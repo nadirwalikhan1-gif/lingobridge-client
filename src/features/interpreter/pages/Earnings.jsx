@@ -3,103 +3,82 @@ import { DollarSign, TrendingUp, Calendar, Download } from 'lucide-react'
 import EarningsChart from '../components/dashboard/EarningsChart'
 
 const transactions = [
-  { id: 1, client: 'John Doe', amount: 45.00, date: 'May 15, 2026', status: 'completed', type: 'Video Call' },
-  { id: 2, client: 'Sarah Smith', amount: 32.50, date: 'May 14, 2026', status: 'completed', type: 'Audio Call' },
-  { id: 3, client: 'Ali Khan', amount: 67.00, date: 'May 14, 2026', status: 'completed', type: 'Video Call' },
-  { id: 4, client: 'Maria Garcia', amount: 28.00, date: 'May 13, 2026', status: 'pending', type: 'Audio Call' },
-  { id: 5, client: 'David Lee', amount: 55.00, date: 'May 12, 2026', status: 'completed', type: 'Video Call' },
+  { id: 1, client: 'John Doe',     amount: 45.00, date: 'May 15, 2026', status: 'completed', type: 'Video Call' },
+  { id: 2, client: 'Sarah Smith',  amount: 32.50, date: 'May 14, 2026', status: 'completed', type: 'Audio Call' },
+  { id: 3, client: 'Ali Khan',     amount: 67.00, date: 'May 14, 2026', status: 'completed', type: 'Video Call' },
+  { id: 4, client: 'Maria Garcia', amount: 28.00, date: 'May 13, 2026', status: 'pending',   type: 'Audio Call' },
+  { id: 5, client: 'David Lee',    amount: 55.00, date: 'May 12, 2026', status: 'completed', type: 'Video Call' },
+]
+
+const statCards = [
+  { label: 'Total Earnings', value: null,    icon: DollarSign, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+  { label: 'Growth',         value: '+18.5%', icon: TrendingUp,  iconBg: 'bg-interpreter-accent/10', iconColor: 'text-interpreter-accent' },
+  { label: 'Sessions',       value: '23',     icon: Calendar,    iconBg: 'bg-slate-100',  iconColor: 'text-slate-600' },
+  { label: 'Pending',        value: '$28.00', icon: DollarSign,  iconBg: 'bg-amber-50',   iconColor: 'text-amber-600' },
 ]
 
 export default function Earnings() {
-  const [filter, setFilter] = useState('This Week')
-
   const totalEarnings = transactions
     .filter(t => t.status === 'completed')
     .reduce((sum, t) => sum + t.amount, 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Earnings</h1>
-          <p className="text-sm text-slate-500 mt-1">View your revenue and payment history</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-white text-slate-700 text-sm font-medium rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
-          <Download className="w-4 h-4" />
+        <h1 className="text-lg font-bold text-slate-800">Earnings</h1>
+        <button className="flex items-center gap-2 px-3 py-1.5 bg-white text-slate-600 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+          <Download className="w-3.5 h-3.5" />
           Export
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-emerald-600" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {statCards.map((s) => (
+          <div key={s.label} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs text-slate-500 mb-1">{s.label}</p>
+                <p className="text-xl font-bold text-slate-800">
+                  {s.label === 'Total Earnings' ? `$${totalEarnings.toFixed(2)}` : s.value}
+                </p>
+              </div>
+              <div className={`w-8 h-8 rounded-lg ${s.iconBg} flex items-center justify-center`}>
+                <s.icon className={`w-4 h-4 ${s.iconColor}`} />
+              </div>
             </div>
-            <span className="text-xs text-emerald-600 font-medium">Total Earnings</span>
           </div>
-          <p className="text-2xl font-bold text-slate-900">${totalEarnings.toFixed(2)}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-violet-600" />
-            </div>
-            <span className="text-xs text-violet-600 font-medium">Growth</span>
-          </div>
-          <p className="text-2xl font-bold text-slate-900">+18.5%</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-blue-600" />
-            </div>
-            <span className="text-xs text-blue-600 font-medium">Sessions</span>
-          </div>
-          <p className="text-2xl font-bold text-slate-900">23</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-amber-600" />
-            </div>
-            <span className="text-xs text-amber-600 font-medium">Pending</span>
-          </div>
-          <p className="text-2xl font-bold text-slate-900">$28.00</p>
-        </div>
+        ))}
       </div>
 
       {/* Chart */}
       <EarningsChart />
 
       {/* Transactions */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-4">Recent Transactions</h2>
-        <div className="space-y-3">
+      <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-800 mb-3">Recent Transactions</h3>
+        <div className="space-y-2">
           {transactions.map((t) => (
-            <div key={t.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  t.status === 'completed' ? 'bg-emerald-50' : 'bg-amber-50'
+            <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                t.status === 'completed' ? 'bg-emerald-50' : 'bg-amber-50'
+              }`}>
+                <span className={`text-xs font-bold ${
+                  t.status === 'completed' ? 'text-emerald-600' : 'text-amber-600'
                 }`}>
-                  <span className={`text-sm font-bold ${
-                    t.status === 'completed' ? 'text-emerald-600' : 'text-amber-600'
-                  }`}>
-                    {t.client[0]}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{t.client}</p>
-                  <p className="text-xs text-slate-500">{t.type} • {t.date}</p>
-                </div>
+                  {t.client[0]}
+                </span>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-bold text-slate-900">${t.amount.toFixed(2)}</p>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  t.status === 'completed' 
-                    ? 'bg-emerald-100 text-emerald-700' 
-                    : 'bg-amber-100 text-amber-700'
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-slate-800 truncate">{t.client}</p>
+                <p className="text-xs text-slate-500">{t.type} · {t.date}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-semibold text-slate-800">${t.amount.toFixed(2)}</p>
+                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                  t.status === 'completed'
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-amber-50 text-amber-700'
                 }`}>
                   {t.status}
                 </span>

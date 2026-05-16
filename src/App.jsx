@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate, Link } from 'react-router-dom'
+import { useAuth } from './hooks/useAuth'
 import DashboardLayout from './components/layout/DashboardLayout'
 import AdminDashboard from './features/admin/pages/Dashboard'
 import InterpreterDashboard from './features/interpreter/pages/Dashboard'
 import BookingPage from './features/booking/pages/BookingPage'
-import LoginPage from './features/auth/pages/LoginPage'
-import RegisterPage from './features/auth/pages/RegisterPage'
+import LoginPage from './pages/LoginPage'
 
 // Client pages
 import ClientDashboard from './features/client/pages/Dashboard'
@@ -14,8 +14,6 @@ import MessagesPage from './features/client/pages/Messages'
 import FavouritesPage from './features/client/pages/Favourites'
 import ProfilePage from './features/client/pages/Profile'
 import TeamsPage from './features/booking/pages/TeamsPage'
-
-const isAuthenticated = true
 
 function RoleSwitcher() {
   return (
@@ -50,7 +48,6 @@ function RoleRoutes({ role }) {
         } />
         <Route path="booking" element={<BookingPage />} />
 
-        {/* Admin routes */}
         {role === 'admin' && (
           <>
             <Route path="users" element={<Placeholder title="Users" />} />
@@ -65,7 +62,6 @@ function RoleRoutes({ role }) {
           </>
         )}
 
-        {/* Client routes */}
         {role === 'client' && (
           <>
             <Route path="history" element={<SessionHistory />} />
@@ -79,7 +75,6 @@ function RoleRoutes({ role }) {
           </>
         )}
 
-        {/* Interpreter routes */}
         {role === 'interpreter' && (
           <>
             <Route path="requests" element={<Placeholder title="Requests" />} />
@@ -110,11 +105,14 @@ function Placeholder({ title }) {
 }
 
 export default function App() {
-  if (!isAuthenticated) {
+  const { user, loading } = useAuth()
+
+  if (loading) return null
+
+  if (!user) {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     )

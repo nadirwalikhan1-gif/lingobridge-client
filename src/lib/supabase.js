@@ -8,7 +8,14 @@ console.log('ENV CHECK:', SUPABASE_URL, SUPABASE_ANON_KEY ? 'KEY_PRESENT' : 'KEY
 let supabase = null;
 
 if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+      lock: () => Promise.resolve(),  // disable navigator lock — fixes white screen on some browsers
+    }
+  });
 } else {
   console.warn('Missing Supabase environment variables — client not initialized');
 }

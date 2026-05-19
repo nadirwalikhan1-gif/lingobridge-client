@@ -11,12 +11,20 @@
   --color-lb-text: #111827;
   --color-lb-text-secondary: #6B7280;
   --color-lb-text-muted: #6E7191;
+
   --color-admin-sidebar: #1e293b;
-  --color-interpreter-sidebar: #064e3b;
+  --color-interpreter-sidebar: #4c1d95;
   --color-client-sidebar: #4c1d95;
+
   --color-admin-accent: #3b82f6;
   --color-client-accent: #6C63FF;
-  --color-interpreter-accent: #10b981;
+  --color-interpreter-accent: #7c3aed;
+
+  /* Interpreter component tokens */
+  --color-lb-ink: #2C2C2A;
+  --color-lb-muted: #888780;
+  --color-lb-subtle: #B4B2A9;
+  --color-lb-surface: #F1EFE8;
 
   --spacing-sidebar: 215px;
   --spacing-sidebar-collapsed: 64px;
@@ -57,5 +65,14 @@
 
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-lb-primary/20 focus:border-lb-primary;
+  }
+}
+
+@layer components {
+  .lb-card {
+    background: white;
+    border: 0.5px solid rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
   }
 }

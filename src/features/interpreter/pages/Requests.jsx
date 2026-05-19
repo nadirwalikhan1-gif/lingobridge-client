@@ -1,102 +1,60 @@
 import { useState } from 'react'
-import { Phone, Video, Clock, Globe, Check, X, MapPin } from 'lucide-react'
 
 const requests = [
-  { id: 1, client: 'John Doe',    fromLang: 'English', toLang: 'Spanish', duration: '30 min', type: 'video', price: 45.00, time: 'Just now',   location: 'New York, USA', avatar: 'JD' },
-  { id: 2, client: 'Sarah Smith', fromLang: 'Arabic',  toLang: 'English', duration: '45 min', type: 'audio', price: 32.50, time: '2 min ago',  location: 'London, UK',    avatar: 'SS' },
-  { id: 3, client: 'Ali Khan',    fromLang: 'Urdu',    toLang: 'English', duration: '60 min', type: 'video', price: 67.00, time: '5 min ago',  location: 'Karachi, PK',   avatar: 'AK' },
+  { id: 1, fromLang: 'English', toLang: 'Spanish', sessionType: 'video', duration: '30 min', category: 'Medical', price: '$45.00', client: 'John Doe',    timeAgo: 'Just now',  avatar: 'JD', expiresIn: 320 },
+  { id: 2, fromLang: 'Arabic',  toLang: 'English', sessionType: 'audio', duration: '45 min', category: 'Business', price: '$32.50', client: 'Sarah Smith', timeAgo: '2 min ago', avatar: 'SS', expiresIn: 480 },
+  { id: 3, fromLang: 'Urdu',    toLang: 'English', sessionType: 'video', duration: '60 min', category: 'Legal',   price: '$67.00', client: 'Ali Khan',    timeAgo: '5 min ago', avatar: 'AK', expiresIn: 540 },
 ]
 
 export default function Requests() {
-  const [activeRequests, setActiveRequests] = useState(requests)
-
-  const handleAccept  = (id) => setActiveRequests(prev => prev.filter(r => r.id !== id))
-  const handleDecline = (id) => setActiveRequests(prev => prev.filter(r => r.id !== id))
+  const [active, setActive] = useState(requests)
+  const remove = (id) => setActive(p => p.filter(r => r.id !== id))
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold text-slate-800">Requests</h1>
-        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span className="text-xs font-medium">{activeRequests.length} Active</span>
-        </div>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between pb-1">
+        <h1 className="text-lg font-medium text-lb-ink">Requests</h1>
+        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-[#E1F5EE] text-[#0F6E56] font-medium">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#1D9E75]" />
+          {active.length} active
+        </span>
       </div>
 
-      {/* Requests List */}
-      <div className="space-y-3">
-        {activeRequests.length === 0 ? (
-          <div className="bg-white p-10 rounded-xl border border-slate-100 shadow-sm text-center">
-            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
-              <Phone className="w-6 h-6 text-slate-300" />
-            </div>
-            <p className="text-sm font-medium text-slate-600 mb-1">No active requests</p>
-            <p className="text-xs text-slate-400">New requests will appear here in real-time</p>
-          </div>
-        ) : (
-          activeRequests.map((r) => (
-            <div key={r.id} className="bg-white p-4 rounded-xl border-2 border-emerald-100 hover:border-emerald-200 shadow-sm transition-all">
+      {active.length === 0 ? (
+        <div className="lb-card py-10 text-center">
+          <p className="text-sm font-medium text-lb-muted mb-1">No active requests</p>
+          <p className="text-xs text-lb-subtle">New requests will appear here in real-time</p>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {active.map((r) => (
+            <div key={r.id} className="lb-card">
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-interpreter-accent/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-bold text-interpreter-accent">{r.avatar}</span>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[13px] font-medium text-[#534AB7] shrink-0">
+                    {r.avatar}
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-800">{r.client}</h3>
-                    <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Globe className="w-3 h-3" />
-                        {r.fromLang} → {r.toLang}
+                    <p className="text-[13px] font-medium text-lb-ink">{r.fromLang} → {r.toLang}</p>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                      <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded border border-lb-border bg-lb-surface text-lb-muted">
+                        {r.sessionType === 'video' ? 'Video' : 'Audio'} · {r.duration}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {r.location}
-                      </span>
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">{r.category}</span>
                     </div>
+                    <p className="text-[11px] text-lb-muted mt-1">{r.client} · {r.timeAgo}</p>
                   </div>
                 </div>
-                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${
-                  r.type === 'video' ? 'bg-interpreter-accent/10 text-interpreter-accent' : 'bg-slate-100 text-slate-600'
-                }`}>
-                  {r.type === 'video' ? <Video className="w-3 h-3" /> : <Phone className="w-3 h-3" />}
-                  {r.type === 'video' ? 'Video Call' : 'Audio Call'}
-                </span>
+                <span className="text-[14px] font-medium text-[#26215C]">{r.price}</span>
               </div>
-
-              <div className="flex items-center gap-4 mb-4 text-xs text-slate-600">
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  {r.duration}
-                </span>
-                <span className="text-slate-300">|</span>
-                <span className="font-semibold text-emerald-600">${r.price.toFixed(2)}</span>
-                <span className="text-slate-300">|</span>
-                <span className="text-slate-400">{r.time}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleAccept(r.id)}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 text-white text-xs font-medium rounded-lg hover:bg-emerald-500 transition-colors"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  Accept Request
-                </button>
-                <button
-                  onClick={() => handleDecline(r.id)}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-white text-red-600 text-xs font-medium rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  Decline
-                </button>
+              <div className="flex gap-2">
+                <button onClick={() => remove(r.id)} className="flex-1 text-[12px] py-2 rounded border border-lb-border text-lb-muted hover:bg-lb-surface transition-colors">Decline</button>
+                <button onClick={() => remove(r.id)} className="flex-1 text-[12px] py-2 rounded bg-[#7F77DD] text-white font-medium hover:bg-[#534AB7] transition-colors">Accept request</button>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

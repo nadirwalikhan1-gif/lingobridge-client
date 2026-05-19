@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import AvailabilitySchedule from '../components/dashboard/AvailabilitySchedule'
-import { Clock, ToggleLeft, ToggleRight } from 'lucide-react'
 
 const DEFAULT_SCHEDULE = [
   { day: 'Mon', start: '9:00 AM', end: '5:00 PM', available: true },
@@ -17,36 +16,32 @@ export default function Availability() {
   const [schedule] = useState(DEFAULT_SCHEDULE)
 
   return (
-    <div className="max-w-2xl space-y-4">
-      <h1 className="text-lg font-bold text-slate-800">Availability</h1>
+    <div className="max-w-2xl space-y-3">
+      <h1 className="text-lg font-medium text-lb-ink pb-1">Availability</h1>
 
-      {/* Online Toggle */}
-      <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
+      {/* Online toggle */}
+      <div className="lb-card flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isOnline ? 'bg-emerald-50' : 'bg-slate-100'}`}>
-            <Clock className={`w-4 h-4 ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`} />
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isOnline ? 'bg-[#E1F5EE]' : 'bg-lb-surface'}`}>
+            <svg className={`w-4 h-4 ${isOnline ? 'text-[#0F6E56]' : 'text-lb-muted'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" d="M12 6v6l4 2"/></svg>
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-800">Online Status</p>
-            <p className="text-xs text-slate-500">
-              {isOnline ? 'You are visible to clients' : 'You are hidden from clients'}
-            </p>
+            <p className="text-[13px] font-medium text-lb-ink">Online status</p>
+            <p className="text-[11px] text-lb-muted">{isOnline ? 'You are visible to clients' : 'You are hidden from clients'}</p>
           </div>
         </div>
-        <button onClick={() => setIsOnline(o => !o)}>
-          {isOnline
-            ? <ToggleRight className="w-7 h-7 text-emerald-500" />
-            : <ToggleLeft className="w-7 h-7 text-slate-300" />
-          }
+        <button
+          onClick={() => setIsOnline(o => !o)}
+          className={`relative w-10 h-6 rounded-full transition-colors ${isOnline ? 'bg-[#7F77DD]' : 'bg-lb-border'}`}
+        >
+          <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${isOnline ? 'left-[18px]' : 'left-0.5'}`} />
         </button>
       </div>
 
-      {/* Schedule */}
       <AvailabilitySchedule schedule={schedule} onEdit={() => {}} />
 
-      {/* Coming Soon Placeholder */}
-      <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm text-center">
-        <p className="text-sm text-slate-400">Full schedule editor coming soon</p>
+      <div className="lb-card text-center py-6">
+        <p className="text-[13px] text-lb-muted">Full schedule editor coming soon</p>
       </div>
     </div>
   )

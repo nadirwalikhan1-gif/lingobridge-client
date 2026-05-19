@@ -1,19 +1,29 @@
-﻿const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+import { supabase } from '../lib/supabase';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 
 async function apiCall(endpoint, options = {}) {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error('Not authenticated');
+  }
+
   const url = `${API_URL}${endpoint}`;
   const response = await fetch(url, {
+    ...options,
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
       ...options.headers,
     },
-    ...options,
   });
-  
+
   if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`);
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.message || `API error: ${response.status} ${response.statusText}`);
   }
-  
+
   return response.json();
 }
 

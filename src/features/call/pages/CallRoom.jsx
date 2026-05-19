@@ -1,0 +1,159 @@
+import { useState } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../../providers/AuthProvider';
+import { useAgora } from '../../../hooks/useAgora';
+import VideoTile from '../components/VideoTile';
+import Controls from '../components/Controls';
+import ChatSidebar from '../components/ChatSidebar';
+
+// Route: /call/:channelId?type=audio|video
+// channelId  — Agora channel name (= session ID)
+// type param — 'audio' or 'video' (defaults to audio)
+
+export default function CallRoom() {
+  const { channelId }            = useParams();
+  const [searchParams]           = useSearchParams();
+  const sessionType              = searchParams.get('type') === 'video' ? 'video' : 'audio';
+  const navigate                 = useNavigate();
+  const { user }                 = useAuth();
+  const [chatOpen, setChatOpen]  = useState(false);
+
+  const {
+    localTracks,
+    remoteUsers,
+    joined,
+    micMuted,
+    camOff,
+    error,
+    toggleMic,
+    toggleCam,
+    leave,
+  } = useAgora({ channel: channelId, sessionType });
+
+  async function handleLeave() {
+    await leave();
+    navigate(-1);
+  }
+
+  const initials = user?.user_metadata?.name
+    ? user.user_metadata.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : (user?.email?.[0] ?? '?').toUpperCase();
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-dvh bg-[#0f0f1a] text-white gap-4">
+        <p className="text-sm text-[#F09595]">Could not join call: {error}</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-lg bg-lb-surface text-lb-ink text-sm hover:bg-lb-border transition-colors"
+        >
+          Go back
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-dvh bg-[#0f0f1a] overflow-hidden">
+      {/* Main call area */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Video grid */}
+        <div className="flex-1 p-3 overflow-hidden">
+          {sessionType === 'video' ? (
+            <div className={`grid h-full gap-2 ${remoteUsers.length === 0 ? '' : 'grid-cols-2'}`}>
+              {/* Local tile */}
+              <VideoTile
+                track={camOff ? null : localTracks.cam}
+                label={user?.user_metadata?.name ?? user?.email ?? 'You'}
+                avatarInitials={initials}
+                muted={micMuted}
+                isLocal
+              />
+
+              {/* Remote tiles */}
+              {remoteUsers.map(u => (
+                <VideoTile
+                  key={u.uid}
+                  track={u.videoTrack ?? null}
+                  label={`Participant ${u.uid}`}
+                  avatarInitials="?"
+                />
+              ))}
+            </div>
+          ) : (
+            // Audio-only layout — avatar grid
+            <div className="flex items-center justify-center h-full gap-8 flex-wrap">
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-20 h-20 rounded-full bg-[#EEEDFE] flex items-center justify-center text-2xl font-semibold text-[#534AB7] ring-4 transition-all ${
+                  !micMuted ? 'ring-[#7F77DD]' : 'ring-transparent'
+                }`}>
+                  {initials}
+                </div>
+                <p className="text-white/70 text-xs">{user?.user_metadata?.name ?? 'You'}</p>
+                {micMuted && <span className="text-[10px] text-[#F09595]">Muted</span>}
+              </div>
+
+              {remoteUsers.map(u => (
+                <div key={u.uid} className="flex flex-col items-center gap-2">
+                  <div className="w-20 h-20 rounded-full bg-[#E1F5EE] flex items-center justify-center text-2xl font-semibold text-[#0F6E56] ring-4 ring-[#1D9E75]">
+                    ?
+                  </div>
+                  <p className="text-white/70 text-xs">Participant {u.uid}</p>
+                </div>
+              ))}
+
+              {remoteUsers.length === 0 && joined && (
+                <p className="text-white/40 text-sm">Waiting for the other participant…</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Connecting state */}
+        {!joined && !error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0f0f1a]/80">
+            <p className="text-white/60 text-sm animate-pulse">Connecting…</p>
+          </div>
+        )}
+
+        {/* Controls bar */}
+        <div className="flex items-center justify-between px-4 bg-[#0f0f1a] border-t border-white/10">
+          <div className="w-24">
+            {sessionType === 'video' && (
+              <span className="text-[11px] text-white/30 uppercase tracking-wide">Video call</span>
+            )}
+          </div>
+
+          <Controls
+            micMuted={micMuted}
+            camOff={camOff}
+            sessionType={sessionType}
+            onToggleMic={toggleMic}
+            onToggleCam={toggleCam}
+            onLeave={handleLeave}
+          />
+
+          <div className="w-24 flex justify-end">
+            <button
+              onClick={() => setChatOpen(o => !o)}
+              className={`text-[12px] px-3 py-1.5 rounded-lg border transition-colors ${
+                chatOpen
+                  ? 'border-[#7F77DD] bg-[#7F77DD]/20 text-[#AFA9EC]'
+                  : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/70'
+              }`}
+            >
+              Chat
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Chat sidebar */}
+      {chatOpen && (
+        <div className="w-72 shrink-0">
+          <ChatSidebar channel={channelId} currentUser={user} />
+        </div>
+      )}
+    </div>
+  );
+}

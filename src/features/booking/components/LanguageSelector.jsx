@@ -1,112 +1,96 @@
+// LanguageSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, ArrowUpDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { FROM_LANGUAGES, TO_LANGUAGES } from '../../../config/constants'
 
-export default function LanguageSelector({ fromLang, toLang, onFromChange, onToChange, onSwap }) {
-  const [fromOpen, setFromOpen] = useState(false)
-  const [toOpen, setToOpen] = useState(false)
-  const fromRef = useRef(null)
-  const toRef = useRef(null)
+function SwapIcon() {
+  return (
+    <svg className="w-3.5 h-3.5 text-lb-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+    </svg>
+  )
+}
+
+function LanguageDropdown({ label, value, options, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const selected = options.find(l => l.code === value)
 
   useEffect(() => {
-    function handleClickOutside(e) {
-      if (fromRef.current && !fromRef.current.contains(e.target)) setFromOpen(false)
-      if (toRef.current && !toRef.current.contains(e.target)) setToOpen(false)
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  const selectedFrom = FROM_LANGUAGES.find((l) => l.code === fromLang)
-  const selectedTo = TO_LANGUAGES.find((l) => l.code === toLang)
-
   return (
-    <div className="relative">
-
-      {/* FROM — English variants only */}
-      <div className="mb-2">
-        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">From</p>
-        <div className="relative" ref={fromRef}>
-          <button
-            onClick={() => setFromOpen(!fromOpen)}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-white border border-slate-200 rounded-xl hover:border-slate-300 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
-            aria-haspopup="listbox"
-            aria-expanded={fromOpen}
-            aria-label="Select source language"
-          >
-            <img src={selectedFrom?.flag} alt="" className="w-5 h-3.5 rounded-sm object-cover shrink-0" />
-            <span className="text-[12px] font-medium text-slate-700 truncate flex-1" title={selectedFrom?.label}>{selectedFrom?.label}</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${fromOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {fromOpen && (
-            <div className="absolute z-20 w-full mt-1.5 bg-white rounded-xl shadow-lg border border-slate-100 py-1 max-h-48 overflow-y-auto" role="listbox" aria-label="Source language options">
-              {FROM_LANGUAGES.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => { onFromChange(lang.code); setFromOpen(false) }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-50 transition-colors focus:outline-none focus:bg-violet-50 ${
-                    fromLang === lang.code ? 'bg-violet-50 text-violet-700' : 'text-slate-700'
-                  }`}
-                  role="option"
-                  aria-selected={fromLang === lang.code}
-                >
-                  <img src={lang.flag} alt="" className="w-5 h-3.5 rounded-sm object-cover shrink-0" />
-                  <span className="text-[11px] font-medium truncate" title={lang.label}>{lang.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Swap */}
-      <div className="flex justify-center my-2">
+    <div className="flex-1" ref={ref}>
+      <p className="text-[10px] font-medium text-lb-muted uppercase tracking-wider mb-1.5">{label}</p>
+      <div className="relative">
         <button
-          onClick={onSwap}
-          className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-violet-50 hover:border-violet-200 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
-          aria-label="Swap languages"
+          onClick={() => setOpen(!open)}
+          className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-left ${
+            open ? 'border-[#7F77DD] bg-lb-surface' : 'border-lb-border bg-lb-surface hover:border-[#7F77DD]'
+          }`}
         >
-          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
-        </button>
-      </div>
-
-      {/* TO — Pashto & Punjabi only */}
-      <div>
-        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">To</p>
-        <div className="relative" ref={toRef}>
-          <button
-            onClick={() => setToOpen(!toOpen)}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-white border border-slate-200 rounded-xl hover:border-slate-300 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
-            aria-haspopup="listbox"
-            aria-expanded={toOpen}
-            aria-label="Select target language"
-          >
-            <img src={selectedTo?.flag} alt="" className="w-5 h-3.5 rounded-sm object-cover shrink-0" />
-            <span className="text-[12px] font-medium text-slate-700 truncate flex-1" title={selectedTo?.label}>{selectedTo?.label}</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${toOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {toOpen && (
-            <div className="absolute z-20 w-full mt-1.5 bg-white rounded-xl shadow-lg border border-slate-100 py-1 max-h-48 overflow-y-auto" role="listbox" aria-label="Source language options">
-              {TO_LANGUAGES.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => { onToChange(lang.code); setToOpen(false) }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-50 transition-colors focus:outline-none focus:bg-violet-50 ${
-                    toLang === lang.code ? 'bg-violet-50 text-violet-700' : 'text-slate-700'
-                  }`}
-                  role="option"
-                  aria-selected={toLang === lang.code}
-                >
-                  <img src={lang.flag} alt="" className="w-5 h-3.5 rounded-sm object-cover shrink-0" />
-                  <span className="text-[11px] font-medium truncate" title={lang.label}>{lang.label}</span>
-                </button>
-              ))}
-            </div>
+          {selected?.flag && (
+            <img src={selected.flag} alt="" className="w-5 h-3.5 rounded-sm object-cover shrink-0" />
           )}
-        </div>
+          <span className="text-[12px] font-medium text-lb-ink truncate flex-1">{selected?.label}</span>
+          <ChevronDown className={`w-3.5 h-3.5 text-lb-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+
+        {open && (
+          <div className="absolute z-20 w-full mt-1 bg-white rounded-lg border border-lb-border shadow-lg py-1 max-h-44 overflow-y-auto">
+            {options.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => { onChange(lang.code); setOpen(false) }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
+                  value === lang.code
+                    ? 'bg-[#EEEDFE] text-[#534AB7]'
+                    : 'text-lb-ink hover:bg-lb-surface'
+                }`}
+              >
+                {lang.flag && (
+                  <img src={lang.flag} alt="" className="w-5 h-3.5 rounded-sm object-cover shrink-0" />
+                )}
+                <span className="text-[12px] font-medium truncate">{lang.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+    </div>
+  )
+}
+
+export default function LanguageSelector({ fromLang, toLang, onFromChange, onToChange, onSwap }) {
+  return (
+    <div className="flex items-end gap-2">
+      <LanguageDropdown
+        label="From"
+        value={fromLang}
+        options={FROM_LANGUAGES}
+        onChange={onFromChange}
+      />
+
+      {/* Swap button — same lb-surface style */}
+      <button
+        onClick={onSwap}
+        className="w-8 h-8 mb-0.5 rounded-lg bg-lb-surface border border-lb-border flex items-center justify-center hover:border-[#7F77DD] hover:bg-[#EEEDFE] transition-colors shrink-0"
+        aria-label="Swap languages"
+      >
+        <SwapIcon />
+      </button>
+
+      <LanguageDropdown
+        label="To"
+        value={toLang}
+        options={TO_LANGUAGES}
+        onChange={onToChange}
+      />
     </div>
   )
 }

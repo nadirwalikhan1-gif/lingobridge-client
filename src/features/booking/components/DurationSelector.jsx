@@ -1,3 +1,4 @@
+// DurationSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
 import { useState, useRef } from 'react'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 import { AUDIO_PRICE_PER_MINUTE, VIDEO_PRICE_PER_MINUTE } from '../../../config/constants'
@@ -18,55 +19,49 @@ export default function DurationSelector({ selected, onSelect, sessionType }) {
     if (newPage < 0 || newPage >= totalPages) return
     setPage(newPage)
     const el = scrollRef.current
-    if (el) {
-      el.scrollTo({ left: newPage * el.clientWidth, behavior: 'smooth' })
-    }
+    if (el) el.scrollTo({ left: newPage * el.clientWidth, behavior: 'smooth' })
   }
 
   return (
     <div className="flex flex-col">
-      <div className="relative h-[200px]">
+      <div className="relative h-[180px]">
         {page > 0 && (
-          <button 
+          <button
             onClick={() => scroll(-1)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center hover:shadow-lg transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
-            aria-label="Previous duration options"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-7 h-7 rounded-full bg-lb-surface border border-lb-border flex items-center justify-center hover:border-[#7F77DD] transition-colors"
+            aria-label="Previous"
           >
-            <ChevronLeft className="w-4 h-4 text-slate-500" />
+            <ChevronLeft className="w-3.5 h-3.5 text-lb-muted" />
           </button>
         )}
 
-        <div 
+        <div
           ref={scrollRef}
-          className="flex h-full overflow-x-hidden scroll-smooth px-2"
-          style={{ 
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}
+          className="flex h-full overflow-x-hidden scroll-smooth px-1"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {DURATIONS.map((pageDurations, pageIndex) => (
-            <div key={pageIndex} className="w-full shrink-0 grid grid-cols-2 grid-rows-2 gap-2 h-full px-1 py-1">
+            <div key={pageIndex} className="w-full shrink-0 grid grid-cols-2 grid-rows-2 gap-2 h-full py-1">
               {pageDurations.map((min) => {
                 const isActive = selected === min
                 return (
                   <button
                     key={min}
                     onClick={() => onSelect(min)}
-                    className={`group flex flex-col items-center justify-center rounded-xl border-2 transition-all duration-200 h-full focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 ${
+                    className={`flex flex-col items-center justify-center rounded-lg border transition-colors h-full ${
                       isActive
-                        ? 'border-violet-500 bg-violet-50 text-violet-900 shadow-sm'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                        ? 'border-[#7F77DD] bg-[#EEEDFE]'
+                        : 'border-lb-border bg-lb-surface hover:border-[#7F77DD] hover:bg-[#EEEDFE]/40'
                     }`}
                     aria-pressed={isActive}
-                    aria-label={`${min} minutes, $${(min * rate).toFixed(2)}`}
                   >
-                    <span className={`text-[16px] font-bold leading-none transition-colors duration-200 ${isActive ? 'text-violet-700' : 'text-slate-800'}`}>
+                    <span className={`text-[18px] font-medium leading-none ${isActive ? 'text-[#26215C]' : 'text-lb-ink'}`}>
                       {min}
                     </span>
-                    <span className={`text-[10px] font-medium tracking-wider mt-1 transition-colors duration-200 ${isActive ? 'text-violet-600' : 'text-slate-500'}`}>
-                      Minute
+                    <span className={`text-[10px] mt-1 ${isActive ? 'text-[#534AB7]' : 'text-lb-muted'}`}>
+                      min
                     </span>
-                    <span className={`text-[8px] font-semibold mt-1 transition-colors duration-200 ${isActive ? 'text-violet-500' : 'text-slate-400'}`}>
+                    <span className={`text-[9px] mt-0.5 font-medium ${isActive ? 'text-[#534AB7]' : 'text-lb-muted'}`}>
                       ${(min * rate).toFixed(2)}
                     </span>
                   </button>
@@ -77,17 +72,18 @@ export default function DurationSelector({ selected, onSelect, sessionType }) {
         </div>
 
         {page < totalPages - 1 && (
-          <button 
+          <button
             onClick={() => scroll(1)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center hover:shadow-lg transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
-            aria-label="Next duration options"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-7 h-7 rounded-full bg-lb-surface border border-lb-border flex items-center justify-center hover:border-[#7F77DD] transition-colors"
+            aria-label="Next"
           >
-            <ChevronRight className="w-4 h-4 text-slate-500" />
+            <ChevronRight className="w-3.5 h-3.5 text-lb-muted" />
           </button>
         )}
       </div>
 
-      <div className="flex justify-center gap-1.5 mt-3" role="tablist" aria-label="Duration pages">
+      {/* Dots — same pill dot pattern as interpreter */}
+      <div className="flex justify-center gap-1.5 mt-2">
         {DURATIONS.map((_, i) => (
           <button
             key={i}
@@ -96,12 +92,9 @@ export default function DurationSelector({ selected, onSelect, sessionType }) {
               const el = scrollRef.current
               if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' })
             }}
-            className={`w-2 h-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1 ${
-              i === page ? 'bg-violet-600 w-4' : 'bg-slate-200 hover:bg-slate-300'
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === page ? 'w-4 bg-[#7F77DD]' : 'w-1.5 bg-lb-border hover:bg-lb-muted'
             }`}
-            role="tab"
-            aria-selected={i === page}
-            aria-label={`Page ${i + 1}`}
           />
         ))}
       </div>

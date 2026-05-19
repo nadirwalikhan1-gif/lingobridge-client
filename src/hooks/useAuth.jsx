@@ -1,28 +1,4 @@
-﻿import { useState, useContext, createContext } from 'react';
-
-const AuthContext = createContext(null);
-
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    role: 'client',
-    avatar: null,
-  });
-
-  const logout = () => setUser(null);
-
-  return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
+// This file is a re-export shim.
+// The real AuthProvider and useAuth live in src/providers/AuthProvider.jsx.
+// All imports across the codebase that point here resolve to the real implementation.
+export { AuthProvider, useAuth } from '../providers/AuthProvider';

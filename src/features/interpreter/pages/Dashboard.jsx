@@ -4,23 +4,19 @@ import IncomingRequests from '../components/dashboard/IncomingRequests'
 import EarningsChart from '../components/dashboard/EarningsChart'
 import TodaysSchedule from '../components/dashboard/TodaysSchedule'
 import RecentSessions from '../components/dashboard/RecentSessions'
-import AvailabilitySchedule from '../components/dashboard/AvailabilitySchedule'
 import RecentReviews from '../components/dashboard/RecentReviews'
+import WalletSummary from '../components/dashboard/WalletSummary'
 
 const MOCK_STATS = {
   todayEarnings: '$124.50',
   todayEarningsTrend: '+12.5%',
-  rating: '4.8',
-  ratingCount: 128,
+  monthEarnings: '$1,245',
+  monthGrowth: '+18.6%',
   sessionsToday: '6',
   sessionsTrend: '+2',
   hoursToday: '3h 20m',
   hoursTrend: '+45m',
-  monthEarnings: '$1,245.75',
-  monthGrowth: '+18.6%',
 }
-
-const MOCK_SPARKLINE = [30, 45, 35, 55, 48, 62, 58, 75, 68, 82]
 
 export default function InterpreterDashboard() {
   const [isLoading, setIsLoading] = useState(true)
@@ -34,44 +30,34 @@ export default function InterpreterDashboard() {
   if (isLoading) return <DashboardSkeleton />
 
   return (
-    <div className="space-y-4">
-      {/* Header — matches client dashboard header scale */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-slate-500">Welcome back</p>
-          <h1 className="text-lg font-bold text-slate-800 mt-0.5">Interpreter Workspace</h1>
+          <p className="text-xs text-lb-muted">Welcome back, Maria</p>
+          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Interpreter workspace</h1>
         </div>
         <button
           onClick={() => setIsOnline(o => !o)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-            isOnline
-              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            isOnline ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-lb-surface text-lb-muted'
           }`}
         >
-          <span className="relative flex h-2 w-2">
-            {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${isOnline ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-          </span>
+          <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-[#1D9E75]' : 'bg-lb-muted'}`} />
           {isOnline ? 'Online' : 'Offline'}
         </button>
       </div>
 
-      {/* Stats Row */}
-      <EarningsStats stats={MOCK_STATS} sparkline={MOCK_SPARKLINE} />
+      <EarningsStats stats={MOCK_STATS} />
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {/* Left Column */}
-        <div className="xl:col-span-2 space-y-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+        <div className="xl:col-span-2 space-y-3">
           <IncomingRequests />
           <EarningsChart />
           <RecentSessions />
         </div>
-        {/* Right Column */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <TodaysSchedule />
-          <AvailabilitySchedule />
+          <WalletSummary />
           <RecentReviews />
         </div>
       </div>
@@ -81,14 +67,14 @@ export default function InterpreterDashboard() {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
-      <div className="h-6 bg-slate-200 rounded-lg w-48" />
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        {[...Array(5)].map((_, i) => <div key={i} className="h-24 bg-slate-200 rounded-xl" />)}
+    <div className="space-y-3 animate-pulse">
+      <div className="h-5 bg-lb-border rounded w-40" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[...Array(4)].map((_, i) => <div key={i} className="h-20 bg-lb-border rounded-xl" />)}
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="xl:col-span-2 h-80 bg-slate-200 rounded-xl" />
-        <div className="h-80 bg-slate-200 rounded-xl" />
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+        <div className="xl:col-span-2 h-72 bg-lb-border rounded-xl" />
+        <div className="h-72 bg-lb-border rounded-xl" />
       </div>
     </div>
   )

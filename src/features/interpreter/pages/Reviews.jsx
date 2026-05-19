@@ -1,98 +1,80 @@
 import { useState } from 'react'
-import { Star, TrendingUp, MessageSquare } from 'lucide-react'
 
 const REVIEWS = [
-  { id: 1, client: 'John Doe',    rating: 5, text: 'Excellent interpretation, very professional. Made the whole medical consultation smooth and stress-free.', date: 'May 15, 2026', session: 'Medical Consultation' },
-  { id: 2, client: 'Sarah Smith', rating: 4, text: 'Good session overall. Minor audio issues at the start but handled it professionally.', date: 'May 14, 2026', session: 'Business Meeting' },
-  { id: 3, client: 'Ali Khan',    rating: 5, text: 'Highly recommended! Very accurate and fast. Will definitely book again.', date: 'May 13, 2026', session: 'Legal Discussion' },
-  { id: 4, client: 'Maria Garcia',rating: 5, text: 'Perfect interpretation. Understood context well and conveyed the right tone.', date: 'May 10, 2026', session: 'Medical Consultation' },
-  { id: 5, client: 'David Lee',   rating: 3, text: 'Decent session but felt rushed. Would prefer more time for complex terminology.', date: 'May 8, 2026', session: 'Technical Meeting' },
+  { id: 1, client: 'John Doe',    initials: 'JD', rating: 5, text: 'Excellent interpretation, very professional. Made the whole medical consultation smooth and stress-free.', date: 'May 15, 2026', session: 'Medical consultation' },
+  { id: 2, client: 'Sarah Smith', initials: 'SS', rating: 4, text: 'Good session overall. Minor audio issues at the start but handled it professionally.', date: 'May 14, 2026', session: 'Business meeting' },
+  { id: 3, client: 'Ali Khan',    initials: 'AK', rating: 5, text: 'Highly recommended! Very accurate and fast. Will definitely book again.', date: 'May 13, 2026', session: 'Legal discussion' },
+  { id: 4, client: 'Maria G.',    initials: 'MG', rating: 5, text: 'Perfect interpretation. Understood context well and conveyed the right tone.', date: 'May 10, 2026', session: 'Medical consultation' },
+  { id: 5, client: 'David Lee',   initials: 'DL', rating: 3, text: 'Decent session but felt rushed. Would prefer more time for complex terminology.', date: 'May 8, 2026', session: 'Technical meeting' },
 ]
 
-const FILTERS = ['All', '5 Stars', '4 Stars', '3 Stars & Below']
-
+const FILTERS = ['All', '5 Stars', '4 Stars', '3 Stars & below']
 const avgRating = (REVIEWS.reduce((s, r) => s + r.rating, 0) / REVIEWS.length).toFixed(1)
-const distribution = [5, 4, 3, 2, 1].map((star) => ({
+const dist = [5, 4, 3, 2, 1].map(star => ({
   star,
   count: REVIEWS.filter(r => r.rating === star).length,
-  percentage: Math.round((REVIEWS.filter(r => r.rating === star).length / REVIEWS.length) * 100),
+  pct: Math.round((REVIEWS.filter(r => r.rating === star).length / REVIEWS.length) * 100),
 }))
 
 export default function Reviews() {
-  const [activeFilter, setActiveFilter] = useState('All')
-
+  const [filter, setFilter] = useState('All')
   const filtered = REVIEWS.filter(r => {
-    if (activeFilter === 'All') return true
-    if (activeFilter === '5 Stars') return r.rating === 5
-    if (activeFilter === '4 Stars') return r.rating === 4
-    if (activeFilter === '3 Stars & Below') return r.rating <= 3
+    if (filter === 'All') return true
+    if (filter === '5 Stars') return r.rating === 5
+    if (filter === '4 Stars') return r.rating === 4
+    if (filter === '3 Stars & below') return r.rating <= 3
     return true
   })
 
   return (
-    <div className="max-w-2xl space-y-4">
-      <h1 className="text-lg font-bold text-slate-800">Reviews</h1>
+    <div className="max-w-2xl space-y-3">
+      <h1 className="text-lg font-medium text-lb-ink pb-1">Reviews</h1>
 
-      {/* Summary Card */}
-      <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+      {/* Summary */}
+      <div className="lb-card">
         <div className="flex items-center gap-6">
-          {/* Average */}
-          <div className="text-center">
-            <p className="text-4xl font-bold text-slate-800">{avgRating}</p>
-            <div className="flex items-center justify-center gap-0.5 mt-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`w-4 h-4 ${i < Math.round(Number(avgRating)) ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
-              ))}
-            </div>
-            <p className="text-xs text-slate-400 mt-1">{REVIEWS.length} reviews</p>
+          <div className="text-center shrink-0">
+            <p className="text-[32px] font-medium text-lb-ink leading-none">{avgRating}</p>
+            <p className="text-[14px] text-[#BA7517] mt-1 tracking-wide">★★★★★</p>
+            <p className="text-[11px] text-lb-muted mt-1">{REVIEWS.length} reviews</p>
           </div>
-
-          {/* Distribution */}
           <div className="flex-1 space-y-1.5">
-            {distribution.map((d) => (
+            {dist.map((d) => (
               <div key={d.star} className="flex items-center gap-2">
-                <span className="text-xs font-medium text-slate-600 w-3">{d.star}</span>
-                <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full" style={{ width: `${d.percentage}%` }} />
+                <span className="text-[11px] font-medium text-lb-muted w-3">{d.star}</span>
+                <span className="text-[11px] text-[#BA7517]">★</span>
+                <div className="flex-1 h-1.5 bg-lb-border rounded-full overflow-hidden">
+                  <div className="h-full bg-[#BA7517] rounded-full" style={{ width: `${d.pct}%` }} />
                 </div>
-                <span className="text-xs text-slate-400 w-8 text-right">{d.percentage}%</span>
+                <span className="text-[11px] text-lb-subtle w-7 text-right">{d.pct}%</span>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Quick Stats Row */}
-        <div className="grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-slate-100">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-slate-400" />
-            <div>
-              <p className="text-sm font-bold text-slate-800">{REVIEWS.length}</p>
-              <p className="text-xs text-slate-500">Total Reviews</p>
-            </div>
+        <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-lb-border">
+          <div>
+            <p className="text-[13px] font-medium text-lb-ink">{REVIEWS.length}</p>
+            <p className="text-[11px] text-lb-muted">Total reviews</p>
           </div>
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
-            <div>
-              <p className="text-sm font-bold text-slate-800">
-                {Math.round((REVIEWS.filter(r => r.rating === 5).length / REVIEWS.length) * 100)}%
-              </p>
-              <p className="text-xs text-slate-500">5-Star Rate</p>
-            </div>
+          <div>
+            <p className="text-[13px] font-medium text-lb-ink">
+              {Math.round((REVIEWS.filter(r => r.rating === 5).length / REVIEWS.length) * 100)}%
+            </p>
+            <p className="text-[11px] text-lb-muted">5-star rate</p>
           </div>
         </div>
       </div>
 
-      {/* Filter Chips — matches client pattern */}
-      <div className="flex items-center gap-2">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-1.5">
         {FILTERS.map(f => (
           <button
             key={f}
-            onClick={() => setActiveFilter(f)}
-            className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-all ${
-              activeFilter === f
-                ? 'bg-interpreter-accent text-white border-interpreter-accent'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+            onClick={() => setFilter(f)}
+            className={`text-[11px] font-medium px-3 py-1.5 rounded border transition-colors ${
+              filter === f
+                ? 'bg-[#7F77DD] text-white border-[#7F77DD]'
+                : 'bg-white text-lb-muted border-lb-border hover:bg-lb-surface'
             }`}
           >
             {f}
@@ -100,34 +82,28 @@ export default function Reviews() {
         ))}
       </div>
 
-      {/* Reviews List */}
-      <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-3">
-        {filtered.length === 0 ? (
-          <p className="text-sm text-slate-400 text-center py-6">No reviews match this filter</p>
-        ) : (
-          filtered.map(r => (
-            <div key={r.id} className="p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-semibold text-slate-600">{r.client[0]}</span>
+      {/* Review list */}
+      <div className="lb-card space-y-3">
+        {filtered.map(r => (
+          <div key={r.id} className="pb-3 border-b border-lb-border last:border-0 last:pb-0">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-lb-surface flex items-center justify-center text-[11px] font-medium text-lb-muted shrink-0">
+                {r.initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-0.5">
+                  <p className="text-[13px] font-medium text-lb-ink">{r.client}</p>
+                  <span className="text-[11px] text-lb-subtle">{r.date}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium text-slate-800">{r.client}</p>
-                    <span className="text-xs text-slate-400">{r.date}</span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 mb-1.5">{r.session}</p>
-                  <div className="flex items-center gap-0.5 mb-1.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`w-3 h-3 ${i < r.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
-                    ))}
-                  </div>
-                  <p className="text-sm text-slate-600">{r.text}</p>
-                </div>
+                <p className="text-[10px] text-lb-muted mb-1">{r.session}</p>
+                <p className="text-[12px] text-[#BA7517] mb-1.5 tracking-wide">
+                  {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
+                </p>
+                <p className="text-[13px] text-lb-muted">{r.text}</p>
               </div>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
     </div>
   )

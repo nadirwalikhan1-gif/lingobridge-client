@@ -3,7 +3,8 @@ import { supabase } from '../lib/supabase';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 
 async function apiCall(endpoint, options = {}) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const result = await supabase?.auth.getSession();
+  const session = result?.data?.session;
 
   if (!session) {
     throw new Error('Not authenticated');

@@ -11,7 +11,8 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then((result) => {
+      const session = result?.data?.session ?? null;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.access_token) {

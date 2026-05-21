@@ -16,7 +16,9 @@ export function AuthProvider({ children }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.access_token) {
-        connectSocket(session.access_token);
+        // FIX: pass role so server auto-joins interpreters/admins rooms
+        const role = session.user?.user_metadata?.role ?? 'client';
+        connectSocket(session.access_token, role);
       }
       setLoading(false);
     });
@@ -27,7 +29,9 @@ export function AuthProvider({ children }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.access_token) {
-          connectSocket(session.access_token);
+          // FIX: pass role on every auth state change (login, token refresh, etc.)
+          const role = session.user?.user_metadata?.role ?? 'client';
+          connectSocket(session.access_token, role);
         } else {
           disconnectSocket();
         }

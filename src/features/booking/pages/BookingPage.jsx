@@ -3,6 +3,9 @@
 // Booking flow feels like a natural extension of the dashboard ecosystem
 
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../../providers/AuthProvider'
+import { getSocket } from '../../../lib/socket'
 import LanguageSelector from '../components/LanguageSelector'
 import SessionTypeSelector from '../components/SessionTypeSelector'
 import DurationSelector from '../components/DurationSelector'
@@ -10,6 +13,7 @@ import CategoryGrid from '../components/CategoryGrid'
 import InterpreterCards from '../components/InterpreterCards'
 import SessionSummary from '../components/SessionSummary'
 
+// Interpreter list — ids must match what the server uses to look up socket connections
 const INTERPRETERS = [
   { id: 1, name: 'Abid Khan' },
   { id: 2, name: 'Ahmad Zia' },
@@ -77,7 +81,7 @@ function WarnIcon() {
   )
 }
 
-// ─── Step Breadcrumb (matches interpreter card visual language) ───────────────
+// ─── Step Breadcrumb ──────────────────────────────────────────────────────────
 function StepBar({ step }) {
   return (
     <div className="lb-card shrink-0">
@@ -120,7 +124,7 @@ function StepBar({ step }) {
   )
 }
 
-// ─── Nav bar (matches interpreter button style) ───────────────────────────────
+// ─── Nav bar ─────────────────────────────────────────────────────────────────
 function NavBar({ step, goBack, goNext, nextLabel, nextDisabled }) {
   return (
     <div className="shrink-0 h-14 flex items-center justify-between">
@@ -152,7 +156,6 @@ function NavBar({ step, goBack, goNext, nextLabel, nextDisabled }) {
   )
 }
 
-// ─── Step label pill — mirrors interpreter badge pills ────────────────────────
 function StepLabel({ label }) {
   return (
     <p className="text-[11px] font-medium text-[#534AB7] bg-[#EEEDFE] px-2.5 py-1 rounded-full inline-block mb-5 shrink-0">
@@ -161,7 +164,6 @@ function StepLabel({ label }) {
   )
 }
 
-// ─── Section divider (matches booking step 1 section anatomy) ────────────────
 function SectionHead({ num, title }) {
   return (
     <div className="flex items-center gap-3 mb-4">
@@ -172,7 +174,6 @@ function SectionHead({ num, title }) {
   )
 }
 
-// ─── Confirm step detail card ─────────────────────────────────────────────────
 function ConfirmDetail({ label, value, onEdit }) {
   return (
     <div className="p-3 bg-lb-surface rounded-lg border border-lb-border">
@@ -191,6 +192,9 @@ function ConfirmDetail({ label, value, onEdit }) {
 
 // ─── Main BookingPage ─────────────────────────────────────────────────────────
 export default function BookingPage() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+
   const [step, setStep] = useState(1)
   const [fromLang, setFromLang] = useState('en-us')
   const [toLang, setToLang] = useState('ps-east')
@@ -199,6 +203,7 @@ export default function BookingPage() {
   const [selectedInterpreter, setSelectedInterpreter] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [selectedPayment, setSelectedPayment] = useState('4242')
+  const [connecting, setConnecting] = useState(false)
 
   const handleSwapLanguages = () => { setFromLang(toLang); setToLang(fromLang) }
 
@@ -218,6 +223,45 @@ export default function BookingPage() {
 
   const goNext = () => { if (step < 4 && canAdvance()) setStep(s => s + 1) }
   const goBack = () => { if (step > 1) setStep(s => s - 1) }
+
+  // ─── Connect Call ───────────────────────────────────────────────────────────
+  const handleConnectCall = () => {
+    const socket = getSocket()
+
+    if (!socket || !socket.connected) {
+      console.error('Socket not connected')
+      return
+    }
+
+    if (!selectedInterpreter) {
+      console.error('No interpreter selected')
+      return
+    }
+
+    // Unique channel name for this session
+    const channelName = `session_${user.id}_${Date.now()}`
+
+    setConnecting(true)
+
+    // Tell server to forward the call request to the interpreter
+    socket.emit('call:request', {
+      interpreterId: selectedInterpreter,
+      clientId: user.id,
+      clientName: user.user_metadata?.name || user.email,
+      channelName,
+      sessionType,
+      duration,
+      category: selectedCategory,
+      fromLang,
+      toLang,
+      price: `$${total.toFixed(2)}`,
+    })
+
+    console.log('📞 call:request emitted', { channelName, interpreterId: selectedInterpreter })
+
+    // Navigate client straight into the call room
+    navigate(`/call/${channelName}?type=${sessionType}`)
+  }
 
   return (
     <div className="h-full flex gap-4 bg-lb-canvas">
@@ -283,7 +327,7 @@ export default function BookingPage() {
                 <StepLabel label="Step 4 — Review & confirm" />
 
                 <div className="flex flex-col gap-3 max-w-2xl w-full">
-                  {/* Summary cards — 2-col grid using lb token style */}
+                  {/* Summary cards */}
                   <div className="grid grid-cols-2 gap-3">
                     <ConfirmDetail
                       label="Session"
@@ -301,7 +345,7 @@ export default function BookingPage() {
                     onEdit={() => setStep(3)}
                   />
 
-                  {/* Payment method — same card border treatment */}
+                  {/* Payment method */}
                   <div className="p-3 bg-lb-surface rounded-lg border border-lb-border">
                     <div className="flex items-center justify-between mb-2.5">
                       <p className="text-[12px] font-medium text-lb-ink flex items-center gap-2">
@@ -329,7 +373,7 @@ export default function BookingPage() {
                     </div>
                   </div>
 
-                  {/* Insufficient funds warning — amber tint, same lb pattern */}
+                  {/* Insufficient funds warning */}
                   {hasInsufficientFunds && (
                     <div className="flex items-start gap-2.5 p-3 bg-[#FFF8E6] border border-[#F0D070] rounded-lg">
                       <WarnIcon />
@@ -342,18 +386,24 @@ export default function BookingPage() {
                     </div>
                   )}
 
-                  {/* CTA — mirrors interpreter Withdraw button */}
+                  {/* CTA */}
                   <div className="mt-2">
                     <button
-                      disabled={hasInsufficientFunds}
+                      onClick={handleConnectCall}
+                      disabled={hasInsufficientFunds || connecting}
                       className={`w-full h-12 flex items-center justify-center gap-2.5 text-[14px] font-medium rounded-lg transition-colors ${
-                        hasInsufficientFunds
+                        hasInsufficientFunds || connecting
                           ? 'bg-lb-surface text-lb-muted cursor-not-allowed border border-lb-border'
                           : 'bg-[#7F77DD] hover:bg-[#534AB7] text-white'
                       }`}
                     >
                       <PhoneIcon />
-                      {hasInsufficientFunds ? 'Add funds to connect' : `Connect now · $${total.toFixed(2)}`}
+                      {connecting
+                        ? 'Connecting…'
+                        : hasInsufficientFunds
+                          ? 'Add funds to connect'
+                          : `Connect now · $${total.toFixed(2)}`
+                      }
                     </button>
                     <div className="flex items-center justify-center gap-4 mt-2.5">
                       <span className="flex items-center gap-1.5 text-[10px] text-lb-muted">

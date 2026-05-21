@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getSocket } from '../../../lib/socket'
 import EarningsStats from '../components/dashboard/EarningsStats'
 import IncomingRequests from '../components/dashboard/IncomingRequests'
 import EarningsChart from '../components/dashboard/EarningsChart'
@@ -20,12 +21,38 @@ const MOCK_STATS = {
 
 export default function InterpreterDashboard() {
   const [isLoading, setIsLoading] = useState(true)
-  const [isOnline, setIsOnline] = useState(true)
+  const [isOnline, setIsOnline] = useState(false)
 
+  // ── Register with server on mount ────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600)
     return () => clearTimeout(timer)
   }, [])
+
+  // ── Register/deregister with socket when online state changes ─
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket) return
+
+    if (isOnline) {
+      socket.emit('register', { role: 'interpreter' })
+    } else {
+      socket.emit('go-offline')
+    }
+  }, [isOnline])
+
+  // ── Also register on socket reconnect if already online ──────
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket) return
+
+    const onReconnect = () => {
+      if (isOnline) socket.emit('register', { role: 'interpreter' })
+    }
+
+    socket.on('connect', onReconnect)
+    return () => socket.off('connect', onReconnect)
+  }, [isOnline])
 
   if (isLoading) return <DashboardSkeleton />
 

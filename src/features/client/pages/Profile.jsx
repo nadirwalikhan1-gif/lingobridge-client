@@ -1,3 +1,4 @@
+import React from 'react'
 export default function ProfilePage() {
-  return <div className="p-6 text-lb-ink">Profile — coming soon</div>
+  return <div className="p-6">Profile — coming soon</div>
 }

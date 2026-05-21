@@ -233,34 +233,28 @@ export default function BookingPage() {
       return
     }
 
-    if (!selectedInterpreter) {
-      console.error('No interpreter selected')
-      return
-    }
-
-    // Unique channel name for this session
-    const channelName = `session_${user.id}_${Date.now()}`
-
     setConnecting(true)
 
-    // Tell server to forward the call request to the interpreter
-    socket.emit('call:request', {
-      interpreterId: selectedInterpreter,
-      clientId: user.id,
-      clientName: user.user_metadata?.name || user.email,
-      channelName,
+    // FIX: emit 'request-call' (matches server requestHandler.mjs)
+    socket.emit('request-call', {
+      language: fromLang,
       sessionType,
-      duration,
-      category: selectedCategory,
-      fromLang,
-      toLang,
-      price: `$${total.toFixed(2)}`,
     })
 
-    console.log('📞 call:request emitted', { channelName, interpreterId: selectedInterpreter })
+    console.log('📞 request-call emitted', { language: fromLang, sessionType })
 
-    // Navigate client straight into the call room
-    navigate(`/call/${channelName}?type=${sessionType}`)
+    // FIX: wait for server 'call-requested' event before navigating
+    socket.once('call-requested', ({ channelName, agoraToken }) => {
+      console.log('✅ call-requested received', { channelName, agoraToken })
+      setConnecting(false)
+      navigate(`/call/${channelName}?token=${agoraToken ?? ''}&type=${sessionType}`)
+    })
+
+    // Handle error from server
+    socket.once('error', (err) => {
+      console.error('❌ request-call error:', err)
+      setConnecting(false)
+    })
   }
 
   return (

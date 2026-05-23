@@ -124,13 +124,14 @@ export default function IncomingRequests() {
     }
 
     // ── Interpreter accepted on another device/tab ───────────────
-    const onCallAccepted = ({ roomId, channelName, agoraToken }) => {
-      // If this socket accepted it, navigate to call room
-      setRequests(prev => prev.filter(r => r.id !== roomId))
-      if (channelName) {
-        navigate(`/call/${channelName}?token=${agoraToken ?? ''}`)
-      }
-    }
+   const onCallAccepted = ({ roomId, channelName, agoraToken }) => {
+  setRequests(prev => prev.filter(r => r.id !== roomId))
+  if (channelName) {
+    // FIX: extract token string from object
+    const tokenString = agoraToken?.token ?? agoraToken ?? ''
+    navigate(`/call/${channelName}?token=${tokenString}`)
+  }
+}
 
     socket.on('new-request',        onNewRequest)
     socket.on('pending-requests',   onPendingRequests)

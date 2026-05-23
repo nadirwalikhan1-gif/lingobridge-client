@@ -245,10 +245,12 @@ export default function BookingPage() {
 
     // FIX: wait for server 'call-requested' event before navigating
     socket.once('call-requested', ({ channelName, agoraToken }) => {
-      console.log('✅ call-requested received', { channelName, agoraToken })
-      setConnecting(false)
-      navigate(`/call/${channelName}?token=${agoraToken ?? ''}&type=${sessionType}`)
-    })
+  console.log('✅ call-requested received', { channelName, agoraToken })
+  setConnecting(false)
+  // FIX: extract token string from object
+  const tokenString = agoraToken?.token ?? agoraToken ?? ''
+  navigate(`/call/${channelName}?token=${tokenString}&type=${sessionType}`)
+})
 
     // Handle error from server
     socket.once('error', (err) => {

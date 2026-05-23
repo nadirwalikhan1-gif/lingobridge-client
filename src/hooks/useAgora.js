@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getAgoraToken } from '../api/api';
 
-export function useAgora({ channel, uid, sessionType = 'audio' }) {
+export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp }) {
   const clientRef = useRef(null);
 
   const [localTracks, setLocalTracks] = useState({ mic: null, cam: null });
@@ -42,7 +42,17 @@ export function useAgora({ channel, uid, sessionType = 'audio' }) {
 
     async function join() {
       try {
-        const { token } = await getAgoraToken(channel, uid);
+        // FIX: use token from URL (passed by server) if available,
+        // otherwise fall back to fetching a fresh one from the API
+        let token = tokenProp ?? null;
+        if (!token) {
+          console.log('No token in URL — fetching from API');
+          const res = await getAgoraToken(channel, uid);
+          token = res.token;
+        } else {
+          console.log('Using token from URL');
+        }
+
         await client.join(appId, channel, token, uid ?? null);
 
         const isVideo = sessionType === 'video';
@@ -57,6 +67,7 @@ export function useAgora({ channel, uid, sessionType = 'audio' }) {
         setLocalTracks({ mic, cam });
         setJoined(true);
       } catch (err) {
+        console.error('Agora join error:', err);
         setError(err.message || 'Failed to join call');
       }
     }
@@ -73,7 +84,7 @@ export function useAgora({ channel, uid, sessionType = 'audio' }) {
       setJoined(false);
       setRemoteUsers([]);
     };
-  }, [appId, channel, uid, sessionType]);
+  }, [appId, channel, uid, sessionType, tokenProp]);
 
   const toggleMic = useCallback(async () => {
     if (!localTracks.mic) return;

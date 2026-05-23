@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  console.log('VITE ENV CHECK:', env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY ? 'KEY_OK' : 'KEY_MISSING')
+ console.log('VITE_AGORA_APP_ID at build time:', env.VITE_AGORA_APP_ID ? env.VITE_AGORA_APP_ID.substring(0, 6) + '...' : 'MISSING')
   return {
     plugins: [react()],
     resolve: {

@@ -123,18 +123,14 @@ export default function IncomingRequests() {
       setRequests(prev => prev.filter(r => r.id !== roomId))
     }
 
-    // ── Interpreter accepted on another device/tab ───────────────
-   const onCallAccepted = ({ roomId, channelName, agoraToken }) => {
-  setRequests(prev => {
-    // FIX: find the request BEFORE filtering so we can get sessionType
-    const req = prev.find(r => r.id === roomId)
-    const type = req?.type ?? req?.sessionType ?? 'audio'
-    if (channelName) {
-      const tokenString = agoraToken?.token ?? agoraToken ?? ''
-      navigate(`/call/${channelName}?token=${tokenString}&type=${type}`)
-    }
-    return prev.filter(r => r.id !== roomId)
-  })
+  // ── Interpreter accepted on another device/tab ───────────────
+const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
+  setRequests(prev => prev.filter(r => r.id !== roomId))
+  if (channelName) {
+    const tokenString = agoraToken?.token ?? agoraToken ?? ''
+    const type = sessionType ?? 'audio'
+    navigate(`/call/${channelName}?token=${tokenString}&type=${type}`)
+  }
 }
 
     socket.on('new-request',        onNewRequest)

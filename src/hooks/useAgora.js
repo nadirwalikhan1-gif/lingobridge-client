@@ -42,12 +42,12 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
 
 async function join() {
   try {
-    // TEMP: hardcoded token for testing
-    const token = '007eJxTYJjoscb99OdT/E88Uv8ca+xeMYVv0sbGcPcJW+Z6uwRr2c1QYDAwSkwxNE42Nkk0NzMxTklLSk42STVLNrZMMzAFyqTsvS+U1RDIyPApS4uZkQECQXwWhpLU4hIGBgCrpCC+'
+    const token = '007eJxTYCh9mvK4aYmA/uPC58mW5u1XzlS9Mdxw+nTGgxpzWcmEm2sUGAyMElMMjZONTRLNzUyMU9KSkpNNUs2SjS3TDEyBMiktRsJZDYGMDBcabjMxMkAgiM/BUJJaXJKcmJPDwAAAbJojGg=='
+    const testChannel = 'testcall'
     
-    console.log('Agora joining with:', { appId: appId?.substring(0,6), channel })
-    await client.join(appId, channel, token, uid ?? null)
-
+    console.log('Agora joining with appId:', appId?.substring(0, 6))
+    await client.join(appId, testChannel, token, uid ?? null)
+    
     const isVideo = sessionType === 'video'
     const tracks = isVideo
       ? await AgoraRTC.createMicrophoneAndCameraTracks()

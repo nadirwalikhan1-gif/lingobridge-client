@@ -5,9 +5,8 @@ import { useAgora } from '../../../hooks/useAgora';
 import VideoTile from '../components/VideoTile';
 import Controls from '../components/Controls';
 import ChatSidebar from '../components/ChatSidebar';
+import RatingModal from '../components/RatingModal';
 import { getSocket } from '../../../lib/socket';
-
-// Route: /call/:channelId?token=xxx&type=audio|video
 
 function fmt(s) {
   const m = Math.floor(s / 60), ss = s % 60;
@@ -22,10 +21,12 @@ export default function CallRoom() {
   const navigate                 = useNavigate();
   const { user }                 = useAuth();
   const [chatOpen, setChatOpen]  = useState(false);
-
-  // ── Call timer ────────────────────────────────────────────
+  const [showRating, setShowRating] = useState(false);
   const [secs, setSecs]          = useState(0);
   const timerRef                 = useRef(null);
+
+  // Determine role from JWT
+  const role = user?.user_metadata?.role ?? 'client';
 
   const {
     localTracks,
@@ -43,40 +44,54 @@ export default function CallRoom() {
   useEffect(() => {
     if (joined && remoteUsers.length > 0) {
       timerRef.current = setInterval(() => setSecs(s => s + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
   }, [joined, remoteUsers.length]);
 
-  // ── End call when other party leaves ─────────────────────
+  // Auto end when remote user leaves
   useEffect(() => {
     if (joined && remoteUsers.length === 0 && secs > 5) {
-      // Remote user left — auto end call after short delay
       const timeout = setTimeout(async () => {
+        clearInterval(timerRef.current);
         await leave();
-        navigate(-1);
+        setShowRating(true);
       }, 3000);
       return () => clearTimeout(timeout);
     }
   }, [joined, remoteUsers.length, secs]);
 
-  // ── Listen for call-ended socket event ───────────────────
+  // Listen for call-ended socket event
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
 
-    const onCallEnded = () => {
-      leave().then(() => navigate(-1));
+    const onCallEnded = async () => {
+      clearInterval(timerRef.current);
+      await leave();
+      setShowRating(true);
     };
 
     socket.on('call-ended', onCallEnded);
     return () => socket.off('call-ended', onCallEnded);
-  }, [leave, navigate]);
+  }, [leave]);
 
   async function handleLeave() {
-    // Notify server so other party gets call-ended event
     const socket = getSocket();
     socket?.emit('end-call', { roomId: channelId });
+    clearInterval(timerRef.current);
     await leave();
+    setShowRating(true);
+  }
+
+  function handleRatingSubmit(payload) {
+    console.log('Rating submitted:', payload);
+    // TODO: send to API
+    setTimeout(() => navigate(-1), 1500);
+  }
+
+  function handleRatingSkip() {
     navigate(-1);
   }
 
@@ -88,10 +103,7 @@ export default function CallRoom() {
     return (
       <div className="flex flex-col items-center justify-center h-dvh bg-[#0f0f1a] text-white gap-4">
         <p className="text-sm text-[#F09595]">Could not join call: {error}</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="px-4 py-2 rounded-lg bg-lb-surface text-lb-ink text-sm hover:bg-lb-border transition-colors"
-        >
+        <button onClick={() => navigate(-1)} className="px-4 py-2 rounded-lg bg-lb-surface text-lb-ink text-sm hover:bg-lb-border transition-colors">
           Go back
         </button>
       </div>
@@ -111,7 +123,7 @@ export default function CallRoom() {
           </div>
         )}
 
-        {/* Video grid */}
+        {/* Video / Audio grid */}
         <div className="flex-1 p-3 overflow-hidden">
           {sessionType === 'video' ? (
             <div className={`grid h-full gap-2 ${remoteUsers.length === 0 ? '' : 'grid-cols-2'}`}>
@@ -123,20 +135,13 @@ export default function CallRoom() {
                 isLocal
               />
               {remoteUsers.map(u => (
-                <VideoTile
-                  key={u.uid}
-                  track={u.videoTrack ?? null}
-                  label={`Participant ${u.uid}`}
-                  avatarInitials="?"
-                />
+                <VideoTile key={u.uid} track={u.videoTrack ?? null} label={`Participant ${u.uid}`} avatarInitials="?" />
               ))}
             </div>
           ) : (
             <div className="flex items-center justify-center h-full gap-8 flex-wrap">
               <div className="flex flex-col items-center gap-2">
-                <div className={`w-20 h-20 rounded-full bg-[#EEEDFE] flex items-center justify-center text-2xl font-semibold text-[#534AB7] ring-4 transition-all ${
-                  !micMuted ? 'ring-[#7F77DD]' : 'ring-transparent'
-                }`}>
+                <div className={`w-20 h-20 rounded-full bg-[#EEEDFE] flex items-center justify-center text-2xl font-semibold text-[#534AB7] ring-4 transition-all ${!micMuted ? 'ring-[#7F77DD]' : 'ring-transparent'}`}>
                   {initials}
                 </div>
                 <p className="text-white/70 text-xs">{user?.user_metadata?.name ?? 'You'}</p>
@@ -145,9 +150,7 @@ export default function CallRoom() {
 
               {remoteUsers.map(u => (
                 <div key={u.uid} className="flex flex-col items-center gap-2">
-                  <div className="w-20 h-20 rounded-full bg-[#E1F5EE] flex items-center justify-center text-2xl font-semibold text-[#0F6E56] ring-4 ring-[#1D9E75]">
-                    ?
-                  </div>
+                  <div className="w-20 h-20 rounded-full bg-[#E1F5EE] flex items-center justify-center text-2xl font-semibold text-[#0F6E56] ring-4 ring-[#1D9E75]">?</div>
                   <p className="text-white/70 text-xs">Participant {u.uid}</p>
                 </div>
               ))}
@@ -155,8 +158,6 @@ export default function CallRoom() {
               {remoteUsers.length === 0 && joined && (
                 <p className="text-white/40 text-sm">Waiting for the other participant…</p>
               )}
-
-              {/* Auto-end notice */}
               {joined && remoteUsers.length === 0 && secs > 5 && (
                 <p className="text-[#F09595] text-sm animate-pulse">Other participant left — ending call…</p>
               )}
@@ -174,11 +175,8 @@ export default function CallRoom() {
         {/* Controls bar */}
         <div className="flex items-center justify-between px-4 bg-[#0f0f1a] border-t border-white/10">
           <div className="w-24">
-            {sessionType === 'video' && (
-              <span className="text-[11px] text-white/30 uppercase tracking-wide">Video call</span>
-            )}
+            {sessionType === 'video' && <span className="text-[11px] text-white/30 uppercase tracking-wide">Video call</span>}
           </div>
-
           <Controls
             micMuted={micMuted}
             camOff={camOff}
@@ -187,15 +185,10 @@ export default function CallRoom() {
             onToggleCam={toggleCam}
             onLeave={handleLeave}
           />
-
           <div className="w-24 flex justify-end">
             <button
               onClick={() => setChatOpen(o => !o)}
-              className={`text-[12px] px-3 py-1.5 rounded-lg border transition-colors ${
-                chatOpen
-                  ? 'border-[#7F77DD] bg-[#7F77DD]/20 text-[#AFA9EC]'
-                  : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/70'
-              }`}
+              className={`text-[12px] px-3 py-1.5 rounded-lg border transition-colors ${chatOpen ? 'border-[#7F77DD] bg-[#7F77DD]/20 text-[#AFA9EC]' : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/70'}`}
             >
               Chat
             </button>
@@ -207,6 +200,15 @@ export default function CallRoom() {
         <div className="w-72 shrink-0">
           <ChatSidebar channel={channelId} currentUser={user} />
         </div>
+      )}
+
+      {/* Rating modal */}
+      {showRating && (
+        <RatingModal
+          role={role}
+          onSubmit={handleRatingSubmit}
+          onSkip={handleRatingSkip}
+        />
       )}
     </div>
   );

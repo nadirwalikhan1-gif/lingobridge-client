@@ -19,26 +19,38 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
 
     const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     clientRef.current = client;
+client.on('user-published', async (user, mediaType) => {
+  await client.subscribe(user, mediaType)
+  
+  if (mediaType === 'audio') {
+    user.audioTrack?.play()
+  }
+  if (mediaType === 'video') {
+    user.videoTrack?.play(`video-${user.uid}`)
+  }
 
-    client.on('user-published', async (user, mediaType) => {
-      await client.subscribe(user, mediaType);
-      setRemoteUsers(prev => {
-        const without = prev.filter(u => u.uid !== user.uid);
-        return [...without, user];
-      });
-    });
+  setRemoteUsers(prev => {
+    const without = prev.filter(u => u.uid !== user.uid)
+    return [...without, user]
+  })
+})
 
-    client.on('user-unpublished', (user, mediaType) => {
-      if (mediaType === 'video') {
-        setRemoteUsers(prev =>
-          prev.map(u => u.uid === user.uid ? { ...u, videoTrack: null } : u)
-        );
-      }
-    });
+client.on('user-unpublished', (user, mediaType) => {
+  if (mediaType === 'video') {
+    setRemoteUsers(prev =>
+      prev.map(u => u.uid === user.uid ? { ...u, videoTrack: null } : u)
+    )
+  }
+  if (mediaType === 'audio') {
+    user.audioTrack?.stop()
+  }
+})
 
-    client.on('user-left', (user) => {
-      setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
-    });
+client.on('user-left', (user) => {
+  user.audioTrack?.stop()
+  user.videoTrack?.stop()
+  setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid))
+})
 
 async function join() {
   try {
@@ -49,9 +61,9 @@ async function join() {
     await client.join(appId, testChannel, token, uid ?? null)
     
     const isVideo = sessionType === 'video'
-    const tracks = isVideo
-      ? await AgoraRTC.createMicrophoneAndCameraTracks()
-      : [await AgoraRTC.createMicrophoneTrack()]
+   const tracks = isVideo
+  ? await AgoraRTC.createMicrophoneAndCameraTracks()
+  : [await AgoraRTC.createMicrophoneAudioTrack()]
 
     const mic = tracks[0]
     const cam = isVideo ? tracks[1] : null

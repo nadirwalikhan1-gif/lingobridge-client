@@ -125,12 +125,16 @@ export default function IncomingRequests() {
 
     // ── Interpreter accepted on another device/tab ───────────────
    const onCallAccepted = ({ roomId, channelName, agoraToken }) => {
-  setRequests(prev => prev.filter(r => r.id !== roomId))
-  if (channelName) {
-    // FIX: extract token string from object
-    const tokenString = agoraToken?.token ?? agoraToken ?? ''
-    navigate(`/call/${channelName}?token=${tokenString}`)
-  }
+  setRequests(prev => {
+    // FIX: find the request BEFORE filtering so we can get sessionType
+    const req = prev.find(r => r.id === roomId)
+    const type = req?.type ?? req?.sessionType ?? 'audio'
+    if (channelName) {
+      const tokenString = agoraToken?.token ?? agoraToken ?? ''
+      navigate(`/call/${channelName}?token=${tokenString}&type=${type}`)
+    }
+    return prev.filter(r => r.id !== roomId)
+  })
 }
 
     socket.on('new-request',        onNewRequest)

@@ -40,37 +40,31 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
       setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
     });
 
-    async function join() {
-      try {
-        // FIX: use token from URL (passed by server) if available,
-        // otherwise fall back to fetching a fresh one from the API
-        let token = tokenProp ?? null;
-        if (!token) {
-          console.log('No token in URL — fetching from API');
-          const res = await getAgoraToken(channel, uid);
-          token = res.token;
-        } else {
-          console.log('Using token from URL');
-        }
+async function join() {
+  try {
+    // TEMP: hardcoded token for testing
+    const token = '007eJxTYJjoscb99OdT/E88Uv8ca+xeMYVv0sbGcPcJW+Z6uwRr2c1QYDAwSkwxNE42Nkk0NzMxTklLSk42STVLNrZMMzAFyqTsvS+U1RDIyPApS4uZkQECQXwWhpLU4hIGBgCrpCC+'
+    
+    console.log('Agora joining with:', { appId: appId?.substring(0,6), channel })
+    await client.join(appId, channel, token, uid ?? null)
 
-        await client.join(appId, channel, token, uid ?? null);
+    const isVideo = sessionType === 'video'
+    const tracks = isVideo
+      ? await AgoraRTC.createMicrophoneAndCameraTracks()
+      : [await AgoraRTC.createMicrophoneTrack()]
 
-        const isVideo = sessionType === 'video';
-        const tracks = isVideo
-          ? await AgoraRTC.createMicrophoneAndCameraTracks()
-          : [await AgoraRTC.createMicrophoneTrack()];
+    const mic = tracks[0]
+    const cam = isVideo ? tracks[1] : null
 
-        const mic = tracks[0];
-        const cam = isVideo ? tracks[1] : null;
-
-        await client.publish(isVideo ? [mic, cam] : [mic]);
-        setLocalTracks({ mic, cam });
-        setJoined(true);
-      } catch (err) {
-        console.error('Agora join error:', err);
-        setError(err.message || 'Failed to join call');
-      }
-    }
+    await client.publish(isVideo ? [mic, cam] : [mic])
+    setLocalTracks({ mic, cam })
+    setJoined(true)
+    console.log('✅ Agora joined!')
+  } catch (err) {
+    console.error('Agora join error:', err)
+    setError(err.message || 'Failed to join call')
+  }
+}
 
     join();
 

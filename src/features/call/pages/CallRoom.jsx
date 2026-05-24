@@ -105,7 +105,7 @@ export default function CallRoom() {
         {/* Timer bar */}
         {joined && (
           <div className="flex items-center justify-center py-2 bg-[#0f0f1a] border-b border-white/10">
-            <span className="text-white/60 text-xs font-mono tabular-nums">
+            <span className="text-white/70 text-sm font-mono tabular-nums tracking-widest">
               {remoteUsers.length > 0 ? fmt(secs) : 'Waiting for other participant…'}
             </span>
           </div>

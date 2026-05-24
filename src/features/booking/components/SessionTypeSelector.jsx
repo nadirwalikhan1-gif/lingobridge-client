@@ -3,7 +3,7 @@ import { Headphones, Video } from 'lucide-react'
 
 const types = [
   { value: 'audio', label: 'Audio Call', desc: 'Best for quick conversations', icon: Headphones, available: true },
-  { value: 'video', label: 'Video Call', desc: 'Coming soon', icon: Video, available: false },
+  { value: 'video', label: 'Video Call', desc: 'Face-to-face interpretation', icon: Video, available: true },
 ]
 
 export default function SessionTypeSelector({ selected, onSelect }) {

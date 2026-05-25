@@ -12,16 +12,10 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
   const [error, setError]               = useState(null);
   const [captions, setCaptions]         = useState({});
 
-  // FIX: hardcode appId directly — VITE env vars unreliable in this build setup
-  const appId ='02ad13c34a7643dfbcc4e6c39f05ad1d';
+  const appId = '02ad13c34a7643dfbcc4e6c39f05ad1d';
 
   useEffect(() => {
     if (!channel) return;
-    if (!appId) {
-      setError('Agora App ID not configured');
-      console.error('VITE_AGORA_APP_ID is undefined');
-      return;
-    }
 
     const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     clientRef.current = client;
@@ -66,8 +60,10 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
     async function join() {
       try {
         const token = tokenProp ?? null;
-        console.log('Agora joining:', { appId: appId?.substring(0, 6), channel, tokenLength: token?.length });
-        await client.join(appId, channel, token, uid ?? null);
+        // FIX: use 0 as uid — token was generated with uid=0 on server
+        // This allows any uid to join with a valid token
+        console.log('Agora joining:', { appId: appId.substring(0, 6), channel, tokenLength: token?.length });
+        await client.join(appId, channel, token, 0);
 
         const isVideo = sessionType === 'video';
         let mic, cam;
@@ -115,7 +111,7 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
       setJoined(false);
       setRemoteUsers([]);
     };
-  }, [appId, channel, uid, sessionType, tokenProp]);
+  }, [channel, uid, sessionType, tokenProp]);
 
   const toggleMic = useCallback(async () => {
     if (!localTracks.mic) return;

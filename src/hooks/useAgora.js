@@ -14,9 +14,11 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
   const [captions, setCaptions]         = useState({});
 
   const appId = import.meta.env.VITE_AGORA_APP_ID;
+  console.log('[useAgora] appId:', appId?.substring(0,6), 'channel:', channel, 'token:', tokenProp?.substring(0,10));
 
   useEffect(() => {
-    if (!appId || !channel) return;
+    if (!channel) return;
+    if (!appId) { console.error('[useAgora] VITE_AGORA_APP_ID is undefined!'); return; }
 
     const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     clientRef.current = client;

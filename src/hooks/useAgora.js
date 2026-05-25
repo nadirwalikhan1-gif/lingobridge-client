@@ -13,7 +13,7 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
   const [captions, setCaptions]         = useState({});
 
   // FIX: hardcode appId directly — VITE env vars unreliable in this build setup
-  const appId = import.meta.env.VITE_AGORA_APP_ID;
+  const appId = import.meta.env.VITE_AGORA_APP_ID || '02ad13c34a7643dfbcc4e6c39f05ad1d';
 
   useEffect(() => {
     if (!channel) return;

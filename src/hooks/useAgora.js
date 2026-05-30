@@ -91,12 +91,22 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
           recognition.interimResults = true;
           recognition.lang = 'en-US';
           recognition.onresult = (event) => {
-            let text = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-              text += event.results[i][0].transcript;
-            }
-            if (text) setCaptions(prev => ({ ...prev, local: text }));
-          };
+  let interim = '';
+  let final = '';
+  for (let i = event.resultIndex; i < event.results.length; i++) {
+    const transcript = event.results[i][0].transcript;
+    if (event.results[i].isFinal) {
+      final += transcript;
+    } else {
+      interim += transcript;
+    }
+  }
+  const text = final || interim;
+  if (text) setCaptions(prev => ({ ...prev, local: text }));
+  if (final) {
+    setTimeout(() => setCaptions(prev => ({ ...prev, local: '' })), 3000);
+  }
+};
           recognition.onerror = () => {};
           recognition.start();
           client._recognition = recognition;

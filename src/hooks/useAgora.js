@@ -12,7 +12,7 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
   const [error, setError]               = useState(null);
   const [captions, setCaptions]         = useState({});
 
-  const appId = '02ad13c34a7643dfbcc4e6c39f05ad1d';
+  const appId = import.meta.env.VITE_AGORA_APP_ID;
 
   useEffect(() => {
     if (!channel) return;
@@ -20,15 +20,22 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
     const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     clientRef.current = client;
 
-    client.on('user-published', async (user, mediaType) => {
-      await client.subscribe(user, mediaType);
-      if (mediaType === 'audio') user.audioTrack?.play();
-      if (mediaType === 'video') user.videoTrack?.play(`video-${user.uid}`);
-      setRemoteUsers(prev => {
-        const without = prev.filter(u => u.uid !== user.uid);
-        return [...without, { ...user, micMuted: false, camOff: false }];
-      });
-    });
+   client.on('user-published', async (user, mediaType) => {
+  await client.subscribe(user, mediaType);
+  if (mediaType === 'audio') user.audioTrack?.play();
+  setRemoteUsers(prev => {
+    const without = prev.filter(u => u.uid !== user.uid);
+    const existing = prev.find(u => u.uid === user.uid) ?? {};
+    return [...without, {
+      ...existing,
+      uid: user.uid,
+      audioTrack: mediaType === 'audio' ? user.audioTrack : existing.audioTrack,
+      videoTrack: mediaType === 'video' ? user.videoTrack : existing.videoTrack,
+      micMuted: false,
+      camOff: mediaType === 'video' ? false : (existing.camOff ?? false),
+    }];
+  });
+});
 
     client.on('user-unpublished', (user, mediaType) => {
       if (mediaType === 'video') {
@@ -60,9 +67,7 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
     async function join() {
       try {
         const token = tokenProp ?? null;
-        // FIX: use 0 as uid — token was generated with uid=0 on server
-        // This allows any uid to join with a valid token
-        console.log('Agora joining:', { appId: appId.substring(0, 6), channel, tokenLength: token?.length });
+        console.log('Agora joining:', { appId: appId?.substring(0, 6), channel, tokenLength: token?.length });
         await client.join(appId, channel, token, 0);
 
         const isVideo = sessionType === 'video';

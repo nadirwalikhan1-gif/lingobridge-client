@@ -14,34 +14,27 @@ function fmt(s) {
 }
 
 export default function CallRoom() {
-  const { channelId }               = useParams();
-  const [searchParams]              = useSearchParams();
-  const sessionType                 = searchParams.get('type') === 'video' ? 'video' : 'audio';
-  const agoraToken                  = searchParams.get('token') || null;
-  const navigate                    = useNavigate();
-  const { user }                    = useAuth();
-  const [chatOpen, setChatOpen]     = useState(false);
-  const [showRating, setShowRating] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false); // end call confirmation
-  const [secs, setSecs]             = useState(0);
-  const timerRef                    = useRef(null);
+  const { channelId }                 = useParams();
+  const [searchParams]                = useSearchParams();
+  const sessionType                   = searchParams.get('type') === 'video' ? 'video' : 'audio';
+  const agoraToken                    = searchParams.get('token') || null;
+  const navigate                      = useNavigate();
+  const { user }                      = useAuth();
+  const [chatOpen, setChatOpen]       = useState(false);
+  const [showRating, setShowRating]   = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [secs, setSecs]               = useState(0);
+  const timerRef                      = useRef(null);
 
   const role = user?.user_metadata?.role ?? 'client';
 
   const {
-    localTracks,
-    remoteUsers,
-    joined,
-    micMuted,
-    camOff,
-    captions,
-    error,
-    toggleMic,
-    toggleCam,
-    leave,
+    localTracks, remoteUsers, joined,
+    micMuted, camOff, captions, error,
+    toggleMic, toggleCam, leave,
   } = useAgora({ channel: channelId, sessionType, token: agoraToken });
 
-  // Timer
+  // Timer — starts when remote joins
   useEffect(() => {
     if (joined && remoteUsers.length > 0) {
       timerRef.current = setInterval(() => setSecs(s => s + 1), 1000);
@@ -51,7 +44,7 @@ export default function CallRoom() {
     return () => clearInterval(timerRef.current);
   }, [joined, remoteUsers.length]);
 
-  // Auto end when remote leaves
+  // Auto-end when remote leaves
   useEffect(() => {
     if (joined && remoteUsers.length === 0 && secs > 5) {
       const t = setTimeout(async () => {
@@ -94,6 +87,8 @@ export default function CallRoom() {
     ? user.user_metadata.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : (user?.email?.[0] ?? '?').toUpperCase();
 
+  const remoteUser = remoteUsers[0] ?? null;
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-dvh bg-[#0f0f1a] text-white gap-4">
@@ -113,37 +108,58 @@ export default function CallRoom() {
         {joined && (
           <div className="flex items-center justify-center py-2 bg-[#0f0f1a] border-b border-white/10">
             <span className="text-white/70 text-sm font-mono tabular-nums tracking-widest">
-              {remoteUsers.length > 0 ? fmt(secs) : 'Waiting for other participant…'}
+              {remoteUser ? fmt(secs) : 'Waiting for other participant…'}
             </span>
           </div>
         )}
 
-        {/* Video / Audio grid */}
+        {/* Video / Audio area */}
         <div className="flex-1 p-3 overflow-hidden relative">
           {sessionType === 'video' ? (
-            <div className={`grid h-full gap-2 ${remoteUsers.length === 0 ? '' : 'grid-cols-2'}`}>
-              <VideoTile
-                track={camOff ? null : localTracks.cam}
-                label={user?.user_metadata?.name ?? user?.email ?? 'You'}
-                avatarInitials={initials}
-                muted={micMuted}
-                camOff={camOff}
-                isLocal
-              />
-              {remoteUsers.map(u => (
-                <VideoTile
-                  key={u.uid}
-                  track={u.camOff ? null : (u.videoTrack ?? null)}
-                  label={`Participant ${u.uid}`}
-                  avatarInitials="?"
-                  muted={u.micMuted}
-                  camOff={u.camOff}
-                />
-              ))}
+            <div className="relative w-full h-full">
+
+              {/* ── Main tile — remote user (large) ── */}
+              {remoteUser ? (
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
+                  <VideoTile
+                    track={remoteUser.camOff ? null : (remoteUser.videoTrack ?? null)}
+                    label={`Participant ${remoteUser.uid}`}
+                    avatarInitials="?"
+                    muted={remoteUser.micMuted}
+                    camOff={remoteUser.camOff}
+                  />
+                </div>
+              ) : (
+                /* Waiting state — local fills the main area */
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
+                  <VideoTile
+                    track={camOff ? null : localTracks.cam}
+                    label={user?.user_metadata?.name ?? user?.email ?? 'You'}
+                    avatarInitials={initials}
+                    muted={micMuted}
+                    camOff={camOff}
+                    isLocal
+                  />
+                </div>
+              )}
+
+              {/* ── PiP tile — local user (small, bottom-right) ── */}
+              {remoteUser && (
+                <div className="absolute bottom-3 right-3 w-[22%] aspect-video rounded-xl overflow-hidden shadow-2xl ring-2 ring-white/10 z-10">
+                  <VideoTile
+                    track={camOff ? null : localTracks.cam}
+                    label={user?.user_metadata?.name ?? user?.email ?? 'You'}
+                    avatarInitials={initials}
+                    muted={micMuted}
+                    camOff={camOff}
+                    isLocal
+                  />
+                </div>
+              )}
             </div>
           ) : (
+            /* ── Audio call layout ── */
             <div className="flex items-center justify-center h-full gap-8 flex-wrap">
-              {/* Local */}
               <div className="flex flex-col items-center gap-2">
                 <div className={`w-20 h-20 rounded-full bg-[#EEEDFE] flex items-center justify-center text-2xl font-semibold text-[#534AB7] ring-4 transition-all ${!micMuted ? 'ring-[#7F77DD]' : 'ring-transparent'}`}>
                   {initials}
@@ -159,7 +175,6 @@ export default function CallRoom() {
                 )}
               </div>
 
-              {/* Remote */}
               {remoteUsers.map(u => (
                 <div key={u.uid} className="flex flex-col items-center gap-2">
                   <div className={`w-20 h-20 rounded-full bg-[#E1F5EE] flex items-center justify-center text-2xl font-semibold text-[#0F6E56] ring-4 transition-all ${!u.micMuted ? 'ring-[#1D9E75]' : 'ring-transparent'}`}>
@@ -177,8 +192,12 @@ export default function CallRoom() {
                 </div>
               ))}
 
-              {remoteUsers.length === 0 && joined && <p className="text-white/40 text-sm">Waiting for the other participant…</p>}
-              {joined && remoteUsers.length === 0 && secs > 5 && <p className="text-[#F09595] text-sm animate-pulse">Other participant left — ending call…</p>}
+              {remoteUsers.length === 0 && joined && (
+                <p className="text-white/40 text-sm">Waiting for the other participant…</p>
+              )}
+              {joined && remoteUsers.length === 0 && secs > 5 && (
+                <p className="text-[#F09595] text-sm animate-pulse">Other participant left — ending call…</p>
+              )}
             </div>
           )}
 

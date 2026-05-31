@@ -22,7 +22,7 @@ const MOCK_STATS = {
 
 export default function InterpreterDashboard() {
   const [isLoading, setIsLoading]                     = useState(true)
-  const [isOnline, setIsOnline]                       = useState(false)
+  const [isOnline, setIsOnline]                       = useState(true)
   const [hasIncomingRequests, setHasIncomingRequests] = useState(false)
 
   useEffect(() => {

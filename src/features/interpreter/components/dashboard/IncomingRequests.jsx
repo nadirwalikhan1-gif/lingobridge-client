@@ -189,7 +189,15 @@ export default function IncomingRequests({ onRequestsChange }) {
 
       {newCount === 0 ? (
         <>
-          <p className="text-sm text-lb-muted text-center py-2">No incoming requests right now</p>
+          <div className="flex flex-col items-center gap-2 py-4">
+            <div className="w-10 h-10 rounded-full bg-lb-surface flex items-center justify-center">
+              <svg className="w-5 h-5 text-lb-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/>
+              </svg>
+            </div>
+            <p className="text-[13px] font-medium text-lb-ink">No incoming requests</p>
+            <p className="text-[11px] text-lb-muted text-center leading-relaxed">New requests will appear here instantly.<br/>Make sure you&apos;re set to Online to receive them.</p>
+          </div>
           <NextSessionBanner />
         </>
       ) : (

@@ -31,7 +31,7 @@ export default function RecentReviews({ reviews = MOCK_REVIEWS }) {
       </div>
 
       <p className="text-[12px] text-lb-muted italic leading-relaxed">
-        \u201c{top.text}\u201d
+        "{top.text}"
       </p>
     </div>
   )

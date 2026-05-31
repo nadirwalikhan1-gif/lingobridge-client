@@ -66,7 +66,7 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
 
     async function join() {
       try {
-        const token = tokenProp ?? null;
+        const token = tokenProp ? tokenProp.replace(/ /g, '+') : null;
         console.log('Agora joining:', { appId: appId?.substring(0, 6), channel, tokenLength: token?.length });
         await client.join(appId, channel, token, 0);
 

@@ -7,10 +7,13 @@ export default function VideoTile({ track, label, avatarInitials, muted = false,
   const containerRef = useRef(null);
 
   useEffect(() => {
-    if (!track || !containerRef.current) return;
-    track.play(containerRef.current);
-    return () => track.stop();
-  }, [track]);
+  if (!track || !containerRef.current) return;
+  track.play(containerRef.current);
+  // Prevent cropping — show full face without zoom
+  const video = containerRef.current.querySelector('video');
+  if (video) video.style.objectFit = 'contain';
+  return () => track.stop();
+}, [track]);
 
   const showAvatar = !track || camOff;
 

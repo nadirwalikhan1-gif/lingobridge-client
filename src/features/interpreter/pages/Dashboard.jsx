@@ -7,6 +7,7 @@ import TodaysSchedule from '../components/dashboard/TodaysSchedule'
 import RecentSessions from '../components/dashboard/RecentSessions'
 import RecentReviews from '../components/dashboard/RecentReviews'
 import WalletSummary from '../components/dashboard/WalletSummary'
+import RatingCard from '../components/dashboard/RatingCard'
 
 const MOCK_STATS = {
   todayEarnings: '$124.50',
@@ -20,8 +21,8 @@ const MOCK_STATS = {
 }
 
 export default function InterpreterDashboard() {
-  const [isLoading, setIsLoading]           = useState(true)
-  const [isOnline, setIsOnline]             = useState(false)
+  const [isLoading, setIsLoading]                     = useState(true)
+  const [isOnline, setIsOnline]                       = useState(false)
   const [hasIncomingRequests, setHasIncomingRequests] = useState(false)
 
   useEffect(() => {
@@ -29,7 +30,6 @@ export default function InterpreterDashboard() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Listen for incoming requests to trigger the highlight state
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
@@ -68,18 +68,18 @@ export default function InterpreterDashboard() {
   if (isLoading) return <DashboardSkeleton />
 
   return (
-    <div className="space-y-3 relative">
+    <div className="space-y-4 relative">
 
       {/* Header */}
       <div className="flex items-center justify-between pb-1">
         <div>
           <p className="text-xs text-lb-muted">Welcome back, Maria</p>
-          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Interpreter workspace</h1>
+          <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Interpreter workspace</h1>
         </div>
         <button
           onClick={() => setIsOnline(o => !o)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            isOnline ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-lb-surface text-lb-muted'
+            isOnline ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-lb-surface text-lb-muted border border-lb-border'
           }`}
         >
           <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-[#1D9E75] animate-pulse' : 'bg-lb-muted'}`} />
@@ -87,9 +87,7 @@ export default function InterpreterDashboard() {
         </button>
       </div>
 
-      {/* ── INCOMING REQUEST HIGHLIGHT ──────────────────────────────────────────
-          When there are incoming requests, this becomes the dominant element.
-          Everything else visually recedes. */}
+      {/* ── INCOMING REQUEST HIGHLIGHT ── */}
       <div className={`transition-all duration-500 ${
         hasIncomingRequests
           ? 'ring-2 ring-[#7F77DD] ring-offset-2 ring-offset-lb-canvas rounded-2xl shadow-[0_0_40px_rgba(127,119,221,0.25)]'
@@ -106,21 +104,24 @@ export default function InterpreterDashboard() {
         <IncomingRequests onRequestsChange={setHasIncomingRequests} />
       </div>
 
-      {/* ── REST OF DASHBOARD — dims when there's an active request ── */}
-      <div className={`space-y-3 transition-opacity duration-500 ${hasIncomingRequests ? 'opacity-40 pointer-events-none select-none' : 'opacity-100'}`}>
+      {/* ── REST OF DASHBOARD ── */}
+      <div className={`space-y-4 transition-opacity duration-500 ${hasIncomingRequests ? 'opacity-40 pointer-events-none select-none' : 'opacity-100'}`}>
+
         <EarningsStats stats={MOCK_STATS} />
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
-          <div className="xl:col-span-2 space-y-3">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div className="xl:col-span-2 space-y-4">
             <EarningsChart />
             <RecentSessions />
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <TodaysSchedule />
+            <RatingCard />
             <WalletSummary />
             <RecentReviews />
           </div>
         </div>
+
       </div>
     </div>
   )
@@ -128,12 +129,12 @@ export default function InterpreterDashboard() {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-3 animate-pulse">
+    <div className="space-y-4 animate-pulse">
       <div className="h-5 bg-lb-border rounded w-40" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[...Array(4)].map((_, i) => <div key={i} className="h-20 bg-lb-border rounded-xl" />)}
+        {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-lb-border rounded-xl" />)}
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2 h-72 bg-lb-border rounded-xl" />
         <div className="h-72 bg-lb-border rounded-xl" />
       </div>

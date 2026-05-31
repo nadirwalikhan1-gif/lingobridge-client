@@ -1,20 +1,16 @@
-// WalletSummary.jsx — new component replacing AvailabilitySchedule on dashboard
-// Matches reference HTML wallet card with "available for withdrawal" microcopy
+// WalletSummary.jsx — focused on financials only, rating removed
 
 export default function WalletSummary({
   balance = '$124.75',
   today = '$124.50',
   week = '$1,045',
   month = '$1,245',
-  rating = '4.8',
-  reviewCount = 128,
   onWithdraw,
 }) {
   const rows = [
-    { label: 'Today',      value: today, icon: CalIcon },
-    { label: 'This week',  value: week,  icon: BarIcon },
-    { label: 'This month', value: month, icon: MonthIcon },
-    { label: 'Rating',     isRating: true },
+    { label: 'Today',      value: today, Icon: CalIcon },
+    { label: 'This week',  value: week,  Icon: BarIcon },
+    { label: 'This month', value: month, Icon: MonthIcon },
   ]
 
   return (
@@ -23,32 +19,25 @@ export default function WalletSummary({
 
       <div className="divide-y divide-lb-border">
         {rows.map((r, i) => (
-          <div key={i} className="flex items-center justify-between py-1.5">
+          <div key={i} className="flex items-center justify-between py-2">
             <span className="flex items-center gap-1.5 text-[12px] text-lb-muted">
-              {r.icon && <r.icon />}
+              <r.Icon />
               {r.label}
             </span>
-            {r.isRating ? (
-              <div className="flex flex-col items-end gap-0.5">
-                <span className="text-[12px] text-[#BA7517] tracking-wide">★★★★★</span>
-                <span className="text-[10px] text-lb-muted">{rating} · {reviewCount} reviews</span>
-              </div>
-            ) : (
-              <span className="text-[12px] font-medium text-lb-ink">{r.value}</span>
-            )}
+            <span className="text-[12px] font-medium text-lb-ink">{r.value}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-2 pt-2 border-t border-lb-border">
+      <div className="mt-3 pt-3 border-t border-lb-border">
         <div className="flex items-baseline justify-between mb-0.5">
           <span className="text-[11px] text-lb-muted">Wallet balance</span>
-          <span className="text-[17px] font-medium text-[#26215C]">{balance}</span>
+          <span className="text-[20px] font-semibold text-[#26215C]">{balance}</span>
         </div>
-        <p className="text-[10px] text-lb-subtle text-right mb-2">Available for withdrawal</p>
+        <p className="text-[10px] text-lb-subtle text-right mb-3">Available for withdrawal</p>
         <button
           onClick={onWithdraw}
-          className="w-full bg-[#7F77DD] hover:bg-[#534AB7] text-white text-[13px] font-medium rounded-lg py-2 transition-colors"
+          className="w-full bg-[#1a1635] hover:bg-[#26215C] text-white text-[13px] font-medium rounded-lg py-2.5 transition-colors"
         >
           ↑ Withdraw funds
         </button>

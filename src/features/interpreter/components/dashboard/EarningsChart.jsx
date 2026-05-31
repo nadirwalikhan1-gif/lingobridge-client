@@ -1,4 +1,4 @@
-// EarningsChart.jsx — Chart.js bar chart matching reference HTML exactly
+// EarningsChart.jsx — dark header band, stronger visual presence
 
 import { useState, useEffect, useRef } from 'react'
 
@@ -8,8 +8,8 @@ const DATA_SETS = {
     data:   [98, 142, 87, 210, 163, 45, 300],
     total: '$1,045',
     range: 'Mon 12 – Sun 18 May',
-    todayIdx: 6,  // Sun = today
-    bestIdx: 3,   // Thu = best
+    todayIdx: 6,
+    bestIdx: 3,
   },
   'Last week': {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -46,7 +46,6 @@ export default function EarningsChart() {
   const ds = DATA_SETS[active]
 
   useEffect(() => {
-    // Dynamically load Chart.js if needed (it may already be in window from CDN)
     const buildChart = () => {
       if (!canvasRef.current) return
       if (chartRef.current) chartRef.current.destroy()
@@ -61,7 +60,7 @@ export default function EarningsChart() {
         type: 'bar',
         data: {
           labels: ds.labels,
-          datasets: [{ data: ds.data, backgroundColor: colors, borderRadius: 4, borderSkipped: false }],
+          datasets: [{ data: ds.data, backgroundColor: colors, borderRadius: 6, borderSkipped: false }],
         },
         options: {
           responsive: true,
@@ -73,7 +72,7 @@ export default function EarningsChart() {
           scales: {
             x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#888780', autoSkip: false } },
             y: {
-              grid: { color: 'rgba(0,0,0,0.025)' },
+              grid: { color: 'rgba(0,0,0,0.04)' },
               ticks: { font: { size: 10 }, color: '#888780', callback: (v) => `$${v}` },
               border: { display: false },
             },
@@ -95,47 +94,49 @@ export default function EarningsChart() {
   }, [active])
 
   return (
-    <div className="lb-card">
-      <div className="flex items-baseline justify-between mb-3">
+    <div className="lb-card overflow-hidden p-0">
+      {/* Dark header band */}
+      <div className="bg-[#1a1635] px-5 py-4 flex items-center justify-between">
         <div>
-          <h3 className="text-[14px] font-medium text-lb-ink">Earnings this week</h3>
-          <p className="text-[11px] text-lb-muted mt-0.5">{ds.range}</p>
+          <p className="text-[11px] text-white/40 uppercase tracking-widest font-medium">Earnings</p>
+          <p className="text-[28px] font-semibold text-white leading-none mt-1">{ds.total}</p>
+          <p className="text-[11px] text-white/40 mt-1">{ds.range}</p>
         </div>
-        <span className="text-[22px] font-medium text-[#26215C]">{ds.total}</span>
+        {/* Period filter */}
+        <div className="flex flex-col gap-1.5 items-end">
+          {FILTERS.map(f => (
+            <button
+              key={f}
+              onClick={() => setActive(f)}
+              className={`text-[11px] px-2.5 py-1 rounded transition-colors ${
+                active === f
+                  ? 'bg-white/15 text-white font-medium'
+                  : 'text-white/40 hover:text-white/60'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Period filter */}
-      <div className="flex gap-1.5 mb-3">
-        {FILTERS.map(f => (
-          <button
-            key={f}
-            onClick={() => setActive(f)}
-            className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
-              active === f
-                ? 'bg-[#EEEDFE] text-[#534AB7] border-[#EEEDFE] font-medium'
-                : 'bg-transparent text-lb-muted border-lb-border hover:bg-lb-surface'
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      {/* Legend */}
-      <div className="flex gap-3.5 mb-2.5">
-        <span className="flex items-center gap-1.5 text-[11px] text-lb-muted">
-          <span className="w-2.5 h-2.5 rounded-[2px] inline-block bg-[#7F77DD]" />Best day
-        </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-lb-muted">
-          <span className="w-2.5 h-2.5 rounded-[2px] inline-block bg-[#AFA9EC]" />Today
-        </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-lb-muted">
-          <span className="w-2.5 h-2.5 rounded-[2px] inline-block bg-[#EEEDFE] border border-[#CECBF6]" />Other days
-        </span>
-      </div>
-
-      <div className="relative w-full h-44">
-        <canvas ref={canvasRef} />
+      {/* Chart body */}
+      <div className="px-5 pt-4 pb-5">
+        {/* Legend */}
+        <div className="flex gap-4 mb-3">
+          <span className="flex items-center gap-1.5 text-[11px] text-lb-muted">
+            <span className="w-2.5 h-2.5 rounded-[2px] inline-block bg-[#7F77DD]" />Best day
+          </span>
+          <span className="flex items-center gap-1.5 text-[11px] text-lb-muted">
+            <span className="w-2.5 h-2.5 rounded-[2px] inline-block bg-[#AFA9EC]" />Today
+          </span>
+          <span className="flex items-center gap-1.5 text-[11px] text-lb-muted">
+            <span className="w-2.5 h-2.5 rounded-[2px] inline-block bg-[#EEEDFE] border border-[#CECBF6]" />Other days
+          </span>
+        </div>
+        <div className="relative w-full h-44">
+          <canvas ref={canvasRef} />
+        </div>
       </div>
     </div>
   )

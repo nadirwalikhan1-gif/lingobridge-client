@@ -1,4 +1,4 @@
-// TodaysSchedule.jsx — right sidebar schedule with income total
+// TodaysSchedule.jsx — accent border-left on items instead of dot
 
 const MOCK_SCHEDULE = [
   { id: 1, time: '11:00 AM', fromLang: 'English', toLang: 'Arabic',  type: 'video', duration: '60 min', initials: 'SL', price: '$24.00', soon: true  },
@@ -29,14 +29,16 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
         <button className="text-[12px] text-[#7F77DD] font-medium">Calendar</button>
       </div>
 
-      <div className="divide-y divide-lb-border">
+      <div className="space-y-2">
         {schedule.map((s) => (
-          <div key={s.id} className="flex items-center gap-2.5 py-2">
+          <div
+            key={s.id}
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg border-l-2 bg-lb-surface ${
+              s.soon ? 'border-[#1D9E75]' : 'border-[#7F77DD]'
+            }`}
+          >
             {/* Time */}
-            <span className="text-[11px] font-medium text-lb-ink w-[52px] shrink-0">{s.time}</span>
-
-            {/* Dot */}
-            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.soon ? 'bg-[#1D9E75]' : 'bg-[#7F77DD]'}`} />
+            <span className="text-[11px] font-semibold text-lb-ink w-[52px] shrink-0 tabular-nums">{s.time}</span>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
@@ -52,10 +54,9 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
         ))}
       </div>
 
-      {/* Total */}
-      <div className="flex justify-between items-baseline mt-2 pt-2 border-t border-lb-border">
+      <div className="flex justify-between items-baseline mt-3 pt-3 border-t border-lb-border">
         <span className="text-[11px] text-lb-muted">Scheduled income today</span>
-        <span className="text-[15px] font-medium text-[#26215C]">{TOTAL}</span>
+        <span className="text-[15px] font-semibold text-[#26215C]">{TOTAL}</span>
       </div>
     </div>
   )

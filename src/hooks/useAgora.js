@@ -12,7 +12,7 @@ export function useAgora({ channel, uid, sessionType = 'audio', token: tokenProp
   const [error, setError]               = useState(null);
   const [captions, setCaptions]         = useState({});
 
-  const appId = import.meta.env.VITE_AGORA_APP_ID;
+  const appId = '02ad13c34a7643dfbcc4e6c39f05ad1d';
 
   useEffect(() => {
     if (!channel) return;

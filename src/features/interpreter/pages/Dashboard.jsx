@@ -20,20 +20,34 @@ const MOCK_STATS = {
 }
 
 export default function InterpreterDashboard() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [isOnline, setIsOnline] = useState(false)
+  const [isLoading, setIsLoading]           = useState(true)
+  const [isOnline, setIsOnline]             = useState(false)
+  const [hasIncomingRequests, setHasIncomingRequests] = useState(false)
 
-  // ── Register with server on mount ────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600)
     return () => clearTimeout(timer)
   }, [])
 
-  // ── Register/deregister with socket when online state changes ─
+  // Listen for incoming requests to trigger the highlight state
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
+    const onNew      = () => setHasIncomingRequests(true)
+    const onCancelled = () => setHasIncomingRequests(false)
+    socket.on('new-request',       onNew)
+    socket.on('request-cancelled', onCancelled)
+    socket.on('call-accepted',     onCancelled)
+    return () => {
+      socket.off('new-request',       onNew)
+      socket.off('request-cancelled', onCancelled)
+      socket.off('call-accepted',     onCancelled)
+    }
+  }, [])
 
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket) return
     if (isOnline) {
       socket.emit('register', { role: 'interpreter' })
     } else {
@@ -41,15 +55,12 @@ export default function InterpreterDashboard() {
     }
   }, [isOnline])
 
-  // ── Also register on socket reconnect if already online ──────
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
-
     const onReconnect = () => {
       if (isOnline) socket.emit('register', { role: 'interpreter' })
     }
-
     socket.on('connect', onReconnect)
     return () => socket.off('connect', onReconnect)
   }, [isOnline])
@@ -57,7 +68,9 @@ export default function InterpreterDashboard() {
   if (isLoading) return <DashboardSkeleton />
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 relative">
+
+      {/* Header */}
       <div className="flex items-center justify-between pb-1">
         <div>
           <p className="text-xs text-lb-muted">Welcome back, Maria</p>
@@ -69,23 +82,44 @@ export default function InterpreterDashboard() {
             isOnline ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-lb-surface text-lb-muted'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-[#1D9E75]' : 'bg-lb-muted'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-[#1D9E75] animate-pulse' : 'bg-lb-muted'}`} />
           {isOnline ? 'Online' : 'Offline'}
         </button>
       </div>
 
-      <EarningsStats stats={MOCK_STATS} />
+      {/* ── INCOMING REQUEST HIGHLIGHT ──────────────────────────────────────────
+          When there are incoming requests, this becomes the dominant element.
+          Everything else visually recedes. */}
+      <div className={`transition-all duration-500 ${
+        hasIncomingRequests
+          ? 'ring-2 ring-[#7F77DD] ring-offset-2 ring-offset-lb-canvas rounded-2xl shadow-[0_0_40px_rgba(127,119,221,0.25)]'
+          : ''
+      }`}>
+        {hasIncomingRequests && (
+          <div className="flex items-center gap-2 px-4 pt-3 pb-1">
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#534AB7] uppercase tracking-widest">
+              <span className="w-2 h-2 rounded-full bg-[#7F77DD] animate-ping inline-block" />
+              Incoming call — respond now
+            </span>
+          </div>
+        )}
+        <IncomingRequests onRequestsChange={setHasIncomingRequests} />
+      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
-        <div className="xl:col-span-2 space-y-3">
-          <IncomingRequests />
-          <EarningsChart />
-          <RecentSessions />
-        </div>
-        <div className="space-y-3">
-          <TodaysSchedule />
-          <WalletSummary />
-          <RecentReviews />
+      {/* ── REST OF DASHBOARD — dims when there's an active request ── */}
+      <div className={`space-y-3 transition-opacity duration-500 ${hasIncomingRequests ? 'opacity-40 pointer-events-none select-none' : 'opacity-100'}`}>
+        <EarningsStats stats={MOCK_STATS} />
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+          <div className="xl:col-span-2 space-y-3">
+            <EarningsChart />
+            <RecentSessions />
+          </div>
+          <div className="space-y-3">
+            <TodaysSchedule />
+            <WalletSummary />
+            <RecentReviews />
+          </div>
         </div>
       </div>
     </div>

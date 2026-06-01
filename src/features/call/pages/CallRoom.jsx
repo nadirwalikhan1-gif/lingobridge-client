@@ -114,9 +114,28 @@ export default function CallRoom() {
         {/* Timer bar */}
         {joined && (
           <div className="flex items-center justify-center py-2 bg-[#0f0f1a] border-b border-white/10">
-            <span className="text-white/70 text-sm font-mono tabular-nums tracking-widest">
-              {remoteUser ? fmt(secs) : 'Waiting for other participant…'}
-            </span>
+            {remoteUser ? (
+              <span className="text-white/70 text-sm font-mono tabular-nums tracking-widest">
+                {fmt(secs)}
+              </span>
+            ) : (
+              <div className="flex items-center gap-2">
+                {/* Pulsing dots */}
+                <div className="flex items-center gap-1">
+                  {[0, 1, 2].map(i => (
+                    <span
+                      key={i}
+                      className="w-1.5 h-1.5 rounded-full bg-[#7F77DD] animate-pulse"
+                      style={{ animationDelay: `${i * 200}ms` }}
+                    />
+                  ))}
+                </div>
+                <span className="text-white/50 text-sm">Connecting your interpreter</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#7F77DD]/20 text-[#AFA9EC]">
+                  &lt; 1 min
+                </span>
+              </div>
+            )}
           </div>
         )}
 

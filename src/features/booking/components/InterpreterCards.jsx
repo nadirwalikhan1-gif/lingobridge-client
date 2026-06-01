@@ -83,6 +83,14 @@ export default function InterpreterCards({ selected, onSelect }) {
         </div>
       </div>
 
+      {/* Badge legend — Fix #7 */}
+      <div className="flex items-center gap-2 mb-2 shrink-0 flex-wrap">
+        <span className="text-[10px] text-lb-muted font-medium">Badges:</span>
+        {[['Top Rated','bg-[#FFF8E6] text-[#BA7517]'],['Expert','bg-[#EEEDFE] text-[#534AB7]'],['Pro','bg-[#E1F5EE] text-[#0F6E56]']].map(([label, cls]) => (
+          <span key={label} className={`text-[9px] font-medium px-2 py-0.5 rounded-full ${cls}`}>{label}</span>
+        ))}
+      </div>
+
       {/* Rows — same divide-y anatomy as interpreter RecentSessions */}
       <div className="flex flex-col gap-2 flex-1 min-h-0">
         {visible.map((interp) => {
@@ -124,7 +132,7 @@ export default function InterpreterCards({ selected, onSelect }) {
               </div>
 
               {/* Bio */}
-              <p className="flex-1 text-[11px] text-lb-muted leading-relaxed line-clamp-2 min-w-0">
+              <p className="flex-1 text-[11px] text-lb-muted leading-relaxed line-clamp-1 min-w-0">
                 {interp.bio}
               </p>
 
@@ -138,6 +146,18 @@ export default function InterpreterCards({ selected, onSelect }) {
                   <Clock className="w-2.5 h-2.5" />
                   {interp.responseTime}
                 </span>
+                {/* Fix #12 — availability signal */}
+                {interp.online ? (
+                  <span className="flex items-center gap-1 text-[10px] font-medium text-[#1D9E75]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1D9E75] inline-block" />
+                    Available now
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-[10px] text-lb-muted">
+                    <span className="w-1.5 h-1.5 rounded-full bg-lb-border inline-block" />
+                    Offline
+                  </span>
+                )}
               </div>
 
               {/* Specialty + language pills — same pill system as interpreter */}

@@ -1,5 +1,6 @@
-// Dashboard.jsx — Client dashboard, improved design language
-// Same lb-* tokens · same card anatomy · same spacing rhythm as interpreter dashboard
+// Dashboard.jsx — Client dashboard v3
+// Fixes applied: #1 live countdown, #2 session cards with interpreter + Join,
+// #3 contextual quick actions, #4 rating card removed, #5 empty state, #6 low-balance warning
 
 import { useEffect, useState } from 'react'
 
@@ -9,15 +10,14 @@ const MOCK_STATS = {
   favourites: '12',
   favouritesTrend: '+2 new',
   walletBalance: '$45.60',
+  walletAvailable: 45.60,
   walletTrend: 'Available',
-  rating: '4.9',
-  ratingTrend: 'Top 5%',
 }
 
 const MOCK_SESSIONS = [
   { id: 1, interpreter: 'Maria Gonzalez', avatar: 'MG', fromLang: 'Spanish', toLang: 'English', type: 'video', duration: '45 min', price: '$32.50', rating: 5, date: 'Today, 10:30 AM' },
-  { id: 2, interpreter: 'John Doe',       avatar: 'JD', fromLang: 'French',  toLang: 'English', type: 'audio', duration: '30 min', price: '$22.00', rating: 4, date: 'Yesterday, 2:15 PM' },
-  { id: 3, interpreter: 'Sarah Chen',     avatar: 'SC', fromLang: 'Mandarin',toLang: 'English', type: 'video', duration: '60 min', price: '$45.00', rating: 5, date: 'Jan 10, 4:00 PM' },
+  { id: 2, interpreter: 'John Doe',        avatar: 'JD', fromLang: 'French',  toLang: 'English', type: 'audio', duration: '30 min', price: '$22.00', rating: 4, date: 'Yesterday, 2:15 PM' },
+  { id: 3, interpreter: 'Sarah Chen',      avatar: 'SC', fromLang: 'Mandarin',toLang: 'English', type: 'video', duration: '60 min', price: '$45.00', rating: 5, date: 'Jan 10, 4:00 PM' },
 ]
 
 const MOCK_ACTIVITY = [
@@ -26,10 +26,30 @@ const MOCK_ACTIVITY = [
   { id: 3, type: 'wallet',  text: 'Added $50.00 to wallet',                 time: '3 days ago' },
 ]
 
+// Fix #1 — real Date objects so countdown can work
 const MOCK_UPCOMING = [
-  { id: 1, time: '02:30 PM', interpreter: 'Maria G.', fromLang: 'Spanish', toLang: 'English', type: 'video', duration: '30 min', initials: 'MG', soon: true },
-  { id: 2, time: '05:00 PM', interpreter: 'Ali Khan',  fromLang: 'Urdu',    toLang: 'English', type: 'audio', duration: '15 min', initials: 'AK', soon: false },
+  {
+    id: 1,
+    time: '02:30 PM',
+    scheduledAt: (() => { const d = new Date(); d.setHours(14, 30, 0, 0); return d })(),
+    interpreter: 'Maria Gonzalez',
+    initials: 'MG',
+    fromLang: 'Spanish', toLang: 'English',
+    type: 'video', duration: '30 min',
+  },
+  {
+    id: 2,
+    time: '05:00 PM',
+    scheduledAt: (() => { const d = new Date(); d.setHours(17, 0, 0, 0); return d })(),
+    interpreter: 'Ali Khan',
+    initials: 'AK',
+    fromLang: 'Urdu', toLang: 'English',
+    type: 'audio', duration: '15 min',
+  },
 ]
+
+// Fix #3 — last booked session for contextual rebook
+const LAST_SESSION = MOCK_SESSIONS[0]
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function VideoIcon({ className = 'w-2.5 h-2.5' }) {
@@ -61,23 +81,62 @@ function StarIcon({ filled }) {
   )
 }
 
-// ─── Stat Cards — hero card pattern matching interpreter EarningsStats ────────
-function ClientStats({ stats }) {
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+// ─── Fix #1 — Live countdown hook ────────────────────────────────────────────
+function useCountdown(targetDate) {
+  const [label, setLabel] = useState('')
+  const [isImminent, setIsImminent] = useState(false)
 
-      {/* PRIMARY hero — dark, matches interpreter's today earnings card */}
-      <div className="lg:col-span-2 rounded-xl px-6 py-5 bg-[#1a1635] flex flex-col justify-between min-h-[110px]">
-        <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Wallet balance</p>
+  useEffect(() => {
+    function tick() {
+      const diff = targetDate - Date.now()
+      if (diff <= 0) {
+        setLabel('Starting now')
+        setIsImminent(true)
+        return
+      }
+      const totalMins = Math.floor(diff / 60000)
+      const hrs = Math.floor(totalMins / 60)
+      const mins = totalMins % 60
+      setIsImminent(totalMins < 15)
+      if (hrs > 0) setLabel(`in ${hrs}h ${mins}m`)
+      else if (mins > 0) setLabel(`in ${mins} min`)
+      else setLabel('in <1 min')
+    }
+    tick()
+    const id = setInterval(tick, 30000)
+    return () => clearInterval(id)
+  }, [targetDate])
+
+  return { label, isImminent }
+}
+
+// ─── Stat Cards ───────────────────────────────────────────────────────────────
+function ClientStats({ stats }) {
+  // Fix #6 — low balance warning threshold
+  const lowBalance = stats.walletAvailable < 20
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* PRIMARY hero — wallet */}
+      <div className={`rounded-xl px-6 py-5 flex flex-col justify-between min-h-[110px] ${lowBalance ? 'bg-[#7B1F1F]' : 'bg-[#1a1635]'}`}>
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Wallet balance</p>
+          {/* Fix #6 — low balance badge */}
+          {lowBalance && (
+            <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-red-500/30 text-red-200">
+              Low balance
+            </span>
+          )}
+        </div>
         <div className="mt-2">
-          <p className="text-[48px] font-semibold leading-none text-white tracking-tight">{stats.walletBalance}</p>
-          <p className="text-[12px] mt-2 text-[#4ade80] flex items-center gap-1">
-            <span className="text-[10px]">✓</span> {stats.walletTrend}
+          <p className="text-[42px] font-semibold leading-none text-white tracking-tight">{stats.walletBalance}</p>
+          <p className={`text-[12px] mt-2 flex items-center gap-1 ${lowBalance ? 'text-red-300' : 'text-[#4ade80]'}`}>
+            {lowBalance ? '⚠ Top up before your next session' : <><span className="text-[10px]">✓</span> {stats.walletTrend}</>}
           </p>
         </div>
       </div>
 
-      {/* SECONDARY — total sessions, purple tint */}
+      {/* Total sessions */}
       <div className="rounded-xl px-4 py-4 bg-[#EEEDFE] flex flex-col justify-between min-h-[110px]">
         <p className="text-[11px] text-[#534AB7] uppercase tracking-widest font-medium">Total sessions</p>
         <div className="mt-2">
@@ -86,42 +145,113 @@ function ClientStats({ stats }) {
         </div>
       </div>
 
-      {/* RIGHT — favourites + rating stacked, matches interpreter sessions/hours pattern */}
-      <div className="flex flex-col gap-3">
-        <div className="rounded-xl px-4 py-3 bg-lb-surface border border-lb-border flex-1">
-          <p className="text-[10px] text-lb-muted uppercase tracking-widest font-medium mb-1">Favourites</p>
-          <p className="text-[22px] font-semibold text-lb-ink leading-none">{stats.favourites}</p>
-          <p className="text-[11px] mt-1 text-[#0F6E56]">{stats.favouritesTrend}</p>
+      {/* Favourites — Fix #4: rating card removed, replaced with favourites only */}
+      <div className="rounded-xl px-4 py-4 bg-lb-surface border border-lb-border flex flex-col justify-between min-h-[110px]">
+        <p className="text-[10px] text-lb-muted uppercase tracking-widest font-medium">Favourites</p>
+        <div>
+          <p className="text-[28px] font-semibold text-lb-ink leading-none">{stats.favourites}</p>
+          <p className="text-[11px] mt-1.5 text-[#0F6E56]">{stats.favouritesTrend}</p>
         </div>
-        <div className="rounded-xl px-4 py-3 bg-lb-surface border border-lb-border flex-1">
-          <p className="text-[10px] text-lb-muted uppercase tracking-widest font-medium mb-1">Your rating</p>
-          <p className="text-[22px] font-semibold text-lb-ink leading-none">{stats.rating}</p>
-          <p className="text-[11px] mt-1 text-[#0F6E56]">{stats.ratingTrend}</p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Fix #2 — Session card with interpreter name, avatar, Join button ─────────
+function UpcomingSessionCard({ session }) {
+  const { label, isImminent } = useCountdown(session.scheduledAt)
+
+  return (
+    <div className={`flex items-center gap-3 py-2.5 px-3 rounded-lg border transition-colors ${
+      isImminent ? 'border-[#1D9E75] bg-[#E1F5EE]' : 'border-lb-border bg-lb-surface'
+    }`}>
+      {/* Avatar */}
+      <div className="w-8 h-8 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[10px] font-semibold text-[#534AB7] shrink-0">
+        {session.initials}
+      </div>
+
+      {/* Details */}
+      <div className="flex-1 min-w-0">
+        <p className="text-[12px] font-medium text-lb-ink truncate">
+          {session.fromLang} → {session.toLang}
+        </p>
+        <div className="flex items-center gap-1 mt-0.5 text-lb-muted">
+          {session.type === 'video' ? <VideoIcon /> : <AudioIcon />}
+          <span className="text-[10px]">{session.interpreter} · {session.duration}</span>
         </div>
       </div>
 
+      {/* Time + countdown + Join */}
+      <div className="shrink-0 flex flex-col items-end gap-1">
+        <span className="text-[10px] font-medium text-lb-ink">{session.time}</span>
+        {isImminent ? (
+          <button className="px-2.5 py-1 text-[10px] font-semibold bg-[#1D9E75] text-white rounded-lg animate-pulse">
+            Join now
+          </button>
+        ) : (
+          <span className="text-[10px] text-[#7F77DD] font-medium">{label}</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Fix #2 — Today's sessions with real cards ────────────────────────────────
+function UpcomingSessions({ sessions }) {
+  return (
+    <div className="lb-card">
+      <div className="flex items-baseline justify-between mb-3">
+        <h3 className="text-[13px] font-medium text-lb-ink">Today's sessions</h3>
+        <button className="text-[12px] text-[#7F77DD] font-medium">Calendar</button>
+      </div>
+
+      {sessions.length === 0 ? (
+        <p className="text-[12px] text-lb-muted text-center py-4">No sessions today</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {sessions.map((s) => <UpcomingSessionCard key={s.id} session={s} />)}
+        </div>
+      )}
+
+      <div className="mt-3 pt-3 border-t border-lb-border">
+        <button className="w-full bg-[#7F77DD] hover:bg-[#534AB7] text-white text-[12px] font-medium rounded-lg py-1.5 transition-colors">
+          + Book new session
+        </button>
+      </div>
     </div>
   )
 }
 
 // ─── Recent Sessions ──────────────────────────────────────────────────────────
 function RecentSessionsList({ sessions }) {
+  // Fix #5 — empty state
+  if (!sessions.length) {
+    return (
+      <div className="lb-card flex flex-col items-center justify-center py-12 gap-3">
+        <div className="w-12 h-12 rounded-full bg-[#EEEDFE] flex items-center justify-center">
+          <VideoIcon className="w-5 h-5 text-[#7F77DD]" />
+        </div>
+        <p className="text-[14px] font-medium text-lb-ink">No sessions yet</p>
+        <p className="text-[12px] text-lb-muted text-center max-w-[200px]">Book your first session and get connected with an interpreter instantly.</p>
+        <button className="mt-1 px-4 py-1.5 text-[12px] font-medium bg-[#7F77DD] text-white rounded-lg hover:bg-[#534AB7] transition-colors">
+          Book a session
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
         <h3 className="text-[14px] font-medium text-lb-ink">Recent sessions</h3>
         <button className="text-[12px] text-[#7F77DD] font-medium">View all</button>
       </div>
-
       <div className="divide-y divide-lb-border">
         {sessions.map((s) => (
           <div key={s.id} className="flex items-center gap-2.5 py-2">
-            {/* Avatar — neutral surface matching interpreter RecentSessions */}
-            <div className="w-7 h-7 rounded-full bg-lb-surface flex items-center justify-center text-[10px] font-medium text-lb-muted shrink-0">
+            <div className="w-7 h-7 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[10px] font-semibold text-[#534AB7] shrink-0">
               {s.avatar}
             </div>
-
-            {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-[12px] font-medium text-lb-ink">{s.fromLang} → {s.toLang}</span>
@@ -132,8 +262,6 @@ function RecentSessionsList({ sessions }) {
               </div>
               <p className="text-[11px] text-lb-muted mt-0.5">{s.interpreter} · {s.duration} · {s.date}</p>
             </div>
-
-            {/* Status badge + price, matching interpreter row pattern */}
             <div className="flex flex-col items-end gap-1 shrink-0">
               <span className="text-[12px] font-medium text-lb-ink">{s.price}</span>
               <div className="flex items-center gap-0.5">
@@ -156,9 +284,7 @@ function RecentActivity({ activity }) {
   }
   return (
     <div className="lb-card">
-      <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-[13px] font-medium text-lb-ink">Recent activity</h3>
-      </div>
+      <h3 className="text-[13px] font-medium text-lb-ink mb-3">Recent activity</h3>
       <div className="divide-y divide-lb-border">
         {activity.map((a) => {
           const { bg, icon } = iconMap[a.type] || iconMap.session
@@ -179,26 +305,35 @@ function RecentActivity({ activity }) {
   )
 }
 
-// ─── Quick Actions — moved to top of sidebar as primary CTA ──────────────────
-function QuickActions() {
+// ─── Fix #3 — Contextual quick actions ───────────────────────────────────────
+function QuickActions({ lastSession }) {
   const actions = [
     {
-      label: 'Book video session',
-      desc: 'Face-to-face interpretation',
-      icon: <VideoIcon className="w-4 h-4 text-[#534AB7]" />,
-      bg: 'bg-[#EEEDFE]',
+      label: `Rebook ${lastSession.interpreter.split(' ')[0]}`,
+      desc:  `${lastSession.fromLang} → ${lastSession.toLang} · ${lastSession.duration}`,
+      icon:  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-[9px] font-semibold text-[#534AB7]">
+               {lastSession.avatar}
+             </div>,
+      bg:    'bg-[#7F77DD]',
+      textColor: 'text-white',
+      descColor: 'text-white/70',
+      primary: true,
     },
     {
-      label: 'Book audio session',
-      desc: 'Voice-only interpretation',
-      icon: <AudioIcon className="w-4 h-4 text-[#0F6E56]" />,
-      bg: 'bg-[#E1F5EE]',
+      label: 'New session',
+      desc:  'Different language or interpreter',
+      icon:  <VideoIcon className="w-4 h-4 text-[#534AB7]" />,
+      bg:    'bg-[#EEEDFE]',
+      textColor: 'text-lb-ink',
+      descColor: 'text-lb-muted',
     },
     {
       label: 'Schedule later',
-      desc: 'Plan your next session',
-      icon: <CalIcon />,
-      bg: 'bg-lb-surface',
+      desc:  'Plan and book in advance',
+      icon:  <CalIcon />,
+      bg:    'bg-lb-surface',
+      textColor: 'text-lb-ink',
+      descColor: 'text-lb-muted',
     },
   ]
 
@@ -209,16 +344,20 @@ function QuickActions() {
         {actions.map((a) => (
           <button
             key={a.label}
-            className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-lb-border hover:border-[#7F77DD] hover:bg-lb-surface transition-colors text-left"
+            className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-colors text-left ${
+              a.primary
+                ? 'border-[#7F77DD] bg-[#7F77DD] hover:bg-[#534AB7] hover:border-[#534AB7]'
+                : 'border-lb-border bg-lb-surface hover:border-[#7F77DD] hover:bg-[#EEEDFE]/40'
+            }`}
           >
             <div className={`w-7 h-7 rounded-lg ${a.bg} flex items-center justify-center shrink-0`}>
               {a.icon}
             </div>
             <div className="flex-1">
-              <p className="text-[12px] font-medium text-lb-ink">{a.label}</p>
-              <p className="text-[10px] text-lb-muted">{a.desc}</p>
+              <p className={`text-[12px] font-medium ${a.textColor}`}>{a.label}</p>
+              <p className={`text-[10px] ${a.descColor}`}>{a.desc}</p>
             </div>
-            <svg className="w-3.5 h-3.5 text-lb-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className={`w-3.5 h-3.5 ${a.primary ? 'text-white/60' : 'text-lb-muted'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" d="M9 18l6-6-6-6"/>
             </svg>
           </button>
@@ -228,58 +367,17 @@ function QuickActions() {
   )
 }
 
-// ─── Upcoming Sessions ────────────────────────────────────────────────────────
-function UpcomingSessions({ sessions }) {
-  return (
-    <div className="lb-card">
-      <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-[13px] font-medium text-lb-ink">Today's sessions</h3>
-        <button className="text-[12px] text-[#7F77DD] font-medium">Calendar</button>
-      </div>
-
-      {sessions.length === 0 ? (
-        <p className="text-[12px] text-lb-muted text-center py-4">No sessions today</p>
-      ) : (
-        <div className="divide-y divide-lb-border">
-          {sessions.map((s) => (
-            <div key={s.id} className="flex items-center gap-2.5 py-2">
-              <span className="text-[11px] font-medium text-lb-ink w-[52px] shrink-0">{s.time}</span>
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.soon ? 'bg-[#1D9E75]' : 'bg-[#7F77DD]'}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-medium text-lb-ink truncate">{s.fromLang} → {s.toLang}</p>
-                <div className="flex items-center gap-1 mt-0.5 text-lb-muted">
-                  {s.type === 'video' ? <VideoIcon /> : <AudioIcon />}
-                  <span className="text-[10px]">{s.type === 'video' ? 'Video' : 'Audio'} · {s.duration} · {s.initials}</span>
-                </div>
-              </div>
-              {s.soon && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#E1F5EE] text-[#0F6E56] shrink-0">Soon</span>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-2 pt-2 border-t border-lb-border">
-        <button className="w-full bg-[#7F77DD] hover:bg-[#534AB7] text-white text-[12px] font-medium rounded-lg py-1.5 transition-colors">
-          + Book new session
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Wallet Snapshot — dark CTA button matching interpreter WalletSummary ─────
-function WalletSnapshot() {
+// ─── Wallet Snapshot ──────────────────────────────────────────────────────────
+function WalletSnapshot({ balance }) {
+  const low = balance < 20
   const rows = [
-    { label: 'Spent today',     value: '$32.50' },
-    { label: 'Spent this week', value: '$99.50' },
-    { label: 'Spent this month',value: '$150.00' },
+    { label: 'Spent today',      value: '$32.50' },
+    { label: 'Spent this week',  value: '$99.50' },
+    { label: 'Spent this month', value: '$150.00' },
   ]
   return (
     <div className="lb-card">
       <h3 className="text-[13px] font-medium text-lb-ink mb-3">Wallet</h3>
-
       <div className="divide-y divide-lb-border">
         {rows.map((r) => (
           <div key={r.label} className="flex items-center justify-between py-1.5">
@@ -288,14 +386,17 @@ function WalletSnapshot() {
           </div>
         ))}
       </div>
-
       <div className="mt-3 pt-3 border-t border-lb-border">
         <div className="flex items-baseline justify-between mb-0.5">
           <span className="text-[11px] text-lb-muted">Available balance</span>
-          <span className="text-[20px] font-semibold text-[#26215C]">$45.60</span>
+          <span className={`text-[20px] font-semibold ${low ? 'text-red-600' : 'text-[#26215C]'}`}>
+            ${balance.toFixed(2)}
+          </span>
         </div>
-        <p className="text-[10px] text-lb-subtle text-right mb-3">Ready to use</p>
-        {/* Dark button — matches interpreter WalletSummary withdraw button */}
+        {low && (
+          <p className="text-[10px] text-red-500 text-right mb-2">⚠ Balance low — top up to avoid interruptions</p>
+        )}
+        {!low && <p className="text-[10px] text-lb-subtle text-right mb-3">Ready to use</p>}
         <button className="w-full bg-[#1a1635] hover:bg-[#26215C] text-white text-[13px] font-medium rounded-lg py-2.5 transition-colors">
           ↑ Add funds
         </button>
@@ -309,8 +410,8 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       <div className="h-5 bg-lb-border rounded w-40" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-lb-border rounded-xl" />)}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        {[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-lb-border rounded-xl" />)}
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2 h-72 bg-lb-border rounded-xl" />
@@ -333,13 +434,12 @@ export default function ClientDashboard() {
 
   return (
     <div className="space-y-4">
-      {/* Header — mirrors interpreter workspace header exactly */}
+      {/* Header */}
       <div className="flex items-center justify-between pb-1">
         <div>
           <p className="text-xs text-lb-muted">Welcome back, Sarah</p>
           <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Client workspace</h1>
         </div>
-        {/* Primary CTA — dark pill matching interpreter's online toggle weight */}
         <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#1a1635] text-white hover:bg-[#26215C] transition-colors">
           + Book session
         </button>
@@ -348,7 +448,7 @@ export default function ClientDashboard() {
       {/* Stats strip */}
       <ClientStats stats={MOCK_STATS} />
 
-      {/* Main 2/3 + 1/3 grid — mirrors interpreter layout exactly */}
+      {/* Main 2/3 + 1/3 grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Left col */}
         <div className="xl:col-span-2 space-y-4">
@@ -356,11 +456,11 @@ export default function ClientDashboard() {
           <RecentActivity activity={MOCK_ACTIVITY} />
         </div>
 
-        {/* Right col — Quick actions first (primary CTA), then schedule, then wallet */}
+        {/* Right col */}
         <div className="space-y-4">
-          <QuickActions />
+          <QuickActions lastSession={LAST_SESSION} />
           <UpcomingSessions sessions={MOCK_UPCOMING} />
-          <WalletSnapshot />
+          <WalletSnapshot balance={MOCK_STATS.walletAvailable} />
         </div>
       </div>
     </div>

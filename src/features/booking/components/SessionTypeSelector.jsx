@@ -28,9 +28,9 @@ export default function SessionTypeSelector({ selected, onSelect }) {
             aria-disabled={!type.available}
           >
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-              isActive ? 'bg-[#7F77DD]' : 'bg-lb-border'
+              isActive ? 'bg-[#7F77DD]' : 'bg-lb-surface border border-lb-border'
             }`}>
-              <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-lb-muted'}`} />
+              <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-lb-ink'}`} />
             </div>
             <div className="text-center">
               <p className={`text-[13px] font-medium transition-colors ${isActive ? 'text-[#26215C]' : 'text-lb-ink'}`}>

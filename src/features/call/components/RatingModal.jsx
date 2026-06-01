@@ -37,8 +37,12 @@ function StarRating({ value, onChange, label }) {
   )
 }
 
-export default function RatingModal({ role = 'client', onSubmit, onSkip }) {
+export default function RatingModal({ role = 'client', sessionDuration = 0, interpreterName = null, onSubmit, onSkip }) {
   const isClient = role === 'client'
+
+  // Format duration mm:ss → "X min"
+  const durationMins = Math.max(1, Math.round(sessionDuration / 60))
+  const durationLabel = `${durationMins} min`
 
   const [callQuality, setCallQuality]         = useState(0)
   const [interpreterRating, setInterpreterRating] = useState(0)
@@ -67,6 +71,7 @@ export default function RatingModal({ role = 'client', onSubmit, onSkip }) {
             </svg>
           </div>
           <p className="text-white text-lg font-medium">Thanks for your feedback!</p>
+          <p className="text-white/40 text-xs">Returning to dashboard…</p>
         </div>
       </div>
     )
@@ -85,6 +90,18 @@ export default function RatingModal({ role = 'client', onSubmit, onSkip }) {
           <button onClick={onSkip} className="text-white/30 hover:text-white/60 transition-colors text-xs">
             Skip
           </button>
+        </div>
+
+        {/* Fix #3 — Session summary */}
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#0f0f1a] border border-white/10">
+          <div className="w-9 h-9 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[11px] font-semibold text-[#534AB7] shrink-0">
+            {interpreterName ? interpreterName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : '?'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-[13px] font-medium truncate">{interpreterName ?? 'Interpreter'}</p>
+            <p className="text-white/40 text-[11px]">Session complete · {durationLabel}</p>
+          </div>
+          <span className="text-[#4ade80] text-[11px] font-medium shrink-0">✓ Done</span>
         </div>
 
         {/* Call quality — shown to both */}

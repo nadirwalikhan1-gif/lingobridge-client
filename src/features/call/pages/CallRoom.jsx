@@ -18,6 +18,11 @@ export default function CallRoom() {
   const [searchParams]                = useSearchParams();
   const sessionType                   = searchParams.get('type') === 'video' ? 'video' : 'audio';
   const agoraToken                    = searchParams.get('token') || null;
+  // Fix #1 — interpreter name passed from BookingPage via ?interpreterName=
+  const interpreterName               = searchParams.get('interpreterName') || null;
+  const interpreterInitials           = interpreterName
+    ? interpreterName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : '?';
   const navigate                      = useNavigate();
   const { user }                      = useAuth();
   const [chatOpen, setChatOpen]       = useState(false);
@@ -80,7 +85,7 @@ export default function CallRoom() {
 
   function handleRatingSubmit(payload) {
     console.log('Rating submitted:', payload);
-    setTimeout(() => navigate(-1), 1500);
+    setTimeout(() => navigate('/client/dashboard'), 1500);
   }
 
   const initials = user?.user_metadata?.name
@@ -116,15 +121,16 @@ export default function CallRoom() {
         {/* Video / Audio area */}
         <div className="flex-1 p-3 overflow-hidden relative">
           {sessionType === 'video' ? (
+            // Fix #2 — two-tile layout only, no third black panel
             <div className="relative w-full h-full">
 
-              {/* ── Main tile — remote user (large) ── */}
+              {/* Main tile — remote user (large, full area) */}
               {remoteUser ? (
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <VideoTile
                     track={remoteUser.camOff ? null : (remoteUser.videoTrack ?? null)}
-                    label={`Participant ${remoteUser.uid}`}
-                    avatarInitials="?"
+                    label={interpreterName ?? `Participant ${remoteUser.uid}`}
+                    avatarInitials={interpreterInitials}
                     muted={remoteUser.micMuted}
                     camOff={remoteUser.camOff}
                   />
@@ -143,7 +149,7 @@ export default function CallRoom() {
                 </div>
               )}
 
-              {/* ── PiP tile — local user (small, bottom-right) ── */}
+              {/* PiP tile — local user (small, bottom-right) */}
               {remoteUser && (
                 <div className="absolute bottom-3 right-3 w-[22%] aspect-video rounded-xl overflow-hidden shadow-2xl ring-2 ring-white/10 z-10">
                   <VideoTile
@@ -178,9 +184,9 @@ export default function CallRoom() {
               {remoteUsers.map(u => (
                 <div key={u.uid} className="flex flex-col items-center gap-2">
                   <div className={`w-20 h-20 rounded-full bg-[#E1F5EE] flex items-center justify-center text-2xl font-semibold text-[#0F6E56] ring-4 transition-all ${!u.micMuted ? 'ring-[#1D9E75]' : 'ring-transparent'}`}>
-                    ?
+                    {interpreterInitials}
                   </div>
-                  <p className="text-white/70 text-xs">Participant {u.uid}</p>
+                  <p className="text-white/70 text-xs">{interpreterName ?? `Participant ${u.uid}`}</p>
                   {u.micMuted && (
                     <span className="flex items-center gap-1 text-[10px] text-[#F09595]">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -293,8 +299,10 @@ export default function CallRoom() {
       {showRating && (
         <RatingModal
           role={role}
+          sessionDuration={secs}
+          interpreterName={interpreterName}
           onSubmit={handleRatingSubmit}
-          onSkip={() => navigate(-1)}
+          onSkip={() => navigate('/client/dashboard')}
         />
       )}
     </div>

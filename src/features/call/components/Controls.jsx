@@ -10,10 +10,10 @@ export default function Controls({ micMuted, camOff, sessionType = 'audio', onTo
       <button
         onClick={onToggleMic}
         title={micMuted ? 'Unmute' : 'Mute'}
-        className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+        className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ring-2 ${
           micMuted
-            ? 'bg-[#FCEBEB] text-[#A32D2D] hover:bg-[#F7C1C1]'
-            : 'bg-lb-surface text-lb-ink hover:bg-lb-border'
+            ? 'bg-[#FCEBEB] text-[#A32D2D] hover:bg-[#F7C1C1] ring-[#E24B4A]'
+            : 'bg-lb-surface text-lb-ink hover:bg-lb-border ring-transparent'
         }`}
       >
         {micMuted ? (
@@ -34,10 +34,10 @@ export default function Controls({ micMuted, camOff, sessionType = 'audio', onTo
         <button
           onClick={onToggleCam}
           title={camOff ? 'Turn camera on' : 'Turn camera off'}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ring-2 ${
             camOff
-              ? 'bg-[#FCEBEB] text-[#A32D2D] hover:bg-[#F7C1C1]'
-              : 'bg-lb-surface text-lb-ink hover:bg-lb-border'
+              ? 'bg-[#FCEBEB] text-[#A32D2D] hover:bg-[#F7C1C1] ring-[#E24B4A]'
+              : 'bg-lb-surface text-lb-ink hover:bg-lb-border ring-transparent'
           }`}
         >
           {camOff ? (

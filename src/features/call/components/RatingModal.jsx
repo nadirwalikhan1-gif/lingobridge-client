@@ -37,7 +37,7 @@ function StarRating({ value, onChange, label }) {
   )
 }
 
-export default function RatingModal({ role = 'client', sessionDuration = 0, interpreterName = null, onSubmit, onSkip }) {
+export default function RatingModal({ role = 'client', sessionDuration = 0, sessionCost = 0, interpreterName = null, onSubmit, onSkip }) {
   const isClient = role === 'client'
 
   // Format duration mm:ss → "X min"
@@ -101,7 +101,10 @@ export default function RatingModal({ role = 'client', sessionDuration = 0, inte
             <p className="text-white text-[13px] font-medium truncate">{interpreterName ?? 'Interpreter'}</p>
             <p className="text-white/40 text-[11px]">Session complete · {durationLabel}</p>
           </div>
-          <span className="text-[#4ade80] text-[11px] font-medium shrink-0">✓ Done</span>
+          <div className="flex flex-col items-end shrink-0">
+            <span className="text-white text-[13px] font-semibold">${sessionCost.toFixed(2)}</span>
+            <span className="text-[#4ade80] text-[10px]">charged</span>
+          </div>
         </div>
 
         {/* Call quality — shown to both */}

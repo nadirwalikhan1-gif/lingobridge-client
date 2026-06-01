@@ -1,7 +1,7 @@
 // Call controls bar — mic, cam, end call.
 // sessionType='audio' hides the camera button entirely.
 
-export default function Controls({ micMuted, camOff, sessionType = 'audio', onToggleMic, onToggleCam, onLeave }) {
+export default function Controls({ micMuted, camOff, sessionType = 'audio', chatOpen = false, onToggleMic, onToggleCam, onToggleChat, onLeave }) {
   const isVideo = sessionType === 'video';
 
   return (
@@ -57,11 +57,26 @@ export default function Controls({ micMuted, camOff, sessionType = 'audio', onTo
       <button
         onClick={onLeave}
         title="End call"
-        className="w-14 h-14 rounded-full bg-[#E24B4A] hover:bg-[#A32D2D] text-white flex items-center justify-center transition-colors"
+        className="w-14 h-14 rounded-full bg-[#E24B4A] hover:bg-[#A32D2D] text-white flex items-center justify-center transition-colors ring-2 ring-transparent"
       >
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path d="M22 16.92V19a2 2 0 01-2.18 2A19.79 19.79 0 013 4.18 2 2 0 015 2h2.09a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.574 2.81.7A2 2 0 0122 16.92z" strokeLinecap="round" strokeLinejoin="round" />
           <line x1="2" y1="2" x2="22" y2="22" strokeLinecap="round" />
+        </svg>
+      </button>
+
+      {/* Chat toggle — icon button matching control bar style */}
+      <button
+        onClick={onToggleChat}
+        title={chatOpen ? 'Close chat' : 'Open chat'}
+        className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ring-2 ${
+          chatOpen
+            ? 'bg-[#7F77DD]/20 text-[#AFA9EC] ring-[#7F77DD]'
+            : 'bg-lb-surface text-lb-ink hover:bg-lb-border ring-transparent'
+        }`}
+      >
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
     </div>

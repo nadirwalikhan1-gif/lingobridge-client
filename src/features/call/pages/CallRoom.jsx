@@ -31,6 +31,8 @@ export default function CallRoom() {
   const [secs, setSecs]               = useState(0);
   const timerRef                      = useRef(null);
 
+  const rate = sessionType === 'video' ? 1.20 : 0.99
+  const sessionCost = Math.max(0, parseFloat(((secs / 60) * rate).toFixed(2)))
   const role = user?.user_metadata?.role ?? 'client';
 
   const {
@@ -242,18 +244,13 @@ export default function CallRoom() {
             micMuted={micMuted}
             camOff={camOff}
             sessionType={sessionType}
+            chatOpen={chatOpen}
             onToggleMic={toggleMic}
             onToggleCam={toggleCam}
+            onToggleChat={() => setChatOpen(o => !o)}
             onLeave={() => setShowConfirm(true)}
           />
-          <div className="w-24 flex justify-end">
-            <button
-              onClick={() => setChatOpen(o => !o)}
-              className={`text-[12px] px-3 py-1.5 rounded-lg border transition-colors ${chatOpen ? 'border-[#7F77DD] bg-[#7F77DD]/20 text-[#AFA9EC]' : 'border-white/20 text-white/50 hover:border-white/40 hover:text-white/70'}`}
-            >
-              Chat
-            </button>
-          </div>
+          <div className="w-24" />
         </div>
       </div>
 
@@ -300,6 +297,7 @@ export default function CallRoom() {
         <RatingModal
           role={role}
           sessionDuration={secs}
+          sessionCost={sessionCost}
           interpreterName={interpreterName}
           onSubmit={handleRatingSubmit}
           onSkip={() => navigate('/client/dashboard')}

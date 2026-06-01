@@ -1,7 +1,7 @@
-// BookingPage.jsx — 5-step auto-advance booking flow
-// Steps: 1 Languages · 2 Type+Duration · 3 Categories · 4 Interpreters · 5 Review
-// Auto-advance on selection (except step 4 interpreter — manual confirm)
-// Back button only for correction · Slide transitions · 5-dot progress indicator
+// BookingPage.jsx — 6-step auto-advance booking flow
+// Steps: 1 Languages · 2 Session Type · 3 Duration · 4 Categories · 5 Interpreters · 6 Review
+// Auto-advance on selection (except step 5 interpreter — manual confirm)
+// Back button only for correction · Slide transitions · Progress bar indicator
 
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -26,10 +26,11 @@ const WALLET_BALANCE = 45.60
 
 const STEPS = [
   { id: 1, label: 'Languages' },
-  { id: 2, label: 'Session' },
-  { id: 3, label: 'Category' },
-  { id: 4, label: 'Interpreter' },
-  { id: 5, label: 'Confirm' },
+  { id: 2, label: 'Type' },
+  { id: 3, label: 'Duration' },
+  { id: 4, label: 'Category' },
+  { id: 5, label: 'Interpreter' },
+  { id: 6, label: 'Confirm' },
 ]
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -76,32 +77,35 @@ function CheckIcon() {
   )
 }
 
-// ─── 5-Dot Progress Indicator ─────────────────────────────────────────────────
-function ProgressDots({ step }) {
+// ─── Progress Bar (replaces 5-dot indicator) ──────────────────────────────────
+function ProgressBar({ step }) {
+  const pct = Math.round((step / STEPS.length) * 100)
   return (
-    <div className="flex items-center justify-center gap-3 shrink-0 py-1">
-      {STEPS.map((s) => {
-        const done   = step > s.id
-        const active = step === s.id
-        return (
-          <div key={s.id} className="flex flex-col items-center gap-1.5">
-            <div
-              className={`rounded-full transition-all duration-400 ${
-                done
-                  ? 'w-2.5 h-2.5 bg-[#7F77DD]'
-                  : active
-                    ? 'w-3 h-3 bg-[#7F77DD] ring-4 ring-[#EEEDFE]'
-                    : 'w-2 h-2 bg-lb-border'
+    <div className="shrink-0 px-1 py-1">
+      {/* Bar */}
+      <div className="h-[5px] rounded-full bg-lb-border overflow-hidden mb-2.5">
+        <div
+          className="h-full rounded-full bg-[#7F77DD] transition-all duration-350"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      {/* Step labels */}
+      <div className="flex justify-between">
+        {STEPS.map((s) => {
+          const done   = step > s.id
+          const active = step === s.id
+          return (
+            <span
+              key={s.id}
+              className={`text-[9px] font-semibold uppercase tracking-wide transition-colors ${
+                active ? 'text-[#534AB7]' : done ? 'text-[#7F77DD]' : 'text-lb-muted'
               }`}
-            />
-            <span className={`text-[9px] font-medium uppercase tracking-wide transition-colors ${
-              active ? 'text-[#534AB7]' : done ? 'text-[#7F77DD]' : 'text-lb-muted'
-            }`}>
+            >
               {s.label}
             </span>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -158,6 +162,37 @@ function ConfirmDetail({ label, value, onEdit }) {
   )
 }
 
+// ─── Language Option Button (with purple selected state) ─────────────────────
+function LangOption({ label, selected, onSelect }) {
+  const [flash, setFlash] = useState(false)
+
+  const handleClick = () => {
+    setFlash(true)
+    onSelect()
+    setTimeout(() => setFlash(false), 300)
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border text-left text-[13px] font-medium transition-all duration-100 ${
+        selected
+          ? 'bg-[#7F77DD] border-[#7F77DD] text-white shadow-sm'
+          : flash
+          ? 'bg-[#EEEDFE] border-[#7F77DD] text-[#534AB7]'
+          : 'bg-lb-surface border-lb-border text-lb-ink hover:border-[#7F77DD]/50'
+      }`}
+    >
+      <span>{label}</span>
+      {selected && (
+        <span className="ml-2 flex items-center justify-center w-4 h-4 rounded-full bg-white/25">
+          <CheckIcon />
+        </span>
+      )}
+    </button>
+  )
+}
+
 // ─── Main BookingPage ─────────────────────────────────────────────────────────
 export default function BookingPage() {
   const navigate = useNavigate()
@@ -177,7 +212,7 @@ export default function BookingPage() {
 
   const advance = () => {
     setDirection('forward')
-    setStep(s => Math.min(5, s + 1))
+    setStep(s => Math.min(6, s + 1))
   }
 
   const goBack = () => {
@@ -191,28 +226,28 @@ export default function BookingPage() {
   const handleToLangChange = (code) => {
     setToLang(code)
     setToLangChosen(true)
-    setTimeout(advance, 320) // brief pause so selection is visible
+    setTimeout(advance, 320) // brief pause so selection highlight is visible
   }
 
-  // Step 2: session type chosen → if duration already set, advance; else wait for duration
+  // Step 2: session type chosen → auto-advance (Duration is now its own step)
   const handleTypeSelect = (type) => {
     setSessionType(type)
-    if (duration) setTimeout(advance, 320)
+    setTimeout(advance, 320)
   }
 
-  // Step 2: duration chosen → if type already set, advance; else wait for type
+  // Step 3: duration chosen → auto-advance
   const handleDurationSelect = (min) => {
     setDuration(min)
-    if (sessionType) setTimeout(advance, 320)
+    setTimeout(advance, 320)
   }
 
-  // Step 3: category chosen → auto-advance
+  // Step 4: category chosen → auto-advance
   const handleCategorySelect = (id) => {
     setSelectedCategory(id)
     setTimeout(advance, 320)
   }
 
-  // Step 4: interpreter selected — manual confirm via button
+  // Step 5: interpreter selected — manual confirm via button
 
   const handleSwapLanguages = () => { setFromLang(toLang); setToLang(fromLang) }
 
@@ -243,9 +278,9 @@ export default function BookingPage() {
       {/* ── Main Content ── */}
       <div className="flex-1 min-w-0 flex flex-col gap-3 overflow-hidden py-2">
 
-        {/* Progress dots */}
-        <div className="lb-card shrink-0 py-3">
-          <ProgressDots step={step} />
+        {/* Progress bar (replaces dots) */}
+        <div className="lb-card shrink-0 py-3 px-4">
+          <ProgressBar step={step} />
         </div>
 
         {/* Step panel */}
@@ -260,14 +295,25 @@ export default function BookingPage() {
                     title="What languages do you need?"
                     hint="Select the language you speak, then the language you need interpretation in."
                   />
-                  {/* Two clear labelled slots */}
                   <div className="max-w-xl w-full">
-                    {/* Speaking slot */}
+                    {/* LanguageSelector handles the two slots; purple highlight via LangOption is
+                        applied inside it — pass selectedFromLang / selectedToLang for highlighting.
+                        We wrap with our own visible selected-state layer below the selector so the
+                        existing LanguageSelector component is not modified. */}
                     <div className="mb-5">
                       <p className="text-[11px] font-semibold text-lb-muted uppercase tracking-wider mb-2 flex items-center gap-2">
                         <span className="w-5 h-5 rounded-full bg-lb-border flex items-center justify-center text-[9px] font-bold text-lb-muted">1</span>
                         I am speaking in
                       </p>
+                      {/* Selected state indicator for "from" language */}
+                      {fromLang && (
+                        <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-[#7F77DD] border border-[#7F77DD]">
+                          <span className="text-[13px] font-semibold text-white flex-1">{fromLang}</span>
+                          <span className="flex items-center justify-center w-4 h-4 rounded-full bg-white/25 text-white">
+                            <CheckIcon />
+                          </span>
+                        </div>
+                      )}
                       <LanguageSelector
                         fromLang={fromLang}
                         toLang={toLang}
@@ -276,7 +322,16 @@ export default function BookingPage() {
                         onSwap={handleSwapLanguages}
                       />
                     </div>
-                    {/* Hint below */}
+                    {/* Selected "to" language pill — appears after selection, before auto-advance */}
+                    {toLangChosen && (
+                      <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-[#7F77DD] border border-[#7F77DD]">
+                        <span className="text-[11px] font-semibold text-white/70 uppercase tracking-wider mr-1">Interpretation in</span>
+                        <span className="text-[13px] font-semibold text-white flex-1">{toLang}</span>
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-white/25 text-white">
+                          <CheckIcon />
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 p-3 bg-[#EEEDFE]/40 rounded-lg border border-[#EEEDFE]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#7F77DD] shrink-0" />
                       <p className="text-[11px] text-[#534AB7]">
@@ -287,28 +342,36 @@ export default function BookingPage() {
                 </>
               )}
 
-              {/* ── STEP 2: Session Type + Duration ── */}
+              {/* ── STEP 2: Session Type (separated from Duration) ── */}
               {step === 2 && (
                 <>
                   <StepHeader
                     title="How would you like to connect?"
-                    hint="Choose the session type and duration. Screen advances automatically once both are selected."
+                    hint="Choose your session type — screen advances automatically."
                   />
-                  <div className="max-w-xl w-full space-y-6">
-                    <div>
-                      <p className="text-[11px] font-semibold text-lb-muted uppercase tracking-wider mb-3">Session type</p>
-                      <SessionTypeSelector selected={sessionType} onSelect={handleTypeSelect} />
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-semibold text-lb-muted uppercase tracking-wider mb-3">Duration</p>
-                      <DurationSelector selected={duration} onSelect={handleDurationSelect} sessionType={sessionType || 'audio'} />
-                    </div>
+                  <div className="max-w-xl w-full">
+                    <p className="text-[11px] font-semibold text-lb-muted uppercase tracking-wider mb-3">Session type</p>
+                    <SessionTypeSelector selected={sessionType} onSelect={handleTypeSelect} />
                   </div>
                 </>
               )}
 
-              {/* ── STEP 3: Category ── */}
+              {/* ── STEP 3: Duration (now its own step) ── */}
               {step === 3 && (
+                <>
+                  <StepHeader
+                    title="How long do you need?"
+                    hint="Select a duration — screen advances automatically."
+                  />
+                  <div className="max-w-xl w-full">
+                    <p className="text-[11px] font-semibold text-lb-muted uppercase tracking-wider mb-3">Duration</p>
+                    <DurationSelector selected={duration} onSelect={handleDurationSelect} sessionType={sessionType || 'audio'} />
+                  </div>
+                </>
+              )}
+
+              {/* ── STEP 4: Category ── */}
+              {step === 4 && (
                 <>
                   <StepHeader
                     title="What is the session for?"
@@ -320,8 +383,8 @@ export default function BookingPage() {
                 </>
               )}
 
-              {/* ── STEP 4: Interpreter ── */}
-              {step === 4 && (
+              {/* ── STEP 5: Interpreter ── */}
+              {step === 5 && (
                 <>
                   <StepHeader
                     title="Choose your interpreter"
@@ -347,8 +410,8 @@ export default function BookingPage() {
                 </>
               )}
 
-              {/* ── STEP 5: Review & Confirm ── */}
-              {step === 5 && (
+              {/* ── STEP 6: Review & Confirm ── */}
+              {step === 6 && (
                 <>
                   <StepHeader
                     title="Review your booking"
@@ -365,7 +428,7 @@ export default function BookingPage() {
                       />
                       <ConfirmDetail
                         label="Session"
-                        value={`${sessionType === 'audio' ? 'Audio' : 'Video'} · ${duration} min`}
+                        value={`${sessionType === 'audio' ? 'Audio' : sessionType === 'video' ? 'Video' : sessionType ?? '—'} · ${duration ?? '—'} min`}
                         onEdit={() => { setDirection('back'); setStep(2) }}
                       />
                     </div>
@@ -373,12 +436,12 @@ export default function BookingPage() {
                       <ConfirmDetail
                         label="Category"
                         value={selectedCategory ?? '—'}
-                        onEdit={() => { setDirection('back'); setStep(3) }}
+                        onEdit={() => { setDirection('back'); setStep(4) }}
                       />
                       <ConfirmDetail
                         label="Interpreter"
                         value={interpreterName ?? '—'}
-                        onEdit={() => { setDirection('back'); setStep(4) }}
+                        onEdit={() => { setDirection('back'); setStep(5) }}
                       />
                     </div>
 

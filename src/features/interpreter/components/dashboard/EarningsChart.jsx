@@ -96,7 +96,7 @@ export default function EarningsChart() {
   return (
     <div className="lb-card overflow-hidden p-0">
       {/* Dark header band */}
-      <div className="bg-[#1e1b4b] px-5 py-4 flex items-center justify-between">
+      <div className="bg-[#1a1635] px-5 py-4 flex items-center justify-between">
         <div>
           <p className="text-[11px] text-white/40 uppercase tracking-widest font-medium">Earnings</p>
           <p className="text-[28px] font-semibold text-white leading-none mt-1">{ds.total}</p>

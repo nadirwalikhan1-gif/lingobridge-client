@@ -24,12 +24,12 @@ const MOCK_PLATFORM_STATS = {
 function PlatformStats({ stats }) {
   // Primary card is visually dominant; secondary/tertiary progressively smaller
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-      {/* PRIMARY — Active sessions: largest value, strongest accent */}
-      <div className="rounded-lg px-4 py-3.5 bg-[#EEEDFE]">
-        <p className="text-[11px] mb-1.5 text-[#534AB7]">Active sessions</p>
-        <p className="text-[28px] font-medium leading-none text-[#26215C]">{stats.activeSessions}</p>
-        <p className="text-[11px] mt-1.5 text-[#0F6E56]">↑ 2 since 1h ago</p>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* PRIMARY — Active sessions: dark hero, col-span-2 on lg */}
+      <div className="rounded-lg px-4 py-3.5 bg-[#1a1635] lg:col-span-2">
+        <p className="text-[11px] mb-1.5 text-[#A9A4E0]">Active sessions</p>
+        <p className="text-[32px] font-medium leading-none text-white">{stats.activeSessions}</p>
+        <p className="text-[11px] mt-1.5 text-[#6EE7B7]">↑ 2 since 1h ago</p>
       </div>
       {/* SECONDARY — Interpreters online */}
       <div className="rounded-lg px-4 py-3.5 bg-[#E1F5EE]">
@@ -37,16 +37,10 @@ function PlatformStats({ stats }) {
         <p className="text-[22px] font-medium leading-none text-[#085041]">{stats.interpretersOnline}</p>
         <p className="text-[11px] mt-1.5 text-[#0F6E56]">↑ 3 from daily avg</p>
       </div>
-      {/* TERTIARY — Requests in queue */}
-      <div className="rounded-lg px-4 py-3.5 bg-lb-surface">
-        <p className="text-[11px] mb-1.5 text-lb-muted">Requests in queue</p>
-        <p className="text-[18px] font-medium leading-none text-lb-ink">{stats.requestsQueued}</p>
-        <p className="text-[11px] mt-1.5 text-[#BA7517]">3 pending &gt;5 min</p>
-      </div>
-      {/* TERTIARY — Open disputes */}
+      {/* TERTIARY — Requests + disputes stacked in 4th column on lg */}
       <div className="rounded-lg px-4 py-3.5 bg-[#FAEEDA]">
         <p className="text-[11px] mb-1.5 text-[#BA7517]">Open disputes</p>
-        <p className="text-[18px] font-medium leading-none text-[#633806]">{stats.openDisputes}</p>
+        <p className="text-[22px] font-medium leading-none text-[#633806]">{stats.openDisputes}</p>
         <p className="text-[11px] mt-1.5 text-[#A32D2D]">1 escalated</p>
       </div>
     </div>
@@ -114,7 +108,7 @@ export default function AdminDashboard() {
           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-lb-border text-xs font-medium text-lb-ink bg-white hover:bg-lb-surface transition-colors">
             Export ops report
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#7F77DD] text-white hover:bg-[#534AB7] transition-colors">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#1a1635] text-white hover:bg-[#26215C] transition-colors">
             + Assign session
           </button>
         </div>

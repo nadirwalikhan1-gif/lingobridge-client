@@ -8,7 +8,7 @@ export default function RatingCard({ rating = '4.8', reviewCount = 128 }) {
     <div className="lb-card">
       <h3 className="text-[13px] font-medium text-lb-ink mb-3">Your rating</h3>
       <div className="flex items-center gap-4">
-        <p className="text-[40px] font-semibold text-[#26215C] leading-none">{rating}</p>
+        <p className="text-[32px] font-semibold text-[#26215C] leading-none">{rating}</p>
         <div>
           <div className="flex items-center gap-0.5 mb-1">
             {[...Array(5)].map((_, i) => (

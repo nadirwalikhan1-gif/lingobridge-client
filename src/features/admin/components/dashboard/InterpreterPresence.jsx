@@ -57,7 +57,7 @@ const statusConfig = {
 }
 
 const avatarBg = {
-  online: 'bg-[#EEEDFE] text-[#534AB7]',
+  online: 'bg-lb-surface text-lb-ink',
   busy: 'bg-[#FAEEDA] text-[#BA7517]',
   offline: 'bg-lb-surface text-lb-muted',
 }

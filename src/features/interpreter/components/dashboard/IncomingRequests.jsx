@@ -1,30 +1,13 @@
-// IncomingRequests.jsx — STRICT WHITELIST: Only client dashboard languages
-// Your SaaS supports: Pashto Eastern, Pashto Western, Punjabi Gurmukhi, Punjabi Shahmukhi, English (US), English (Canada), English (UK)
+// IncomingRequests.jsx — DIRECTIONAL WHITELIST
+// FROM: English (US), English (Canada), English (UK)
+// TO:   Pashto Eastern, Pashto Western, Punjabi Gurmukhi, Punjabi Shahmukhi
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSocket } from '../../../../lib/socket'
 
-// ─── WHITELIST: Only languages available on client dashboard ───
-const CLIENT_LANGUAGES = {
-  // Pashto variants
-  'ps':         'Pashto Eastern',
-  'ps-et':      'Pashto Eastern',
-  'ps-east':    'Pashto Eastern',
-  'ps-eastern': 'Pashto Eastern',
-  'ps-wt':      'Pashto Western',
-  'ps-west':    'Pashto Western',
-  'ps-western': 'Pashto Western',
-
-  // Punjabi variants
-  'pa':         'Punjabi Gurmukhi',
-  'pa-guru':    'Punjabi Gurmukhi',
-  'pa-gurmukhi':'Punjabi Gurmukhi',
-  'pa-shah':    'Punjabi Shahmukhi',
-  'pa-shahmukhi':'Punjabi Shahmukhi',
-  'pa-arab':    'Punjabi Shahmukhi',
-
-  // English variants
+// ─── FROM languages (English variants only) ───
+const FROM_LANGUAGES = {
   'en':         'English (US)',
   'en-us':      'English (US)',
   'en-usa':     'English (US)',
@@ -38,49 +21,49 @@ const CLIENT_LANGUAGES = {
   'en-great':   'English (UK)',
 }
 
-// 🔴 STRICT: Only resolve whitelisted languages. Everything else is flagged.
-function resolveLanguage(raw) {
-  if (!raw) return null
-  const key = String(raw).toLowerCase().trim()
-
-  // Exact match
-  if (CLIENT_LANGUAGES[key]) return CLIENT_LANGUAGES[key]
-
-  // Partial match for safety
-  const cleanKey = key.replace(/[^a-z-]/g, '')
-  if (CLIENT_LANGUAGES[cleanKey]) return CLIENT_LANGUAGES[cleanKey]
-
-  // Not in whitelist — return null so caller can flag it
-  return null
+// ─── TO languages (Pashto/Punjabi variants only) ───
+const TO_LANGUAGES = {
+  'ps':         'Pashto Eastern',
+  'ps-et':      'Pashto Eastern',
+  'ps-east':    'Pashto Eastern',
+  'ps-eastern': 'Pashto Eastern',
+  'ps-wt':      'Pashto Western',
+  'ps-west':    'Pashto Western',
+  'ps-western': 'Pashto Western',
+  'pa':         'Punjabi Gurmukhi',
+  'pa-guru':    'Punjabi Gurmukhi',
+  'pa-gurmukhi':'Punjabi Gurmukhi',
+  'pa-shah':    'Punjabi Shahmukhi',
+  'pa-shahmukhi':'Punjabi Shahmukhi',
+  'pa-arab':    'Punjabi Shahmukhi',
 }
 
-// 🔴 BULLETPROOF: Format pair using ONLY whitelisted languages
+function resolveFrom(raw) {
+  if (!raw) return null
+  const key = String(raw).toLowerCase().trim().replace(/[^a-z-]/g, '')
+  return FROM_LANGUAGES[key] || null
+}
+
+function resolveTo(raw) {
+  if (!raw) return null
+  const key = String(raw).toLowerCase().trim().replace(/[^a-z-]/g, '')
+  return TO_LANGUAGES[key] || null
+}
+
+// 🔴 DIRECTIONAL: From must be English, To must be Pashto/Punjabi
 function formatLanguagePair(req) {
   const rawFrom = req.fromLang ?? req.language ?? req.sourceLanguage ?? req.source ?? req.langFrom ?? null
   const rawTo   = req.toLang   ?? req.targetLanguage ?? req.target ?? req.langTo ?? null
 
-  const fromResolved = resolveLanguage(rawFrom)
-  const toResolved   = resolveLanguage(rawTo)
+  const fromResolved = resolveFrom(rawFrom)
+  const toResolved   = resolveTo(rawTo)
 
-  // Both resolved and different → perfect
-  if (fromResolved && toResolved && fromResolved !== toResolved) {
+  // Perfect case: English → Pashto/Punjabi
+  if (fromResolved && toResolved) {
     return { from: fromResolved, to: toResolved, warning: false }
   }
 
-  // Both resolved but same name (e.g., both English variants) → show raw codes
-  if (fromResolved && toResolved && fromResolved === toResolved && rawFrom && rawTo) {
-    const rf = String(rawFrom).toLowerCase()
-    const rt = String(rawTo).toLowerCase()
-    if (rf !== rt) {
-      return { 
-        from: `${fromResolved} (${rawFrom})`, 
-        to: `${toResolved} (${rawTo})`, 
-        warning: true 
-      }
-    }
-  }
-
-  // One resolved, one not in whitelist → flag the unknown one
+  // From resolved, To not in whitelist → flag To
   if (fromResolved && !toResolved) {
     return { 
       from: fromResolved, 
@@ -88,6 +71,8 @@ function formatLanguagePair(req) {
       warning: true 
     }
   }
+
+  // To resolved, From not in whitelist → flag From
   if (!fromResolved && toResolved) {
     return { 
       from: rawFrom ? `${String(rawFrom)} ⚠️` : 'Unknown ⚠️', 
@@ -96,7 +81,7 @@ function formatLanguagePair(req) {
     }
   }
 
-  // Neither resolved → both flagged
+  // Neither resolved
   if (rawFrom && rawTo) {
     return { 
       from: `${String(rawFrom)} ⚠️`, 
@@ -186,7 +171,6 @@ function RequestCard({ req, onAccept, onDecline }) {
   const urgent = secs < 120
   const isVideo = req.sessionType === 'video' || req.type === 'video'
 
-  // 🔴 WHITELIST: Format language pair using ONLY client languages
   const pair = formatLanguagePair(req)
 
   const sector = resolveSector(req.category ?? req.purpose ?? req.domain ?? req.sector)
@@ -216,14 +200,11 @@ function RequestCard({ req, onAccept, onDecline }) {
         : 'border-[#7F77DD] bg-[rgba(127,119,221,0.04)]'
     }`} style={{ gridTemplateColumns: '44px 1fr auto' }}>
 
-      {/* Avatar */}
       <div className="row-span-2 w-11 h-11 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[13px] font-semibold text-[#534AB7] shrink-0">
         {avatar}
       </div>
 
-      {/* Content */}
       <div>
-        {/* Language pair + badges */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-[15px] font-semibold leading-tight ${pair.warning ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
             {pair.from} → {pair.to}
@@ -246,7 +227,6 @@ function RequestCard({ req, onAccept, onDecline }) {
           )}
         </div>
 
-        {/* Type + Sector + Recording */}
         <div className="flex flex-wrap items-center gap-2 mt-1.5">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border border-lb-border bg-lb-surface text-lb-muted">
             {isVideo ? (
@@ -274,7 +254,6 @@ function RequestCard({ req, onAccept, onDecline }) {
           )}
         </div>
 
-        {/* Client context */}
         <div className="flex items-center gap-2 mt-2 flex-wrap">
           <span className="text-[12px] font-semibold text-lb-ink">{clientName}</span>
           {clientRating && (
@@ -288,14 +267,12 @@ function RequestCard({ req, onAccept, onDecline }) {
           )}
         </div>
 
-        {/* Rate + Estimate */}
         <div className="flex items-center gap-2 mt-1.5">
           <span className="text-[11px] text-lb-muted">${perMinuteRate.toFixed(2)}/min</span>
           <span className="text-[11px] text-[#534AB7] font-semibold">≈ ${estimatedEarnings} est.</span>
         </div>
       </div>
 
-      {/* Actions + Timer */}
       <div className="row-span-2 flex flex-col items-end gap-2 justify-between">
         <div className="flex items-center gap-2">
           <span className="text-[15px] font-semibold text-[#26215C]">{price}</span>

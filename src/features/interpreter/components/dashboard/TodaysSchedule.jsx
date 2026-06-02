@@ -1,5 +1,4 @@
-// TodaysSchedule.jsx — enriched with domain, client organization, confirmation status
-// Uses WHITELIST languages: Pashto Eastern, Pashto Western, Punjabi Gurmukhi, Punjabi Shahmukhi, English (US), English (Canada), English (UK)
+// TodaysSchedule.jsx — DIRECTIONAL: From=English variants, To=Pashto/Punjabi variants
 
 const MOCK_SCHEDULE = [
   {
@@ -8,12 +7,12 @@ const MOCK_SCHEDULE = [
     domain: 'Medical', clientOrg: 'City General Hospital', status: 'Confirmed',
   },
   {
-    id: 2, time: '02:30 PM', fromLang: 'Punjabi Gurmukhi', toLang: 'English (Canada)',
+    id: 2, time: '02:30 PM', fromLang: 'English (Canada)', toLang: 'Punjabi Gurmukhi',
     type: 'audio', duration: '30 min', initials: 'MG', price: '$12.00', soon: false,
     domain: 'Legal', clientOrg: 'Johnson & Associates Law', status: 'Confirmed',
   },
   {
-    id: 3, time: '04:00 PM', fromLang: 'Pashto Western', toLang: 'English (UK)',
+    id: 3, time: '04:00 PM', fromLang: 'English (UK)', toLang: 'Pashto Western',
     type: 'audio', duration: '15 min', initials: 'AK', price: '$6.00', soon: false,
     domain: 'Insurance', clientOrg: 'State Farm Insurance', status: 'Pending',
   },

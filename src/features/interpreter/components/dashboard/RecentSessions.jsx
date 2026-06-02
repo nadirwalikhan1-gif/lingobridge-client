@@ -1,13 +1,12 @@
-// RecentSessions.jsx — matches reference HTML row design
-// Uses WHITELIST languages: Pashto Eastern, Pashto Western, Punjabi Gurmukhi, Punjabi Shahmukhi, English (US), English (Canada), English (UK)
+// RecentSessions.jsx — DIRECTIONAL: From=English variants, To=Pashto/Punjabi variants
 
 import { useState } from 'react'
 
 const MOCK_SESSIONS = [
   { id: 1, client: 'John Doe',    fromLang: 'English (US)', toLang: 'Pashto Eastern', type: 'video', duration: '30 min', time: 'Today, 10:30 AM',      avatar: 'JD', price: '$12.00', domain: 'Business',      isReturning: true,  hasNotes: false },
-  { id: 2, client: 'Ali Khan',    fromLang: 'Punjabi Gurmukhi', toLang: 'English (Canada)', type: 'audio', duration: '15 min', time: 'Today, 09:15 AM',      avatar: 'AK', price: '$6.00',  domain: 'Medical',       isReturning: false, hasNotes: true  },
+  { id: 2, client: 'Ali Khan',    fromLang: 'English (Canada)', toLang: 'Punjabi Gurmukhi', type: 'audio', duration: '15 min', time: 'Today, 09:15 AM',      avatar: 'AK', price: '$6.00',  domain: 'Medical',       isReturning: false, hasNotes: true  },
   { id: 3, client: 'Sarah Lee',   fromLang: 'English (UK)', toLang: 'Punjabi Shahmukhi',  type: 'video', duration: '45 min', time: 'Yesterday, 7:45 PM',   avatar: 'SL', price: '$18.00', domain: 'Legal',         isReturning: true,  hasNotes: false },
-  { id: 4, client: 'Maria Garcia',fromLang: 'Pashto Western', toLang: 'English (US)',  type: 'video', duration: '60 min', time: 'Yesterday, 3:00 PM',   avatar: 'MJ', price: '$35.00', domain: 'Insurance',     isReturning: false, hasNotes: false },
+  { id: 4, client: 'Maria Garcia',fromLang: 'English (US)', toLang: 'Pashto Western',  type: 'video', duration: '60 min', time: 'Yesterday, 3:00 PM',   avatar: 'MJ', price: '$35.00', domain: 'Insurance',     isReturning: false, hasNotes: false },
 ]
 
 const DOMAIN_COLORS = {

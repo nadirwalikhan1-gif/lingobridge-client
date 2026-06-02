@@ -1,8 +1,110 @@
 // IncomingRequests.jsx — live socket data, countdown timers, urgent border state
+// FIXES APPLIED: 🔴 Locale code → language names, 🔴 Estimated earnings, 🟠 Prominent domain, 🟡 Returning client indicator
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSocket } from '../../../../lib/socket'
+
+// ─── Locale → Language mapping (critical fix) ───
+const LOCALE_MAP = {
+  'en': 'English', 'en-us': 'English', 'en-gb': 'English', 'en-ca': 'English', 'en-au': 'English',
+  'es': 'Spanish', 'es-mx': 'Spanish', 'es-es': 'Spanish', 'es-ar': 'Spanish',
+  'fr': 'French', 'fr-ca': 'French', 'fr-fr': 'French',
+  'de': 'German', 'de-de': 'German',
+  'it': 'Italian',
+  'pt': 'Portuguese', 'pt-br': 'Portuguese', 'pt-pt': 'Portuguese',
+  'ru': 'Russian',
+  'zh': 'Chinese', 'zh-cn': 'Chinese', 'zh-tw': 'Chinese', 'zh-hk': 'Chinese',
+  'ja': 'Japanese',
+  'ko': 'Korean',
+  'ar': 'Arabic',
+  'hi': 'Hindi',
+  'ur': 'Urdu',
+  'fa': 'Farsi', 'fa-ir': 'Farsi',
+  'ps': 'Pashto',
+  'tr': 'Turkish',
+  'pl': 'Polish',
+  'uk': 'Ukrainian',
+  'vi': 'Vietnamese',
+  'th': 'Thai',
+  'tl': 'Tagalog', 'fil': 'Tagalog',
+  'nl': 'Dutch',
+  'sv': 'Swedish',
+  'el': 'Greek',
+  'he': 'Hebrew', 'iw': 'Hebrew',
+  'id': 'Indonesian',
+  'ms': 'Malay',
+  'bn': 'Bengali',
+  'pa': 'Punjabi',
+  'ta': 'Tamil',
+  'te': 'Telugu',
+  'mr': 'Marathi',
+  'gu': 'Gujarati',
+  'kn': 'Kannada',
+  'ml': 'Malayalam',
+  'si': 'Sinhala',
+  'ne': 'Nepali',
+  'my': 'Burmese',
+  'km': 'Khmer',
+  'lo': 'Lao',
+  'sw': 'Swahili',
+  'am': 'Amharic',
+  'ha': 'Hausa',
+  'yo': 'Yoruba',
+  'ig': 'Igbo',
+  'zu': 'Zulu',
+  'af': 'Afrikaans',
+  'sq': 'Albanian',
+  'hy': 'Armenian',
+  'az': 'Azerbaijani',
+  'eu': 'Basque',
+  'be': 'Belarusian',
+  'bs': 'Bosnian',
+  'bg': 'Bulgarian',
+  'ca': 'Catalan',
+  'hr': 'Croatian',
+  'cs': 'Czech',
+  'da': 'Danish',
+  'et': 'Estonian',
+  'fi': 'Finnish',
+  'gl': 'Galician',
+  'ka': 'Georgian',
+  'hu': 'Hungarian',
+  'is': 'Icelandic',
+  'ga': 'Irish',
+  'lv': 'Latvian',
+  'lt': 'Lithuanian',
+  'mk': 'Macedonian',
+  'mt': 'Maltese',
+  'mn': 'Mongolian',
+  'no': 'Norwegian',
+  'ro': 'Romanian',
+  'sr': 'Serbian',
+  'sk': 'Slovak',
+  'sl': 'Slovenian',
+  'cy': 'Welsh',
+  'xh': 'Xhosa',
+}
+
+function resolveLanguage(raw) {
+  if (!raw) return '—'
+  const key = raw.toString().toLowerCase().trim()
+  return LOCALE_MAP[key] || (key.charAt(0).toUpperCase() + key.slice(1))
+}
+
+// ─── Domain colors for prominent display ───
+const DOMAIN_COLORS = {
+  'Medical':   { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
+  'Legal':     { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
+  'Business':  { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Technical': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'General':   { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+}
+
+function getDomainStyle(category) {
+  const c = category || 'General'
+  return DOMAIN_COLORS[c] || DOMAIN_COLORS['General']
+}
 
 function fmt(s) {
   const m = Math.floor(s / 60), ss = s % 60
@@ -23,13 +125,27 @@ function RequestCard({ req, onAccept, onDecline }) {
 
   const urgent = secs < 120
   const isVideo = req.sessionType === 'video' || req.type === 'video'
-  const fromLang = req.fromLang ?? req.language ?? '—'
-  const toLang   = req.toLang   ?? 'English'
-  const category = req.category ?? req.purpose ?? 'General'
+
+  // 🔴 CRITICAL FIX: Resolve locale codes to real language names
+  const fromLang = resolveLanguage(req.fromLang ?? req.language ?? req.sourceLanguage ?? '—')
+  const toLang   = resolveLanguage(req.toLang   ?? req.targetLanguage ?? 'English')
+
+  const category = req.category ?? req.purpose ?? req.domain ?? 'General'
   const duration = req.duration ?? '—'
   const price    = req.price    ?? '—'
-  const client   = req.client   ?? req.clientId ?? 'Client'
+  const client   = req.client   ?? req.clientName ?? req.clientId ?? 'Client'
   const avatar   = req.avatar   ?? (client?.[0] ?? '?').toUpperCase()
+
+  // 🟡 New vs Returning client indicator
+  const isReturning = req.isReturningClient === true || req.clientHistory?.sessions > 0
+
+  // 🔴 Estimated earnings calculation
+  const perMinuteRate = req.perMinuteRate ?? req.rate ?? 0.85
+  const durationMinutes = parseInt(duration) || 30
+  const estimatedEarnings = (perMinuteRate * durationMinutes).toFixed(2)
+
+  // 🟠 Prominent domain style
+  const domainStyle = getDomainStyle(category)
 
   return (
     <div className={`grid gap-x-4 p-4 rounded-xl border-2 items-start transition-all ${
@@ -45,9 +161,16 @@ function RequestCard({ req, onAccept, onDecline }) {
 
       {/* Title row */}
       <div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[15px] font-semibold text-lb-ink">{fromLang} → {toLang}</span>
-          <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#EAF3DE] text-[#3B6D11] uppercase tracking-wide">New</span>
+          {/* 🟡 Client indicator badge */}
+          <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${
+            isReturning
+              ? 'bg-[#EEEDFE] text-[#534AB7]'
+              : 'bg-[#EAF3DE] text-[#3B6D11]'
+          }`}>
+            {isReturning ? 'Returning' : 'New'}
+          </span>
         </div>
         <div className="flex flex-wrap items-center gap-2 mt-1.5">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border border-lb-border bg-lb-surface text-lb-muted">
@@ -58,8 +181,23 @@ function RequestCard({ req, onAccept, onDecline }) {
             )}
             {isVideo ? 'Video' : 'Audio'} · {duration}
           </span>
-          <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#EEEDFE] text-[#534AB7]">{category}</span>
-          <span className="text-[11px] text-lb-subtle">{client}</span>
+          {/* 🟠 PROMINENT domain badge — larger, colored by domain */}
+          <span
+            className="inline-flex text-[11px] font-semibold px-2.5 py-1 rounded-full border"
+            style={{
+              backgroundColor: domainStyle.bg,
+              color: domainStyle.text,
+              borderColor: domainStyle.border,
+            }}
+          >
+            {category}
+          </span>
+          <span className="text-[11px] text-lb-subtle font-medium">{client}</span>
+        </div>
+        {/* 🔴 Estimated earnings row */}
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="text-[11px] text-lb-muted">${perMinuteRate.toFixed(2)}/min</span>
+          <span className="text-[11px] text-[#534AB7] font-medium">≈ ${estimatedEarnings} est.</span>
         </div>
       </div>
 

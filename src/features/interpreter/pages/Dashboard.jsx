@@ -18,12 +18,32 @@ const MOCK_STATS = {
   sessionsTrend: '+2',
   hoursToday: '3h 20m',
   hoursTrend: '+45m',
+  // 🟠 Acceptance rate (new)
+  acceptanceRate: '92%',
+  acceptanceTrend: '+3%',
+  // 🟡 Certification hours (new)
+  certHours: '47h 20m',
+  certTarget: '60h',
+}
+
+// 🔴 Status constants for 3-state toggle
+const STATUS = {
+  ONLINE:  'online',
+  BREAK:   'break',
+  OFFLINE: 'offline',
+}
+
+const STATUS_META = {
+  [STATUS.ONLINE]:  { label: 'Online',  color: '#1D9E75', bg: '#E1F5EE', text: '#0F6E56', socket: 'register' },
+  [STATUS.BREAK]:   { label: 'Break',   color: '#BA7517', bg: '#FAEEDA', text: '#854F0B', socket: 'go-on-break' },
+  [STATUS.OFFLINE]: { label: 'Offline', color: '#9CA3AF', bg: '#F3F4F6', text: '#4B5563', socket: 'go-offline' },
 }
 
 export default function InterpreterDashboard() {
   const [isLoading, setIsLoading]                     = useState(true)
-  const [isOnline, setIsOnline]                       = useState(true)
-  const [hasIncomingRequests, setHasIncomingRequests] = useState(false)
+  // 🔴 3-state availability instead of boolean
+  const [availability, setAvailability]                 = useState(STATUS.ONLINE)
+  const [hasIncomingRequests, setHasIncomingRequests]   = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600)
@@ -48,24 +68,30 @@ export default function InterpreterDashboard() {
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
-    if (isOnline) {
+    const meta = STATUS_META[availability]
+    if (meta.socket === 'register') {
       socket.emit('register', { role: 'interpreter' })
     } else {
-      socket.emit('go-offline')
+      socket.emit(meta.socket)
     }
-  }, [isOnline])
+  }, [availability])
 
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
     const onReconnect = () => {
-      if (isOnline) socket.emit('register', { role: 'interpreter' })
+      const meta = STATUS_META[availability]
+      if (meta.socket === 'register') {
+        socket.emit('register', { role: 'interpreter' })
+      }
     }
     socket.on('connect', onReconnect)
     return () => socket.off('connect', onReconnect)
-  }, [isOnline])
+  }, [availability])
 
   if (isLoading) return <DashboardSkeleton />
+
+  const currentMeta = STATUS_META[availability]
 
   return (
     <div className="space-y-4 relative">
@@ -76,15 +102,42 @@ export default function InterpreterDashboard() {
           <p className="text-xs text-lb-muted">Welcome back, Maria</p>
           <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Interpreter workspace</h1>
         </div>
-        <button
-          onClick={() => setIsOnline(o => !o)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            isOnline ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-lb-surface text-lb-muted border border-lb-border'
-          }`}
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-[#1D9E75] animate-pulse' : 'bg-lb-muted'}`} />
-          {isOnline ? 'Online' : 'Offline'}
-        </button>
+
+        {/* 🔴 PROMINENT 3-state toggle — large segmented control */}
+        <div className="flex flex-col items-end gap-1.5">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-lb-surface border border-lb-border shadow-sm">
+            {Object.values(STATUS).map((statusKey) => {
+              const meta = STATUS_META[statusKey]
+              const isActive = availability === statusKey
+              return (
+                <button
+                  key={statusKey}
+                  onClick={() => setAvailability(statusKey)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all ${
+                    isActive
+                      ? 'shadow-sm'
+                      : 'text-lb-muted hover:text-lb-ink hover:bg-white/50'
+                  }`}
+                  style={isActive ? {
+                    backgroundColor: meta.bg,
+                    color: meta.text,
+                  } : {}}
+                >
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${isActive ? 'animate-pulse' : ''}`}
+                    style={{ backgroundColor: meta.color }}
+                  />
+                  {meta.label}
+                </button>
+              )
+            })}
+          </div>
+          <p className="text-[10px] text-lb-subtle">
+            {availability === STATUS.ONLINE && 'You are visible to clients and will receive calls'}
+            {availability === STATUS.BREAK && 'You are on break — no calls, metrics preserved'}
+            {availability === STATUS.OFFLINE && 'You are hidden from clients'}
+          </p>
+        </div>
       </div>
 
       {/* ── INCOMING REQUEST HIGHLIGHT ── */}
@@ -116,7 +169,8 @@ export default function InterpreterDashboard() {
           </div>
           <div className="space-y-4">
             <TodaysSchedule />
-            <RatingCard />
+            {/* 🟡 Rating with trend */}
+            <RatingCard rating="4.8" previousRating="4.6" reviewCount={128} />
             <WalletSummary />
             <RecentReviews />
           </div>

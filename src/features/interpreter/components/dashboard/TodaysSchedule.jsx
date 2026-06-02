@@ -1,19 +1,19 @@
 // TodaysSchedule.jsx — enriched with domain, client organization, confirmation status
-// FIXES: Reviewer "Problem 3" — Next Session banner missing call type
+// Uses WHITELIST languages: Pashto Eastern, Pashto Western, Punjabi Gurmukhi, Punjabi Shahmukhi, English (US), English (Canada), English (UK)
 
 const MOCK_SCHEDULE = [
   {
-    id: 1, time: '11:00 AM', fromLang: 'English', toLang: 'Arabic',
+    id: 1, time: '11:00 AM', fromLang: 'English (US)', toLang: 'Pashto Eastern',
     type: 'video', duration: '60 min', initials: 'SL', price: '$24.00', soon: true,
     domain: 'Medical', clientOrg: 'City General Hospital', status: 'Confirmed',
   },
   {
-    id: 2, time: '02:30 PM', fromLang: 'Spanish', toLang: 'English',
+    id: 2, time: '02:30 PM', fromLang: 'Punjabi Gurmukhi', toLang: 'English (Canada)',
     type: 'audio', duration: '30 min', initials: 'MG', price: '$12.00', soon: false,
     domain: 'Legal', clientOrg: 'Johnson & Associates Law', status: 'Confirmed',
   },
   {
-    id: 3, time: '04:00 PM', fromLang: 'Urdu', toLang: 'English',
+    id: 3, time: '04:00 PM', fromLang: 'Pashto Western', toLang: 'English (UK)',
     type: 'audio', duration: '15 min', initials: 'AK', price: '$6.00', soon: false,
     domain: 'Insurance', clientOrg: 'State Farm Insurance', status: 'Pending',
   },
@@ -59,12 +59,11 @@ function TypeIcon({ type }) {
   )
 }
 
-// 🔴 Next Session Banner with domain
 function NextSessionBanner({ session }) {
   const s = session || {
     domain: 'Medical',
-    fromLang: 'English',
-    toLang: 'Arabic',
+    fromLang: 'English (US)',
+    toLang: 'Pashto Eastern',
     type: 'video',
     duration: '60 min',
     price: '$24.00',
@@ -97,7 +96,6 @@ function NextSessionBanner({ session }) {
 }
 
 export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
-  // Find next session for banner
   const nextSession = schedule.find(s => s.soon) || schedule[0]
 
   return (
@@ -119,10 +117,8 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
                 s.soon ? 'border-[#1D9E75]' : 'border-[#7F77DD]'
               }`}
             >
-              {/* Top row: Time + Domain + Status + Price */}
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-semibold text-lb-ink w-[52px] shrink-0 tabular-nums">{s.time}</span>
-
                 <span
                   className="text-[10px] font-semibold px-1.5 py-0.5 rounded border"
                   style={{
@@ -133,7 +129,6 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
                 >
                   {s.domain}
                 </span>
-
                 <span
                   className="text-[10px] font-medium px-1.5 py-0.5 rounded"
                   style={{
@@ -143,18 +138,15 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
                 >
                   {s.status}
                 </span>
-
                 <span className="text-[12px] font-medium text-lb-ink ml-auto shrink-0">{s.price}</span>
               </div>
 
-              {/* Middle row: Language pair */}
               <div className="flex items-center gap-1.5 ml-[52px]">
                 <span className="text-[13px] font-medium text-lb-ink">{s.fromLang} → {s.toLang}</span>
                 <TypeIcon type={s.type} />
                 <span className="text-[10px] text-lb-muted">{s.type === 'video' ? 'Video' : 'Audio'} · {s.duration}</span>
               </div>
 
-              {/* Bottom row: Client organization + initials */}
               <div className="flex items-center gap-1.5 ml-[52px]">
                 <span className="text-[10px] text-lb-subtle font-medium">{s.clientOrg}</span>
                 <span className="text-[10px] text-lb-muted">· {s.initials}</span>
@@ -164,7 +156,6 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
         })}
       </div>
 
-      {/* 🔴 Next session banner with domain */}
       <NextSessionBanner session={nextSession ? {
         domain: nextSession.domain,
         fromLang: nextSession.fromLang,

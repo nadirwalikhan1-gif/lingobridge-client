@@ -1,114 +1,118 @@
-// IncomingRequests.jsx — live socket data, countdown timers, urgent border state
-// FIXES: 🔴 Client rating + sector + recording + urgency + "General" subcategories
+// IncomingRequests.jsx — STRICT WHITELIST: Only client dashboard languages
+// Your SaaS supports: Pashto Eastern, Pashto Western, Punjabi Gurmukhi, Punjabi Shahmukhi, English (US), English (Canada), English (UK)
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSocket } from '../../../../lib/socket'
 
-// ─── Locale → Language mapping ───
-const LOCALE_MAP = {
-  'en': 'English', 'en-us': 'English', 'en-gb': 'English', 'en-ca': 'English', 'en-au': 'English',
-  'es': 'Spanish', 'es-mx': 'Spanish', 'es-es': 'Spanish', 'es-ar': 'Spanish',
-  'fr': 'French', 'fr-ca': 'French', 'fr-fr': 'French',
-  'de': 'German', 'de-de': 'German',
-  'it': 'Italian',
-  'pt': 'Portuguese', 'pt-br': 'Portuguese', 'pt-pt': 'Portuguese',
-  'ru': 'Russian',
-  'zh': 'Chinese', 'zh-cn': 'Chinese', 'zh-tw': 'Chinese', 'zh-hk': 'Chinese',
-  'ja': 'Japanese',
-  'ko': 'Korean',
-  'ar': 'Arabic',
-  'hi': 'Hindi',
-  'ur': 'Urdu',
-  'fa': 'Farsi', 'fa-ir': 'Farsi',
-  'ps': 'Pashto',
-  'tr': 'Turkish',
-  'pl': 'Polish',
-  'uk': 'Ukrainian',
-  'vi': 'Vietnamese',
-  'th': 'Thai',
-  'tl': 'Tagalog', 'fil': 'Tagalog',
-  'nl': 'Dutch',
-  'sv': 'Swedish',
-  'el': 'Greek',
-  'he': 'Hebrew', 'iw': 'Hebrew',
-  'id': 'Indonesian',
-  'ms': 'Malay',
-  'bn': 'Bengali',
-  'pa': 'Punjabi',
-  'ta': 'Tamil',
-  'te': 'Telugu',
-  'mr': 'Marathi',
-  'gu': 'Gujarati',
-  'kn': 'Kannada',
-  'ml': 'Malayalam',
-  'si': 'Sinhala',
-  'ne': 'Nepali',
-  'my': 'Burmese',
-  'km': 'Khmer',
-  'lo': 'Lao',
-  'sw': 'Swahili',
-  'am': 'Amharic',
-  'ha': 'Hausa',
-  'yo': 'Yoruba',
-  'ig': 'Igbo',
-  'zu': 'Zulu',
-  'af': 'Afrikaans',
-  'sq': 'Albanian',
-  'hy': 'Armenian',
-  'az': 'Azerbaijani',
-  'eu': 'Basque',
-  'be': 'Belarusian',
-  'bs': 'Bosnian',
-  'bg': 'Bulgarian',
-  'ca': 'Catalan',
-  'hr': 'Croatian',
-  'cs': 'Czech',
-  'da': 'Danish',
-  'et': 'Estonian',
-  'fi': 'Finnish',
-  'gl': 'Galician',
-  'ka': 'Georgian',
-  'hu': 'Hungarian',
-  'is': 'Icelandic',
-  'ga': 'Irish',
-  'lv': 'Latvian',
-  'lt': 'Lithuanian',
-  'mk': 'Macedonian',
-  'mt': 'Maltese',
-  'mn': 'Mongolian',
-  'no': 'Norwegian',
-  'ro': 'Romanian',
-  'sr': 'Serbian',
-  'sk': 'Slovak',
-  'sl': 'Slovenian',
-  'cy': 'Welsh',
-  'xh': 'Xhosa',
+// ─── WHITELIST: Only languages available on client dashboard ───
+const CLIENT_LANGUAGES = {
+  // Pashto variants
+  'ps':         'Pashto Eastern',
+  'ps-et':      'Pashto Eastern',
+  'ps-east':    'Pashto Eastern',
+  'ps-eastern': 'Pashto Eastern',
+  'ps-wt':      'Pashto Western',
+  'ps-west':    'Pashto Western',
+  'ps-western': 'Pashto Western',
+
+  // Punjabi variants
+  'pa':         'Punjabi Gurmukhi',
+  'pa-guru':    'Punjabi Gurmukhi',
+  'pa-gurmukhi':'Punjabi Gurmukhi',
+  'pa-shah':    'Punjabi Shahmukhi',
+  'pa-shahmukhi':'Punjabi Shahmukhi',
+  'pa-arab':    'Punjabi Shahmukhi',
+
+  // English variants
+  'en':         'English (US)',
+  'en-us':      'English (US)',
+  'en-usa':     'English (US)',
+  'en-american':'English (US)',
+  'en-ca':      'English (Canada)',
+  'en-canada':  'English (Canada)',
+  'en-can':     'English (Canada)',
+  'en-gb':      'English (UK)',
+  'en-uk':      'English (UK)',
+  'en-british': 'English (UK)',
+  'en-great':   'English (UK)',
 }
 
+// 🔴 STRICT: Only resolve whitelisted languages. Everything else is flagged.
 function resolveLanguage(raw) {
   if (!raw) return null
   const key = String(raw).toLowerCase().trim()
-  return LOCALE_MAP[key] || (key.charAt(0).toUpperCase() + key.slice(1))
+
+  // Exact match
+  if (CLIENT_LANGUAGES[key]) return CLIENT_LANGUAGES[key]
+
+  // Partial match for safety
+  const cleanKey = key.replace(/[^a-z-]/g, '')
+  if (CLIENT_LANGUAGES[cleanKey]) return CLIENT_LANGUAGES[cleanKey]
+
+  // Not in whitelist — return null so caller can flag it
+  return null
 }
 
-// 🔴 CRITICAL: Resolve language pair, handle duplicate names gracefully
-function resolveLanguagePair(req) {
-  const rawFrom = req.fromLang ?? req.language ?? req.sourceLanguage ?? null
-  const rawTo   = req.toLang   ?? req.targetLanguage ?? null
-  const from = resolveLanguage(rawFrom)
-  const to   = resolveLanguage(rawTo)
-  if (from && to && from === to && rawFrom && rawTo) {
-    const fromCode = String(rawFrom).toLowerCase()
-    const toCode   = String(rawTo).toLowerCase()
-    if (fromCode !== toCode) {
-      return { from: `${from} (${rawFrom})`, to: `${to} (${rawTo})`, isDuplicate: true, rawFrom, rawTo }
+// 🔴 BULLETPROOF: Format pair using ONLY whitelisted languages
+function formatLanguagePair(req) {
+  const rawFrom = req.fromLang ?? req.language ?? req.sourceLanguage ?? req.source ?? req.langFrom ?? null
+  const rawTo   = req.toLang   ?? req.targetLanguage ?? req.target ?? req.langTo ?? null
+
+  const fromResolved = resolveLanguage(rawFrom)
+  const toResolved   = resolveLanguage(rawTo)
+
+  // Both resolved and different → perfect
+  if (fromResolved && toResolved && fromResolved !== toResolved) {
+    return { from: fromResolved, to: toResolved, warning: false }
+  }
+
+  // Both resolved but same name (e.g., both English variants) → show raw codes
+  if (fromResolved && toResolved && fromResolved === toResolved && rawFrom && rawTo) {
+    const rf = String(rawFrom).toLowerCase()
+    const rt = String(rawTo).toLowerCase()
+    if (rf !== rt) {
+      return { 
+        from: `${fromResolved} (${rawFrom})`, 
+        to: `${toResolved} (${rawTo})`, 
+        warning: true 
+      }
     }
   }
-  return { from: from ?? '—', to: to ?? 'English', isDuplicate: false, rawFrom, rawTo }
+
+  // One resolved, one not in whitelist → flag the unknown one
+  if (fromResolved && !toResolved) {
+    return { 
+      from: fromResolved, 
+      to: rawTo ? `${String(rawTo)} ⚠️` : 'Unknown ⚠️', 
+      warning: true 
+    }
+  }
+  if (!fromResolved && toResolved) {
+    return { 
+      from: rawFrom ? `${String(rawFrom)} ⚠️` : 'Unknown ⚠️', 
+      to: toResolved, 
+      warning: true 
+    }
+  }
+
+  // Neither resolved → both flagged
+  if (rawFrom && rawTo) {
+    return { 
+      from: `${String(rawFrom)} ⚠️`, 
+      to: `${String(rawTo)} ⚠️`, 
+      warning: true 
+    }
+  }
+
+  return { 
+    from: rawFrom ? `${String(rawFrom)} ⚠️` : 'Unknown ⚠️', 
+    to: rawTo ? `${String(rawTo)} ⚠️` : 'Unknown ⚠️', 
+    warning: true 
+  }
 }
 
-// ─── Domain/Sector colors ───
+// ─── Sector colors ───
 const SECTOR_COLORS = {
   'Medical':        { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
   'Legal':          { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
@@ -128,12 +132,12 @@ function getSectorStyle(sector) {
   return SECTOR_COLORS[sector] || SECTOR_COLORS['General']
 }
 
-// 🔴 Replace "General" with subcategories
 function resolveSector(raw) {
   const map = {
     'customer service': 'Customer Service',
     'welfare': 'Welfare',
     'social': 'Social Services',
+    'social services': 'Social Services',
     'healthcare admin': 'Healthcare',
     'healthcare': 'Healthcare',
     'medical': 'Medical',
@@ -154,12 +158,12 @@ function fmt(s) {
   return `${m}:${ss < 10 ? '0' : ''}${ss}`
 }
 
-function StarRating({ rating = 0, size = 12 }) {
+function StarRating({ rating = 0 }) {
   const filled = Math.round(parseFloat(rating)) || 0
   return (
     <span className="flex items-center gap-0.5">
       {[...Array(5)].map((_, i) => (
-        <svg key={i} className={`w-${size === 10 ? '2.5' : '3'} h-${size === 10 ? '2.5' : '3'}`} fill={i < filled ? '#BA7517' : '#E5E7EB'} viewBox="0 0 20 20">
+        <svg key={i} className="w-2.5 h-2.5" fill={i < filled ? '#BA7517' : '#E5E7EB'} viewBox="0 0 20 20">
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
         </svg>
       ))}
@@ -182,17 +186,21 @@ function RequestCard({ req, onAccept, onDecline }) {
   const urgent = secs < 120
   const isVideo = req.sessionType === 'video' || req.type === 'video'
 
-  const langPair = resolveLanguagePair(req)
-  const sector = resolveSector(req.category ?? req.purpose ?? req.domain ?? req.sector ?? 'General')
+  // 🔴 WHITELIST: Format language pair using ONLY client languages
+  const pair = formatLanguagePair(req)
+
+  const sector = resolveSector(req.category ?? req.purpose ?? req.domain ?? req.sector)
   const duration = req.duration ?? '—'
   const price    = req.price    ?? '—'
-  const client   = req.client   ?? req.clientName ?? req.clientId ?? 'Client'
-  const avatar   = req.avatar   ?? (client?.[0] ?? '?').toUpperCase()
+
+  const clientName = req.clientName ?? req.client ?? req.clientId ?? req.requesterName ?? req.requester ?? 'Client'
+  const clientOrg  = req.clientOrg ?? req.organization ?? req.clientOrganization ?? req.company ?? null
+  const avatar     = req.avatar ?? (clientName?.[0] ?? 'C').toUpperCase()
 
   const isReturning = req.isReturningClient === true || req.clientHistory?.sessions > 0
   const clientRating = req.clientRating ?? req.client?.rating ?? null
   const isRecording = req.isRecording ?? req.recording ?? false
-  const isUrgent    = req.isUrgent ?? req.urgency === 'emergency' ?? false
+  const isUrgent    = req.isUrgent === true || req.urgency === 'emergency' || req.urgency === 'urgent'
   const expectedDuration = req.expectedDuration ?? req.duration ?? '30 min'
 
   const perMinuteRate = req.perMinuteRate ?? req.rate ?? 0.85
@@ -213,14 +221,15 @@ function RequestCard({ req, onAccept, onDecline }) {
         {avatar}
       </div>
 
-      {/* Title row */}
+      {/* Content */}
       <div>
+        {/* Language pair + badges */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className={`text-[15px] font-semibold leading-tight ${langPair.isDuplicate ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
-            {langPair.from} → {langPair.to}
+          <span className={`text-[15px] font-semibold leading-tight ${pair.warning ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
+            {pair.from} → {pair.to}
           </span>
-          {langPair.isDuplicate && (
-            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">Check pair</span>
+          {pair.warning && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">Unsupported</span>
           )}
           <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${
             isReturning ? 'bg-[#EEEDFE] text-[#534AB7]' : 'bg-[#EAF3DE] text-[#3B6D11]'
@@ -237,6 +246,7 @@ function RequestCard({ req, onAccept, onDecline }) {
           )}
         </div>
 
+        {/* Type + Sector + Recording */}
         <div className="flex flex-wrap items-center gap-2 mt-1.5">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border border-lb-border bg-lb-surface text-lb-muted">
             {isVideo ? (
@@ -246,7 +256,6 @@ function RequestCard({ req, onAccept, onDecline }) {
             )}
             {isVideo ? 'Video' : 'Audio'} · {expectedDuration}
           </span>
-          {/* 🟠 PROMINENT sector badge */}
           <span
             className="inline-flex text-[11px] font-semibold px-2.5 py-1 rounded-full border"
             style={{
@@ -265,28 +274,28 @@ function RequestCard({ req, onAccept, onDecline }) {
           )}
         </div>
 
-        {/* 🔴 Client context row: name + rating + org */}
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <span className="text-[11px] text-lb-subtle font-medium">{client}</span>
+        {/* Client context */}
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <span className="text-[12px] font-semibold text-lb-ink">{clientName}</span>
           {clientRating && (
             <div className="flex items-center gap-1">
-              <StarRating rating={clientRating} size={10} />
-              <span className="text-[10px] text-lb-subtle font-medium">{clientRating}</span>
+              <StarRating rating={clientRating} />
+              <span className="text-[10px] text-lb-subtle font-semibold">{clientRating}</span>
             </div>
           )}
-          {req.clientOrg && (
-            <span className="text-[10px] text-lb-muted">· {req.clientOrg}</span>
+          {clientOrg && (
+            <span className="text-[10px] text-lb-muted">· {clientOrg}</span>
           )}
         </div>
 
-        {/* Earnings */}
+        {/* Rate + Estimate */}
         <div className="flex items-center gap-2 mt-1.5">
           <span className="text-[11px] text-lb-muted">${perMinuteRate.toFixed(2)}/min</span>
-          <span className="text-[11px] text-[#534AB7] font-medium">≈ ${estimatedEarnings} est.</span>
+          <span className="text-[11px] text-[#534AB7] font-semibold">≈ ${estimatedEarnings} est.</span>
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Actions + Timer */}
       <div className="row-span-2 flex flex-col items-end gap-2 justify-between">
         <div className="flex items-center gap-2">
           <span className="text-[15px] font-semibold text-[#26215C]">{price}</span>
@@ -322,7 +331,7 @@ function NextSessionBanner() {
       <div className="w-1.5 h-8 rounded-full bg-[#7F77DD] shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-[11px] font-medium text-lb-ink">Next session in 47 min</p>
-        <p className="text-[10px] text-lb-muted mt-0.5">English → Arabic · Video · 60 min</p>
+        <p className="text-[10px] text-lb-muted mt-0.5">English (US) → Pashto Eastern · Video · 60 min</p>
       </div>
       <span className="text-[11px] font-medium text-[#534AB7]">$24.00</span>
     </div>

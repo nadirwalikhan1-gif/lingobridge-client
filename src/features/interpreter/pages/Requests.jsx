@@ -7,14 +7,18 @@ const requests = [
 ]
 
 const DOMAIN_COLORS = {
-  'Medical':   { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
-  'Legal':     { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
-  'Insurance': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
-  'Social Services': { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
-  'Government':{ bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
-  'Business':  { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
-  'Technical': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
-  'General':   { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'Medical':        { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
+  'Legal':          { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
+  'Insurance':      { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'Social Services':{ bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Government':     { bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
+  'Business':       { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Technical':      { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'Healthcare':     { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
+  'Customer Service':{ bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'Welfare':        { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'Personal':       { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'General':        { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
 }
 
 function StarRating({ rating = 0 }) {

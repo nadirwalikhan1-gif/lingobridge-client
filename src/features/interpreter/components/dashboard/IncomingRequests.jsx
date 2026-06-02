@@ -1,5 +1,5 @@
 // IncomingRequests.jsx — live socket data, countdown timers, urgent border state
-// FIXES: 🔴 Locale duplicate bug, 🔴 Recording/urgency/client rating on accept card
+// FIXES: 🔴 Client rating + sector + recording + urgency + "General" subcategories
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -92,46 +92,61 @@ function resolveLanguage(raw) {
   return LOCALE_MAP[key] || (key.charAt(0).toUpperCase() + key.slice(1))
 }
 
-// 🔴 CRITICAL FIX: Resolve language pair, handling duplicate names gracefully
+// 🔴 CRITICAL: Resolve language pair, handle duplicate names gracefully
 function resolveLanguagePair(req) {
   const rawFrom = req.fromLang ?? req.language ?? req.sourceLanguage ?? null
   const rawTo   = req.toLang   ?? req.targetLanguage ?? null
-
   const from = resolveLanguage(rawFrom)
   const to   = resolveLanguage(rawTo)
-
-  // If both resolve to the same name (e.g., "English → English"), show raw codes
   if (from && to && from === to && rawFrom && rawTo) {
     const fromCode = String(rawFrom).toLowerCase()
     const toCode   = String(rawTo).toLowerCase()
     if (fromCode !== toCode) {
-      return {
-        from: `${from} (${rawFrom})`,
-        to:   `${to} (${rawTo})`,
-        isDuplicate: true,
-        rawFrom, rawTo,
-      }
+      return { from: `${from} (${rawFrom})`, to: `${to} (${rawTo})`, isDuplicate: true, rawFrom, rawTo }
     }
   }
-
   return { from: from ?? '—', to: to ?? 'English', isDuplicate: false, rawFrom, rawTo }
 }
 
-// ─── Domain colors ───
-const DOMAIN_COLORS = {
-  'Medical':   { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
-  'Legal':     { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
-  'Insurance': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
-  'Social Services': { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
-  'Government':{ bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
-  'Business':  { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
-  'Technical': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
-  'General':   { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+// ─── Domain/Sector colors ───
+const SECTOR_COLORS = {
+  'Medical':        { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
+  'Legal':          { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
+  'Insurance':      { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'Social Services':{ bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Government':     { bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
+  'Business':       { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Technical':      { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'Healthcare':     { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
+  'Customer Service':{ bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'Welfare':        { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'Personal':       { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'General':        { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
 }
 
-function getDomainStyle(category) {
-  const c = category || 'General'
-  return DOMAIN_COLORS[c] || DOMAIN_COLORS['General']
+function getSectorStyle(sector) {
+  return SECTOR_COLORS[sector] || SECTOR_COLORS['General']
+}
+
+// 🔴 Replace "General" with subcategories
+function resolveSector(raw) {
+  const map = {
+    'customer service': 'Customer Service',
+    'welfare': 'Welfare',
+    'social': 'Social Services',
+    'healthcare admin': 'Healthcare',
+    'healthcare': 'Healthcare',
+    'medical': 'Medical',
+    'legal': 'Legal',
+    'insurance': 'Insurance',
+    'business': 'Business',
+    'government': 'Government',
+    'technical': 'Technical',
+    'personal': 'Personal',
+  }
+  if (!raw) return 'General'
+  const key = String(raw).toLowerCase().trim()
+  return map[key] || (key.charAt(0).toUpperCase() + key.slice(1))
 }
 
 function fmt(s) {
@@ -167,30 +182,24 @@ function RequestCard({ req, onAccept, onDecline }) {
   const urgent = secs < 120
   const isVideo = req.sessionType === 'video' || req.type === 'video'
 
-  // 🔴 CRITICAL FIX: Locale resolution with duplicate detection
   const langPair = resolveLanguagePair(req)
-
-  const category = req.category ?? req.purpose ?? req.domain ?? 'General'
+  const sector = resolveSector(req.category ?? req.purpose ?? req.domain ?? req.sector ?? 'General')
   const duration = req.duration ?? '—'
   const price    = req.price    ?? '—'
   const client   = req.client   ?? req.clientName ?? req.clientId ?? 'Client'
   const avatar   = req.avatar   ?? (client?.[0] ?? '?').toUpperCase()
 
-  // 🟡 Client indicators
   const isReturning = req.isReturningClient === true || req.clientHistory?.sessions > 0
   const clientRating = req.clientRating ?? req.client?.rating ?? null
-
-  // 🔴 New metadata
   const isRecording = req.isRecording ?? req.recording ?? false
   const isUrgent    = req.isUrgent ?? req.urgency === 'emergency' ?? false
   const expectedDuration = req.expectedDuration ?? req.duration ?? '30 min'
 
-  // Estimated earnings
   const perMinuteRate = req.perMinuteRate ?? req.rate ?? 0.85
   const durationMinutes = parseInt(expectedDuration) || 30
   const estimatedEarnings = (perMinuteRate * durationMinutes).toFixed(2)
 
-  const domainStyle = getDomainStyle(category)
+  const sectorStyle = getSectorStyle(sector)
 
   return (
     <div className={`grid gap-x-4 p-4 rounded-xl border-2 items-start transition-all ${
@@ -207,24 +216,17 @@ function RequestCard({ req, onAccept, onDecline }) {
       {/* Title row */}
       <div>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* 🔴 Language pair — amber warning if duplicate detected */}
           <span className={`text-[15px] font-semibold leading-tight ${langPair.isDuplicate ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
             {langPair.from} → {langPair.to}
           </span>
           {langPair.isDuplicate && (
-            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">
-              Check pair
-            </span>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">Check pair</span>
           )}
-          {/* 🟡 New/Returning */}
           <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${
-            isReturning
-              ? 'bg-[#EEEDFE] text-[#534AB7]'
-              : 'bg-[#EAF3DE] text-[#3B6D11]'
+            isReturning ? 'bg-[#EEEDFE] text-[#534AB7]' : 'bg-[#EAF3DE] text-[#3B6D11]'
           }`}>
             {isReturning ? 'Returning' : 'New'}
           </span>
-          {/* 🔴 Urgency flag */}
           {isUrgent && (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FCEBEB] text-[#A32D2D] animate-pulse">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -244,18 +246,17 @@ function RequestCard({ req, onAccept, onDecline }) {
             )}
             {isVideo ? 'Video' : 'Audio'} · {expectedDuration}
           </span>
-          {/* 🟠 PROMINENT domain badge */}
+          {/* 🟠 PROMINENT sector badge */}
           <span
             className="inline-flex text-[11px] font-semibold px-2.5 py-1 rounded-full border"
             style={{
-              backgroundColor: domainStyle.bg,
-              color: domainStyle.text,
-              borderColor: domainStyle.border,
+              backgroundColor: sectorStyle.bg,
+              color: sectorStyle.text,
+              borderColor: sectorStyle.border,
             }}
           >
-            {category}
+            {sector}
           </span>
-          {/* 🔴 Recording indicator */}
           {isRecording && (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FCEBEB] text-[#A32D2D]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#E24B4A] animate-pulse" />
@@ -264,18 +265,21 @@ function RequestCard({ req, onAccept, onDecline }) {
           )}
         </div>
 
-        {/* Client row with rating */}
-        <div className="flex items-center gap-2 mt-1.5">
+        {/* 🔴 Client context row: name + rating + org */}
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
           <span className="text-[11px] text-lb-subtle font-medium">{client}</span>
           {clientRating && (
             <div className="flex items-center gap-1">
               <StarRating rating={clientRating} size={10} />
-              <span className="text-[10px] text-lb-subtle">({clientRating})</span>
+              <span className="text-[10px] text-lb-subtle font-medium">{clientRating}</span>
             </div>
+          )}
+          {req.clientOrg && (
+            <span className="text-[10px] text-lb-muted">· {req.clientOrg}</span>
           )}
         </div>
 
-        {/* Estimated earnings */}
+        {/* Earnings */}
         <div className="flex items-center gap-2 mt-1.5">
           <span className="text-[11px] text-lb-muted">${perMinuteRate.toFixed(2)}/min</span>
           <span className="text-[11px] text-[#534AB7] font-medium">≈ ${estimatedEarnings} est.</span>

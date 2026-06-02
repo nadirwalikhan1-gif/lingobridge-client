@@ -1,5 +1,7 @@
-// CommandCenter.jsx — real-time operational KPIs for interpreters
-// FIXES: Reviewer "Problem 1" — Call queue info at top. "Problem 4" — Performance dashboard.
+// CommandCenter.jsx — real-time operational KPIs + performance trends
+// FIXES: 🔴 Clickable waiting alert, 🟠 Performance trend panel in right sidebar
+
+import { useState } from 'react'
 
 export default function CommandCenter({
   status = 'online',
@@ -17,6 +19,7 @@ export default function CommandCenter({
   hoursToday = '3h 20m',
   hoursTrend = '+45m',
   callsWaiting = 0,
+  onWaitingClick,
 }) {
   const statusMeta = {
     online:  { dot: '#1D9E75', label: 'Online',  sub: 'Receiving calls' },
@@ -52,15 +55,10 @@ export default function CommandCenter({
             <p className="text-[22px] font-semibold text-lb-ink leading-none">{callsReceived}</p>
             <span className="text-[11px] text-lb-subtle">received</span>
           </div>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span className="text-[11px] text-[#0F6E56] font-medium">{callsAccepted} accepted</span>
             <span className="text-[11px] text-lb-subtle">·</span>
             <span className="text-[11px] text-[#A32D2D] font-medium">{callsMissed} missed</span>
-            {callsWaiting > 0 && (
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D] animate-pulse ml-1">
-                {callsWaiting} waiting
-              </span>
-            )}
           </div>
         </div>
 
@@ -99,7 +97,7 @@ export default function CommandCenter({
         </div>
       </div>
 
-      {/* Bottom row: Earnings + Sessions + Hours + Utilization */}
+      {/* Bottom row: Earnings + Sessions + Hours + 🔴 Clickable Waiting */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-lb-border border-t border-lb-border">
         <div className="bg-[#1a1635] p-4 flex flex-col justify-between">
           <span className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Today's earnings</span>
@@ -116,11 +114,84 @@ export default function CommandCenter({
           <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">{hoursToday}</p>
           {hoursTrend && <p className="text-[11px] text-[#0F6E56] mt-1">+{hoursTrend.replace('+','')} vs yesterday</p>}
         </div>
-        <div className="bg-white p-4 flex flex-col justify-between">
-          <span className="text-[11px] font-semibold text-lb-muted uppercase tracking-widest">Utilization</span>
-          <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">68%</p>
-          <p className="text-[11px] text-lb-subtle mt-1">Time in calls / online</p>
-        </div>
+        {/* 🔴 Clickable waiting alert */}
+        <button
+          onClick={onWaitingClick}
+          disabled={callsWaiting === 0}
+          className={`p-4 flex flex-col justify-between text-left transition-colors ${
+            callsWaiting > 0
+              ? 'bg-[#FCEBEB] hover:bg-[#FAD5D5] cursor-pointer'
+              : 'bg-white cursor-default'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span className={`text-[11px] font-semibold uppercase tracking-widest ${callsWaiting > 0 ? 'text-[#A32D2D]' : 'text-lb-muted'}`}>
+              Waiting
+            </span>
+            {callsWaiting > 0 && (
+              <span className="w-2 h-2 rounded-full bg-[#E24B4A] animate-pulse" />
+            )}
+          </div>
+          <p className={`text-[24px] font-semibold leading-none mt-1 ${callsWaiting > 0 ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
+            {callsWaiting}
+          </p>
+          {callsWaiting > 0 ? (
+            <p className="text-[11px] text-[#A32D2D] mt-1 font-medium">Click to respond →</p>
+          ) : (
+            <p className="text-[11px] text-lb-subtle mt-1">No calls waiting</p>
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── PerformanceTrendPanel — right sidebar career metrics ───
+export function PerformanceTrendPanel({
+  acceptanceRate = '94%',
+  acceptanceTrend = '+3%',
+  avgResponseTime = '8s',
+  responseTrend = 'faster',
+  completedSessions = 89,
+  sessionsTrend = '+12',
+  onTimeRate = '97%',
+  onTimeTrend = '+2%',
+}) {
+  const rows = [
+    { label: 'Acceptance Rate',     value: acceptanceRate, trend: acceptanceTrend, isUp: true },
+    { label: 'Avg Response Time',   value: avgResponseTime,  trend: responseTrend,  isUp: true, isTime: true },
+    { label: 'Completed Sessions',  value: completedSessions,  trend: sessionsTrend,  isUp: true },
+    { label: 'On-Time Start Rate',  value: onTimeRate,       trend: onTimeTrend,    isUp: true },
+  ]
+
+  return (
+    <div className="lb-card">
+      <div className="flex items-center gap-2 mb-3">
+        <svg className="w-4 h-4 text-[#534AB7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+        </svg>
+        <h3 className="text-[13px] font-medium text-lb-ink">Your Performance</h3>
+      </div>
+      <p className="text-[10px] text-lb-subtle uppercase tracking-widest mb-3">This month</p>
+
+      <div className="space-y-3">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-center justify-between">
+            <span className="text-[12px] text-lb-muted">{r.label}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-semibold text-lb-ink">{r.value}</span>
+              <span className={`text-[10px] font-medium ${r.isUp ? 'text-[#0F6E56]' : 'text-[#A32D2D]'}`}>
+                {r.isTime ? '↑' : '↑'} {r.trend}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 pt-3 border-t border-lb-border">
+        <p className="text-[10px] text-lb-subtle text-center">
+          Trending up across all metrics
+        </p>
       </div>
     </div>
   )

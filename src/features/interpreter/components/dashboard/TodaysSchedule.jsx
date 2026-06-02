@@ -1,5 +1,5 @@
 // TodaysSchedule.jsx — enriched with domain, client organization, confirmation status
-// FIXES: Reviewer "Problem 5" — Schedule widget too weak
+// FIXES: Reviewer "Problem 3" — Next Session banner missing call type
 
 const MOCK_SCHEDULE = [
   {
@@ -22,20 +22,28 @@ const MOCK_SCHEDULE = [
 const TOTAL = '$42.00'
 
 const DOMAIN_COLORS = {
-  'Medical':   { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
-  'Legal':     { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
-  'Insurance': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
-  'Social Services': { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
-  'Government':{ bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
-  'Business':  { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
-  'Technical': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
-  'General':   { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'Medical':        { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
+  'Legal':          { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
+  'Insurance':      { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'Social Services':{ bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Government':     { bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
+  'Business':       { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Technical':      { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'Healthcare':     { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
+  'Customer Service':{ bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'Welfare':        { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'Personal':       { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+  'General':        { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
 }
 
 const STATUS_COLORS = {
   'Confirmed': { bg: '#EAF3DE', text: '#3B6D11' },
   'Pending':   { bg: '#FAEEDA', text: '#854F0B' },
   'Cancelled': { bg: '#FCEBEB', text: '#A32D2D' },
+}
+
+function getDomainStyle(domain) {
+  return DOMAIN_COLORS[domain] || DOMAIN_COLORS['General']
 }
 
 function TypeIcon({ type }) {
@@ -51,7 +59,47 @@ function TypeIcon({ type }) {
   )
 }
 
+// 🔴 Next Session Banner with domain
+function NextSessionBanner({ session }) {
+  const s = session || {
+    domain: 'Medical',
+    fromLang: 'English',
+    toLang: 'Arabic',
+    type: 'video',
+    duration: '60 min',
+    price: '$24.00',
+    minutesUntil: 47,
+  }
+  const domainStyle = getDomainStyle(s.domain)
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-lb-surface border border-lb-border mt-3">
+      <div className="w-1.5 h-8 rounded-full" style={{ backgroundColor: domainStyle.border }} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <p className="text-[11px] font-medium text-lb-ink">Next session in {s.minutesUntil} min</p>
+          <span
+            className="text-[9px] font-semibold px-1.5 py-0.5 rounded border"
+            style={{
+              backgroundColor: domainStyle.bg,
+              color: domainStyle.text,
+              borderColor: domainStyle.border,
+            }}
+          >
+            {s.domain}
+          </span>
+        </div>
+        <p className="text-[10px] text-lb-muted">{s.fromLang} → {s.toLang} · {s.type === 'video' ? 'Video' : 'Audio'} · {s.duration}</p>
+      </div>
+      <span className="text-[11px] font-medium text-[#534AB7]">{s.price}</span>
+    </div>
+  )
+}
+
 export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
+  // Find next session for banner
+  const nextSession = schedule.find(s => s.soon) || schedule[0]
+
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
@@ -61,7 +109,7 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
 
       <div className="space-y-2">
         {schedule.map((s) => {
-          const domainStyle = DOMAIN_COLORS[s.domain] || DOMAIN_COLORS['General']
+          const domainStyle = getDomainStyle(s.domain)
           const statusStyle = STATUS_COLORS[s.status] || STATUS_COLORS['Pending']
 
           return (
@@ -75,7 +123,6 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-semibold text-lb-ink w-[52px] shrink-0 tabular-nums">{s.time}</span>
 
-                {/* Domain badge */}
                 <span
                   className="text-[10px] font-semibold px-1.5 py-0.5 rounded border"
                   style={{
@@ -87,7 +134,6 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
                   {s.domain}
                 </span>
 
-                {/* Confirmation status */}
                 <span
                   className="text-[10px] font-medium px-1.5 py-0.5 rounded"
                   style={{
@@ -117,6 +163,17 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
           )
         })}
       </div>
+
+      {/* 🔴 Next session banner with domain */}
+      <NextSessionBanner session={nextSession ? {
+        domain: nextSession.domain,
+        fromLang: nextSession.fromLang,
+        toLang: nextSession.toLang,
+        type: nextSession.type,
+        duration: nextSession.duration,
+        price: nextSession.price,
+        minutesUntil: 47,
+      } : null} />
 
       <div className="flex justify-between items-baseline mt-3 pt-3 border-t border-lb-border">
         <span className="text-[11px] text-lb-muted">Scheduled income today</span>

@@ -1,12 +1,42 @@
-// TodaysSchedule.jsx — accent border-left on items instead of dot
+// TodaysSchedule.jsx — enriched with domain, client organization, confirmation status
+// FIXES: Reviewer "Problem 5" — Schedule widget too weak
 
 const MOCK_SCHEDULE = [
-  { id: 1, time: '11:00 AM', fromLang: 'English', toLang: 'Arabic',  type: 'video', duration: '60 min', initials: 'SL', price: '$24.00', soon: true  },
-  { id: 2, time: '02:30 PM', fromLang: 'Spanish', toLang: 'English', type: 'audio', duration: '30 min', initials: 'MG', price: '$12.00', soon: false },
-  { id: 3, time: '04:00 PM', fromLang: 'Urdu',    toLang: 'English', type: 'audio', duration: '15 min', initials: 'AK', price: '$6.00',  soon: false },
+  {
+    id: 1, time: '11:00 AM', fromLang: 'English', toLang: 'Arabic',
+    type: 'video', duration: '60 min', initials: 'SL', price: '$24.00', soon: true,
+    domain: 'Medical', clientOrg: 'City General Hospital', status: 'Confirmed',
+  },
+  {
+    id: 2, time: '02:30 PM', fromLang: 'Spanish', toLang: 'English',
+    type: 'audio', duration: '30 min', initials: 'MG', price: '$12.00', soon: false,
+    domain: 'Legal', clientOrg: 'Johnson & Associates Law', status: 'Confirmed',
+  },
+  {
+    id: 3, time: '04:00 PM', fromLang: 'Urdu', toLang: 'English',
+    type: 'audio', duration: '15 min', initials: 'AK', price: '$6.00', soon: false,
+    domain: 'Insurance', clientOrg: 'State Farm Insurance', status: 'Pending',
+  },
 ]
 
 const TOTAL = '$42.00'
+
+const DOMAIN_COLORS = {
+  'Medical':   { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
+  'Legal':     { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
+  'Insurance': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'Social Services': { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Government':{ bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
+  'Business':  { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Technical': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'General':   { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
+}
+
+const STATUS_COLORS = {
+  'Confirmed': { bg: '#EAF3DE', text: '#3B6D11' },
+  'Pending':   { bg: '#FAEEDA', text: '#854F0B' },
+  'Cancelled': { bg: '#FCEBEB', text: '#A32D2D' },
+}
 
 function TypeIcon({ type }) {
   if (type === 'video') return (
@@ -25,33 +55,67 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-[13px] font-medium text-lb-ink">Today's schedule</h3>
+        <h3 className="text-[14px] font-medium text-lb-ink">Today's schedule</h3>
         <button className="text-[12px] text-[#7F77DD] font-medium">Calendar</button>
       </div>
 
       <div className="space-y-2">
-        {schedule.map((s) => (
-          <div
-            key={s.id}
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg border-l-2 bg-lb-surface ${
-              s.soon ? 'border-[#1D9E75]' : 'border-[#7F77DD]'
-            }`}
-          >
-            {/* Time */}
-            <span className="text-[11px] font-semibold text-lb-ink w-[52px] shrink-0 tabular-nums">{s.time}</span>
+        {schedule.map((s) => {
+          const domainStyle = DOMAIN_COLORS[s.domain] || DOMAIN_COLORS['General']
+          const statusStyle = STATUS_COLORS[s.status] || STATUS_COLORS['Pending']
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-medium text-lb-ink truncate">{s.fromLang} → {s.toLang}</p>
-              <div className="flex items-center gap-1 mt-0.5 text-lb-muted">
+          return (
+            <div
+              key={s.id}
+              className={`flex flex-col gap-2 px-3 py-2.5 rounded-lg border-l-2 bg-lb-surface ${
+                s.soon ? 'border-[#1D9E75]' : 'border-[#7F77DD]'
+              }`}
+            >
+              {/* Top row: Time + Domain + Status + Price */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-lb-ink w-[52px] shrink-0 tabular-nums">{s.time}</span>
+
+                {/* Domain badge */}
+                <span
+                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded border"
+                  style={{
+                    backgroundColor: domainStyle.bg,
+                    color: domainStyle.text,
+                    borderColor: domainStyle.border,
+                  }}
+                >
+                  {s.domain}
+                </span>
+
+                {/* Confirmation status */}
+                <span
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                  style={{
+                    backgroundColor: statusStyle.bg,
+                    color: statusStyle.text,
+                  }}
+                >
+                  {s.status}
+                </span>
+
+                <span className="text-[12px] font-medium text-lb-ink ml-auto shrink-0">{s.price}</span>
+              </div>
+
+              {/* Middle row: Language pair */}
+              <div className="flex items-center gap-1.5 ml-[52px]">
+                <span className="text-[13px] font-medium text-lb-ink">{s.fromLang} → {s.toLang}</span>
                 <TypeIcon type={s.type} />
-                <span className="text-[10px]">{s.type === 'video' ? 'Video' : 'Audio'} · {s.duration} · {s.initials}</span>
+                <span className="text-[10px] text-lb-muted">{s.type === 'video' ? 'Video' : 'Audio'} · {s.duration}</span>
+              </div>
+
+              {/* Bottom row: Client organization + initials */}
+              <div className="flex items-center gap-1.5 ml-[52px]">
+                <span className="text-[10px] text-lb-subtle font-medium">{s.clientOrg}</span>
+                <span className="text-[10px] text-lb-muted">· {s.initials}</span>
               </div>
             </div>
-
-            <span className="text-[12px] font-medium text-lb-ink shrink-0">{s.price}</span>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="flex justify-between items-baseline mt-3 pt-3 border-t border-lb-border">

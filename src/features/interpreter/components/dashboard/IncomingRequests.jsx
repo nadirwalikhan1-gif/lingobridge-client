@@ -1,11 +1,11 @@
 // IncomingRequests.jsx — live socket data, countdown timers, urgent border state
-// FIXES APPLIED: 🔴 Locale code → language names, 🔴 Estimated earnings, 🟠 Prominent domain, 🟡 Returning client indicator
+// FIXES: 🔴 Locale duplicate bug, 🔴 Recording/urgency/client rating on accept card
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSocket } from '../../../../lib/socket'
 
-// ─── Locale → Language mapping (critical fix) ───
+// ─── Locale → Language mapping ───
 const LOCALE_MAP = {
   'en': 'English', 'en-us': 'English', 'en-gb': 'English', 'en-ca': 'English', 'en-au': 'English',
   'es': 'Spanish', 'es-mx': 'Spanish', 'es-es': 'Spanish', 'es-ar': 'Spanish',
@@ -87,15 +87,43 @@ const LOCALE_MAP = {
 }
 
 function resolveLanguage(raw) {
-  if (!raw) return '—'
-  const key = raw.toString().toLowerCase().trim()
+  if (!raw) return null
+  const key = String(raw).toLowerCase().trim()
   return LOCALE_MAP[key] || (key.charAt(0).toUpperCase() + key.slice(1))
 }
 
-// ─── Domain colors for prominent display ───
+// 🔴 CRITICAL FIX: Resolve language pair, handling duplicate names gracefully
+function resolveLanguagePair(req) {
+  const rawFrom = req.fromLang ?? req.language ?? req.sourceLanguage ?? null
+  const rawTo   = req.toLang   ?? req.targetLanguage ?? null
+
+  const from = resolveLanguage(rawFrom)
+  const to   = resolveLanguage(rawTo)
+
+  // If both resolve to the same name (e.g., "English → English"), show raw codes
+  if (from && to && from === to && rawFrom && rawTo) {
+    const fromCode = String(rawFrom).toLowerCase()
+    const toCode   = String(rawTo).toLowerCase()
+    if (fromCode !== toCode) {
+      return {
+        from: `${from} (${rawFrom})`,
+        to:   `${to} (${rawTo})`,
+        isDuplicate: true,
+        rawFrom, rawTo,
+      }
+    }
+  }
+
+  return { from: from ?? '—', to: to ?? 'English', isDuplicate: false, rawFrom, rawTo }
+}
+
+// ─── Domain colors ───
 const DOMAIN_COLORS = {
   'Medical':   { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
   'Legal':     { bg: '#FCEBEB', text: '#A32D2D', border: '#E24B4A' },
+  'Insurance': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
+  'Social Services': { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
+  'Government':{ bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
   'Business':  { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
   'Technical': { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
   'General':   { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
@@ -109,6 +137,19 @@ function getDomainStyle(category) {
 function fmt(s) {
   const m = Math.floor(s / 60), ss = s % 60
   return `${m}:${ss < 10 ? '0' : ''}${ss}`
+}
+
+function StarRating({ rating = 0, size = 12 }) {
+  const filled = Math.round(parseFloat(rating)) || 0
+  return (
+    <span className="flex items-center gap-0.5">
+      {[...Array(5)].map((_, i) => (
+        <svg key={i} className={`w-${size === 10 ? '2.5' : '3'} h-${size === 10 ? '2.5' : '3'}`} fill={i < filled ? '#BA7517' : '#E5E7EB'} viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+        </svg>
+      ))}
+    </span>
+  )
 }
 
 function RequestCard({ req, onAccept, onDecline }) {
@@ -126,9 +167,8 @@ function RequestCard({ req, onAccept, onDecline }) {
   const urgent = secs < 120
   const isVideo = req.sessionType === 'video' || req.type === 'video'
 
-  // 🔴 CRITICAL FIX: Resolve locale codes to real language names
-  const fromLang = resolveLanguage(req.fromLang ?? req.language ?? req.sourceLanguage ?? '—')
-  const toLang   = resolveLanguage(req.toLang   ?? req.targetLanguage ?? 'English')
+  // 🔴 CRITICAL FIX: Locale resolution with duplicate detection
+  const langPair = resolveLanguagePair(req)
 
   const category = req.category ?? req.purpose ?? req.domain ?? 'General'
   const duration = req.duration ?? '—'
@@ -136,15 +176,20 @@ function RequestCard({ req, onAccept, onDecline }) {
   const client   = req.client   ?? req.clientName ?? req.clientId ?? 'Client'
   const avatar   = req.avatar   ?? (client?.[0] ?? '?').toUpperCase()
 
-  // 🟡 New vs Returning client indicator
+  // 🟡 Client indicators
   const isReturning = req.isReturningClient === true || req.clientHistory?.sessions > 0
+  const clientRating = req.clientRating ?? req.client?.rating ?? null
 
-  // 🔴 Estimated earnings calculation
+  // 🔴 New metadata
+  const isRecording = req.isRecording ?? req.recording ?? false
+  const isUrgent    = req.isUrgent ?? req.urgency === 'emergency' ?? false
+  const expectedDuration = req.expectedDuration ?? req.duration ?? '30 min'
+
+  // Estimated earnings
   const perMinuteRate = req.perMinuteRate ?? req.rate ?? 0.85
-  const durationMinutes = parseInt(duration) || 30
+  const durationMinutes = parseInt(expectedDuration) || 30
   const estimatedEarnings = (perMinuteRate * durationMinutes).toFixed(2)
 
-  // 🟠 Prominent domain style
   const domainStyle = getDomainStyle(category)
 
   return (
@@ -162,8 +207,16 @@ function RequestCard({ req, onAccept, onDecline }) {
       {/* Title row */}
       <div>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[15px] font-semibold text-lb-ink">{fromLang} → {toLang}</span>
-          {/* 🟡 Client indicator badge */}
+          {/* 🔴 Language pair — amber warning if duplicate detected */}
+          <span className={`text-[15px] font-semibold leading-tight ${langPair.isDuplicate ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
+            {langPair.from} → {langPair.to}
+          </span>
+          {langPair.isDuplicate && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">
+              Check pair
+            </span>
+          )}
+          {/* 🟡 New/Returning */}
           <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${
             isReturning
               ? 'bg-[#EEEDFE] text-[#534AB7]'
@@ -171,7 +224,17 @@ function RequestCard({ req, onAccept, onDecline }) {
           }`}>
             {isReturning ? 'Returning' : 'New'}
           </span>
+          {/* 🔴 Urgency flag */}
+          {isUrgent && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FCEBEB] text-[#A32D2D] animate-pulse">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              Emergency
+            </span>
+          )}
         </div>
+
         <div className="flex flex-wrap items-center gap-2 mt-1.5">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border border-lb-border bg-lb-surface text-lb-muted">
             {isVideo ? (
@@ -179,9 +242,9 @@ function RequestCard({ req, onAccept, onDecline }) {
             ) : (
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
             )}
-            {isVideo ? 'Video' : 'Audio'} · {duration}
+            {isVideo ? 'Video' : 'Audio'} · {expectedDuration}
           </span>
-          {/* 🟠 PROMINENT domain badge — larger, colored by domain */}
+          {/* 🟠 PROMINENT domain badge */}
           <span
             className="inline-flex text-[11px] font-semibold px-2.5 py-1 rounded-full border"
             style={{
@@ -192,9 +255,27 @@ function RequestCard({ req, onAccept, onDecline }) {
           >
             {category}
           </span>
-          <span className="text-[11px] text-lb-subtle font-medium">{client}</span>
+          {/* 🔴 Recording indicator */}
+          {isRecording && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FCEBEB] text-[#A32D2D]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E24B4A] animate-pulse" />
+              Recording
+            </span>
+          )}
         </div>
-        {/* 🔴 Estimated earnings row */}
+
+        {/* Client row with rating */}
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="text-[11px] text-lb-subtle font-medium">{client}</span>
+          {clientRating && (
+            <div className="flex items-center gap-1">
+              <StarRating rating={clientRating} size={10} />
+              <span className="text-[10px] text-lb-subtle">({clientRating})</span>
+            </div>
+          )}
+        </div>
+
+        {/* Estimated earnings */}
         <div className="flex items-center gap-2 mt-1.5">
           <span className="text-[11px] text-lb-muted">${perMinuteRate.toFixed(2)}/min</span>
           <span className="text-[11px] text-[#534AB7] font-medium">≈ ${estimatedEarnings} est.</span>
@@ -248,7 +329,6 @@ export default function IncomingRequests({ onRequestsChange }) {
   const [requests, setRequests] = useState([])
   const navigate = useNavigate()
 
-  // Notify parent whenever request count changes
   useEffect(() => {
     onRequestsChange?.(requests.length > 0)
   }, [requests.length]) // eslint-disable-line react-hooks/exhaustive-deps

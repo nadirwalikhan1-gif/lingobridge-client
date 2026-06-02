@@ -401,7 +401,11 @@ export default function BookingPage() {
     setDirection('forward')
     setStep(7) // Fix #3: show connecting screen immediately
 
-    socket.emit('request-call', { language: fromLang, sessionType })
+    socket.emit('request-call', {
+  fromLang, toLang, language: fromLang,
+  sessionType, duration: `${duration} min`,
+  category: selectedCategory, interpreterName,
+})
 
     socket.once('call-requested', ({ channelName, agoraToken }) => {
       const tokenString = agoraToken?.token ?? agoraToken ?? ''

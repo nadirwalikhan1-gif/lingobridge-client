@@ -5,12 +5,12 @@
 import { useState, useEffect } from 'react'
 
 const MOCK_ALL_SESSIONS = [
-  { id: 1, ref: '#5021', interpreterInitials: 'MG', interpreter: 'Maria Gonzalez', client: 'John D.',    fromLang: 'Spanish',  toLang: 'English', category: 'Medical',     type: 'video', startedAt: '10:14 AM', elapsedMins: 18, status: 'live' },
-  { id: 2, ref: '#5019', interpreterInitials: 'AK', interpreter: 'Ali Khan',       client: 'Saima R.',   fromLang: 'Urdu',     toLang: 'English', category: 'Legal',       type: 'audio', startedAt: '09:52 AM', elapsedMins: 34, status: 'live' },
-  { id: 3, ref: '#5017', interpreterInitials: 'SC', interpreter: 'Sarah Chen',     client: 'ICU Team',   fromLang: 'Mandarin', toLang: 'English', category: 'Emergency',   type: 'video', startedAt: '10:29 AM', elapsedMins: 2,  status: 'escalated' },
-  { id: 4, ref: '#5015', interpreterInitials: 'JR', interpreter: 'Jamal Rahimi',   client: 'Parveen S.', fromLang: 'Dari',     toLang: 'English', category: 'Immigration', type: 'audio', startedAt: '10:24 AM', elapsedMins: 7,  status: 'hold' },
-  { id: 5, ref: '#5010', interpreterInitials: 'FA', interpreter: 'Fatima Al-Said', client: 'Ahmad K.',   fromLang: 'Arabic',   toLang: 'English', category: 'Medical',     type: 'video', startedAt: '10:00 AM', elapsedMins: 31, status: 'completed' },
-  { id: 6, ref: '#5008', interpreterInitials: 'PT', interpreter: 'Pavel Tran',     client: 'Linh N.',    fromLang: 'Vietnamese', toLang: 'English', category: 'General',  type: 'audio', startedAt: '09:30 AM', elapsedMins: 15, status: 'completed' },
+  { id: 1, ref: '#5021', interpreterInitials: 'KA', interpreter: 'Khalid Ahmadzai',   client: 'Nasrin A.',    fromLang: 'English (Canada)', toLang: 'Pashto (Eastern)',  category: 'Medical',     type: 'video', startedAt: '10:14 AM', elapsedMins: 18, status: 'live' },
+  { id: 2, ref: '#5019', interpreterInitials: 'RS', interpreter: 'Rajinder Singh',    client: 'Gurjeet K.',   fromLang: 'English (US)',     toLang: 'Punjabi (Gurmukhi)', category: 'Legal',       type: 'audio', startedAt: '09:52 AM', elapsedMins: 34, status: 'live' },
+  { id: 3, ref: '#5017', interpreterInitials: 'SB', interpreter: 'Sadia Butt',        client: 'ICU Team',     fromLang: 'English (UK)',     toLang: 'Punjabi (Shahmukhi)', category: 'Emergency',   type: 'video', startedAt: '10:29 AM', elapsedMins: 2,  status: 'escalated' },
+  { id: 4, ref: '#5015', interpreterInitials: 'NW', interpreter: 'Noorullah Wardak',  client: 'Tariq W.',     fromLang: 'English (US)',     toLang: 'Pashto (Western)',   category: 'Immigration', type: 'audio', startedAt: '10:24 AM', elapsedMins: 7,  status: 'hold' },
+  { id: 5, ref: '#5010', interpreterInitials: 'AK', interpreter: 'Amrit Kaur',        client: 'Parveen M.',   fromLang: 'English (Canada)', toLang: 'Punjabi (Gurmukhi)', category: 'Medical',     type: 'video', startedAt: '10:00 AM', elapsedMins: 31, status: 'completed' },
+  { id: 6, ref: '#5008', interpreterInitials: 'ZS', interpreter: 'Zarghona Shinwari', client: 'Ahmad K.',     fromLang: 'English (UK)',     toLang: 'Pashto (Eastern)',   category: 'General',     type: 'audio', startedAt: '09:30 AM', elapsedMins: 15, status: 'completed' },
 ]
 
 const statusConfig = {

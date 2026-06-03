@@ -30,6 +30,7 @@ export default function SessionSummary({
   selectedInterpreter,
   selectedCategory,
   currentStep,
+  isOnDemand = false,
 }) {
   const rate = sessionType === 'video' ? VIDEO_PRICE_PER_MINUTE : AUDIO_PRICE_PER_MINUTE
   const base = +(duration * rate).toFixed(2)
@@ -52,8 +53,8 @@ export default function SessionSummary({
           label="Type"
           value={sessionType === 'audio' ? 'Audio Call' : 'Video Call'}
         />
-        <Row icon={Clock}    label="Duration"   value={`${duration} minutes`} />
-        <Row icon={Calendar} label="Date & Time" value="Today, 10:30 AM" />
+        <Row icon={Clock}    label="Duration"   value={duration ? `${duration} minutes` : '—'} />
+        <Row icon={Calendar} label="Date & Time" value={isOnDemand ? 'On-demand · < 1 min' : 'Today, 10:30 AM'} />
 
         {selectedCategory && (
           <Row icon={Tag}  label="Category"    value={selectedCategory}    valuePill />
@@ -63,7 +64,8 @@ export default function SessionSummary({
         )}
       </div>
 
-      {/* Price breakdown */}
+      {/* Price breakdown — only shown when duration is selected */}
+      {duration && (
       <div className="mt-3 pt-3 border-t border-lb-border">
         <p className="text-[10px] font-medium text-lb-muted uppercase tracking-wider mb-2">Price breakdown</p>
         <div className="divide-y divide-lb-border">
@@ -83,6 +85,8 @@ export default function SessionSummary({
           <span className="text-[20px] font-medium text-[#26215C]">${total.toFixed(2)}</span>
         </div>
       </div>
+
+      )}
 
       {/* Wallet balance row */}
       <div className="mt-2 pt-2 border-t border-lb-border flex items-center justify-between">

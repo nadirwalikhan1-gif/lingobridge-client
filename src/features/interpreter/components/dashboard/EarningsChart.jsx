@@ -2,20 +2,58 @@
 
 import { useState, useEffect, useRef } from 'react'
 
+function getCurrentWeekRange() {
+  const now = new Date()
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  const fmt = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+  return `Mon ${fmt(monday)} – Sun ${fmt(sunday)}`
+}
+
+function getLastWeekRange() {
+  const now = new Date()
+  const thisMonday = new Date(now)
+  thisMonday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+  const lastMonday = new Date(thisMonday)
+  lastMonday.setDate(thisMonday.getDate() - 7)
+  const lastSunday = new Date(lastMonday)
+  lastSunday.setDate(lastMonday.getDate() + 6)
+  const fmt = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+  return `Mon ${fmt(lastMonday)} – Sun ${fmt(lastSunday)}`
+}
+
+function getCurrentMonthRange() {
+  const now = new Date()
+  return now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+}
+
+function getLastMonthRange() {
+  const now = new Date()
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  return lastMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+}
+
+function getTodayIndex() {
+  const day = new Date().getDay()
+  return day === 0 ? 6 : day - 1 // Mon=0, Sun=6
+}
+
 const DATA_SETS = {
   'This week': {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     data:   [98, 142, 87, 210, 163, 45, 300],
     total: '$1,045',
-    range: 'Mon 12 – Sun 18 May',
-    todayIdx: 6,
+    range: getCurrentWeekRange(),
+    todayIdx: getTodayIndex(),
     bestIdx: 3,
   },
   'Last week': {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     data:   [90, 140, 110, 175, 130, 60, 160],
     total: '$865',
-    range: 'Mon 5 – Sun 11 May',
+    range: getLastWeekRange(),
     todayIdx: -1,
     bestIdx: 3,
   },
@@ -23,7 +61,7 @@ const DATA_SETS = {
     labels: ['W1', 'W2', 'W3', 'W4'],
     data:   [680, 820, 750, 960],
     total: '$3,210',
-    range: 'May 2026',
+    range: getCurrentMonthRange(),
     todayIdx: 3,
     bestIdx: 3,
   },
@@ -31,7 +69,7 @@ const DATA_SETS = {
     labels: ['W1', 'W2', 'W3', 'W4'],
     data:   [590, 700, 680, 830],
     total: '$2,800',
-    range: 'Apr 2026',
+    range: getLastMonthRange(),
     todayIdx: -1,
     bestIdx: 3,
   },

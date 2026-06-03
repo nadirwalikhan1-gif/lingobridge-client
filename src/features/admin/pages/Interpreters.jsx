@@ -4,13 +4,13 @@
 import { useState } from 'react'
 
 const INTERPRETERS = [
-  { id: 1, name: 'Maria Garcia',   initials: 'MG', email: 'maria@linguabridge.io', langs: ['Spanish', 'English'],  categories: ['Medical', 'Legal'],   status: 'busy',    sessions: 128, rating: 4.9, earnings: '$1,845', joined: 'Jan 2025' },
-  { id: 2, name: 'Aisha Khan',     initials: 'AK', email: 'aisha@linguabridge.io', langs: ['Arabic', 'English'],   categories: ['Legal', 'Emergency'], status: 'busy',    sessions: 97,  rating: 4.8, earnings: '$1,420', joined: 'Feb 2025' },
-  { id: 3, name: 'Raza Malik',     initials: 'RM', email: 'raza@linguabridge.io',  langs: ['Urdu', 'English'],     categories: ['Medical'],            status: 'busy',    sessions: 86,  rating: 4.7, earnings: '$1,210', joined: 'Jan 2025' },
-  { id: 4, name: 'Chen Wei',       initials: 'CW', email: 'chen@linguabridge.io',  langs: ['Mandarin', 'English'], categories: ['Business', 'Medical'], status: 'online',  sessions: 74,  rating: 4.9, earnings: '$980',   joined: 'Mar 2025' },
-  { id: 5, name: 'Laila Sanz',     initials: 'LS', email: 'laila@linguabridge.io', langs: ['French', 'English'],   categories: ['Legal'],              status: 'online',  sessions: 63,  rating: 4.6, earnings: '$850',   joined: 'Apr 2025' },
-  { id: 6, name: 'Yusuf Adeyemi',  initials: 'YA', email: 'yusuf@linguabridge.io', langs: ['Yoruba', 'English'],  categories: ['General'],            status: 'offline', sessions: 55,  rating: 4.5, earnings: '$720',   joined: 'Mar 2025' },
-  { id: 7, name: 'Priya Sharma',   initials: 'PS', email: 'priya@linguabridge.io', langs: ['Hindi', 'English'],    categories: ['Medical'],            status: 'offline', sessions: 42,  rating: 4.3, earnings: '$560',   joined: 'May 2025' },
+  { id: 1, name: 'Khalid Ahmadzai',   initials: 'KA', email: 'khalid@linguabridge.io', langs: ['Pashto Eastern', 'Pashto Western'],  categories: ['Medical', 'Emergency'],   status: 'busy',    sessions: 128, rating: 4.9, earnings: '$1,845', joined: 'Jan 2025' },
+  { id: 2, name: 'Rajinder Singh',     initials: 'RS', email: 'rajinder@linguabridge.io', langs: ['Punjabi Gurmukhi'],   categories: ['Legal', 'Business'],      status: 'busy',    sessions: 97,  rating: 4.8, earnings: '$1,420', joined: 'Feb 2025' },
+  { id: 3, name: 'Sadia Butt',          initials: 'SB', email: 'sadia@linguabridge.io',  langs: ['Punjabi Shahmukhi'],  categories: ['Medical'],                status: 'busy',    sessions: 86,  rating: 4.7, earnings: '$1,210', joined: 'Jan 2025' },
+  { id: 4, name: 'Noorullah Wardak',    initials: 'NW', email: 'noorullah@linguabridge.io', langs: ['Pashto Eastern'],     categories: ['Immigration', 'Medical'], status: 'online',  sessions: 74,  rating: 4.9, earnings: '$980',   joined: 'Mar 2025' },
+  { id: 5, name: 'Amrit Kaur',          initials: 'AK', email: 'amrit@linguabridge.io',  langs: ['Punjabi Gurmukhi'],   categories: ['Legal'],                  status: 'online',  sessions: 63,  rating: 4.6, earnings: '$850',   joined: 'Apr 2025' },
+  { id: 6, name: 'Zarghona Shinwari',   initials: 'ZS', email: 'zarghona@linguabridge.io', langs: ['Pashto Eastern', 'Pashto Western'], categories: ['General'], status: 'offline', sessions: 55,  rating: 4.5, earnings: '$720',   joined: 'Mar 2025' },
+  { id: 7, name: 'Imran Chaudhry',      initials: 'IC', email: 'imran@linguabridge.io',  langs: ['Punjabi Shahmukhi'],  categories: ['Medical'],                status: 'offline', sessions: 42,  rating: 4.3, earnings: '$560',   joined: 'May 2025' },
 ]
 
 const STATUS_CFG = {

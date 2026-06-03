@@ -13,6 +13,65 @@ function fmt(s) {
   return `${m}:${ss < 10 ? '0' : ''}${ss}`;
 }
 
+// ─── Session Context Panel — Fix #7 ──────────────────────────────────────────
+function SessionContextPanel({ fromLang, toLang, category, sessionType, duration, rate }) {
+  const fromLabel = fromLang || '—'
+  const toLabel = toLang || '—'
+
+  return (
+    <div className="absolute top-4 left-4 z-20 max-w-xs">
+      <div className="bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10 shadow-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#1D9E75] animate-pulse" />
+          <span className="text-[10px] font-semibold text-[#1D9E75] uppercase tracking-wider">Live Session</span>
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <svg className="w-3.5 h-3.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            </svg>
+            <span className="text-[12px] text-white font-medium">{fromLabel} → {toLabel}</span>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="flex items-center gap-1 text-[11px] text-white/70">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              {category || 'General'}
+            </span>
+            <span className="flex items-center gap-1 text-[11px] text-white/70">
+              {sessionType === 'video' ? (
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path d="M15 10l4.553-2.069A1 1 0 0121 8.829v6.342a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                </svg>
+              ) : (
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              )}
+              {sessionType === 'video' ? 'Video' : 'Audio'}
+            </span>
+            <span className="flex items-center gap-1 text-[11px] text-white/70">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 6v6l4 2" />
+              </svg>
+              {duration} min booked
+            </span>
+            <span className="flex items-center gap-1 text-[11px] text-white/70">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              ${rate}/min
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function CallRoom() {
   const { channelId }                 = useParams();
   const [searchParams]                = useSearchParams();
@@ -23,6 +82,12 @@ export default function CallRoom() {
   const interpreterInitials           = interpreterName
     ? interpreterName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : '?';
+
+  // Fix #7 — session context from URL params
+  const fromLang                      = searchParams.get('fromLang') || 'en-us';
+  const toLang                        = searchParams.get('toLang') || 'ps-east';
+  const selectedCategory              = searchParams.get('category') || '';
+  const duration                      = searchParams.get('duration') || '30';
   const navigate                      = useNavigate();
   const { user }                      = useAuth();
   const [chatOpen, setChatOpen]       = useState(false);
@@ -109,7 +174,17 @@ export default function CallRoom() {
 
   return (
     <div className="flex h-dvh bg-[#0f0f1a] overflow-hidden">
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 relative">
+
+        {/* Fix #7: Session context panel */}
+        <SessionContextPanel
+          fromLang={fromLang}
+          toLang={toLang}
+          category={selectedCategory}
+          sessionType={sessionType}
+          duration={duration}
+          rate={rate}
+        />
 
         {/* Timer bar */}
         {joined && (
@@ -239,7 +314,7 @@ export default function CallRoom() {
               )}
               {remoteUsers.map(u => captions[u.uid] ? (
                 <div key={u.uid} className="self-start max-w-[80%] px-3 py-1.5 rounded-lg bg-black/70 text-white text-sm">
-                  <span className="text-[10px] text-white/40 block mb-0.5">Participant</span>
+                  <span className="text-[10px] text-white/40 block mb-0.5">{interpreterName ?? 'Participant'}</span>
                   {captions[u.uid]}
                 </div>
               ) : null)}

@@ -409,7 +409,16 @@ export default function BookingPage() {
 
     socket.once('call-requested', ({ channelName, agoraToken }) => {
       const tokenString = agoraToken?.token ?? agoraToken ?? ''
-      navigate(`/call/${channelName}?token=${encodeURIComponent(tokenString)}&type=${sessionType}&interpreterName=${encodeURIComponent(interpreterName ?? '')}`)
+      navigate(
+  `/call/${channelName}?` +
+  `token=${encodeURIComponent(tokenString)}` +
+  `&type=${sessionType}` +
+  `&interpreterName=${encodeURIComponent(interpreterName ?? '')}` +
+  `&fromLang=${encodeURIComponent(fromLang)}` +
+  `&toLang=${encodeURIComponent(toLang)}` +
+  `&category=${encodeURIComponent(selectedCategory ?? '')}` +
+  `&duration=${duration}`
+)
     })
 
     socket.once('error', (err) => {

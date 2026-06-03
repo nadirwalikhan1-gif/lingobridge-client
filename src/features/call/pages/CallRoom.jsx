@@ -158,12 +158,13 @@ export default function CallRoom() {
   }
 
   // Fix: better name resolution — prefer displayName, then name, then email initial
-  const userDisplayName = user?.user_metadata?.displayName 
-    || user?.user_metadata?.name 
-    || user?.user?.user_metadata?.name 
-    || user?.name 
-    || user?.email 
-    || 'You'
+  const rawName =
+  user?.user_metadata?.full_name    ||   // Supabase standard field
+  user?.user_metadata?.displayName  ||
+  user?.user_metadata?.name         ||
+  user?.email?.split('@')[0]        ||   // strips domain — better than full email
+  'You'
+const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
   const initials = userDisplayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 
   const remoteUser = remoteUsers[0] ?? null;

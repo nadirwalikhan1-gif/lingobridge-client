@@ -318,6 +318,7 @@ function NextSessionBanner() {
 export default function IncomingRequests({ onRequestsChange }) {
   const [requests, setRequests] = useState([])
   const navigate = useNavigate()
+  const acceptedRequestRef = useRef(null)
 
   useEffect(() => {
     onRequestsChange?.(requests.length > 0)
@@ -346,8 +347,26 @@ export default function IncomingRequests({ onRequestsChange }) {
       setRequests(prev => prev.filter(r => r.id !== roomId))
       if (channelName) {
         const tokenString = agoraToken?.token ?? agoraToken ?? ''
-        const type = sessionType ?? 'audio'
-        navigate(`/call/${channelName}?token=${encodeURIComponent(tokenString)}&type=${type}`)
+        const req = acceptedRequestRef.current
+        acceptedRequestRef.current = null
+
+        // Extract session context from the accepted request (Fix #7)
+        const type = sessionType ?? req?.sessionType ?? req?.type ?? 'audio'
+        const fromLang = req?.fromLang ?? req?.language ?? req?.sourceLanguage ?? 'en-us'
+        const toLang = req?.toLang ?? req?.targetLanguage ?? 'ps-east'
+        const category = req?.category ?? req?.purpose ?? req?.domain ?? 'General'
+        const duration = req?.duration ?? req?.expectedDuration ?? '30 min'
+        const durationNum = parseInt(duration) || 30
+
+        navigate(
+          `/call/${channelName}?` +
+          `token=${encodeURIComponent(tokenString)}` +
+          `&type=${type}` +
+          `&fromLang=${encodeURIComponent(fromLang)}` +
+          `&toLang=${encodeURIComponent(toLang)}` +
+          `&category=${encodeURIComponent(category)}` +
+          `&duration=${durationNum}`
+        )
       }
     }
 
@@ -367,6 +386,9 @@ export default function IncomingRequests({ onRequestsChange }) {
   const handleAccept = (id) => {
     const socket = getSocket()
     if (!socket) return
+    // Store request data before filtering — needed for call-accepted URL params
+    const req = requests.find(r => r.id === id)
+    acceptedRequestRef.current = req
     socket.emit('accept-call', { roomId: id })
     setRequests(prev => prev.filter(r => r.id !== id))
   }

@@ -342,34 +342,35 @@ export default function IncomingRequests({ onRequestsChange }) {
     const onRequestCancelled = ({ roomId }) => {
       setRequests(prev => prev.filter(r => r.id !== roomId))
     }
+const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
+  setRequests(prev => prev.filter(r => r.id !== roomId))
+  if (channelName) {
+    const tokenString = agoraToken?.token ?? agoraToken ?? ''
+    const req = acceptedRequestRef.current
+    acceptedRequestRef.current = null
 
-    const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
-      setRequests(prev => prev.filter(r => r.id !== roomId))
-      if (channelName) {
-        const tokenString = agoraToken?.token ?? agoraToken ?? ''
-        const req = acceptedRequestRef.current
-        acceptedRequestRef.current = null
+    const type = sessionType ?? req?.sessionType ?? req?.type ?? 'audio'
+    const fromLang = req?.fromLang ?? req?.language ?? req?.sourceLanguage ?? 'en-us'
+    const toLang = req?.toLang ?? req?.targetLanguage ?? 'ps-east'
+    const category = req?.category ?? req?.purpose ?? req?.domain ?? 'General'
+    const duration = req?.duration ?? req?.expectedDuration ?? '30 min'
+    const durationNum = parseInt(duration) || 30
+    // ── FIX: pass client name so interpreter call screen shows real name ──
+    const clientName = req?.clientName ?? req?.client ?? req?.requesterName ?? 'Client'
 
-        // Extract session context from the accepted request (Fix #7)
-        const type = sessionType ?? req?.sessionType ?? req?.type ?? 'audio'
-        const fromLang = req?.fromLang ?? req?.language ?? req?.sourceLanguage ?? 'en-us'
-        const toLang = req?.toLang ?? req?.targetLanguage ?? 'ps-east'
-        const category = req?.category ?? req?.purpose ?? req?.domain ?? 'General'
-        const duration = req?.duration ?? req?.expectedDuration ?? '30 min'
-        const durationNum = parseInt(duration) || 30
-
-        navigate(
-          `/call/${channelName}?` +
-          `token=${encodeURIComponent(tokenString)}` +
-          `&type=${type}` +
-          `&fromLang=${encodeURIComponent(fromLang)}` +
-          `&toLang=${encodeURIComponent(toLang)}` +
-          `&category=${encodeURIComponent(category)}` +
-          `&duration=${durationNum}`
-        )
-      }
-    }
-
+    navigate(
+      `/call/${channelName}?` +
+      `token=${encodeURIComponent(tokenString)}` +
+      `&type=${type}` +
+      `&fromLang=${encodeURIComponent(fromLang)}` +
+      `&toLang=${encodeURIComponent(toLang)}` +
+      `&category=${encodeURIComponent(category)}` +
+      `&duration=${durationNum}` +
+      `&interpreterName=${encodeURIComponent(clientName)}`
+    )
+  }
+}
+   
     socket.on('new-request',       onNewRequest)
     socket.on('pending-requests',  onPendingRequests)
     socket.on('request-cancelled', onRequestCancelled)

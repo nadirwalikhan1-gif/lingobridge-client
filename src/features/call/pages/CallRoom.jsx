@@ -7,6 +7,7 @@ import Controls from '../components/Controls';
 import ChatSidebar from '../components/ChatSidebar';
 import RatingModal from '../components/RatingModal';
 import { getSocket } from '../../../lib/socket';
+import { LANGUAGE_LABELS } from '../../../config/constants';
 
 function fmt(s) {
   const m = Math.floor(s / 60), ss = s % 60;
@@ -15,8 +16,9 @@ function fmt(s) {
 
 // ─── Session Context Panel — Fix #7 ──────────────────────────────────────────
 function SessionContextPanel({ fromLang, toLang, category, sessionType, duration, rate }) {
-  const fromLabel = fromLang || '—'
-  const toLabel = toLang || '—'
+  // Resolve display names using LANGUAGE_LABELS (Fix #2)
+  const fromLabel = LANGUAGE_LABELS[fromLang] || fromLang || '—'
+  const toLabel   = LANGUAGE_LABELS[toLang]   || toLang   || '—'
 
   return (
     <div className="absolute top-4 left-4 z-20 max-w-xs">
@@ -155,11 +157,41 @@ export default function CallRoom() {
     setTimeout(() => navigate('/client/dashboard'), 1500);
   }
 
-  const initials = user?.user_metadata?.name
-    ? user.user_metadata.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
-    : (user?.email?.[0] ?? '?').toUpperCase();
+  // Fix: better name resolution — prefer displayName, then name, then email initial
+  const userDisplayName = user?.user_metadata?.displayName 
+    || user?.user_metadata?.name 
+    || user?.user?.user_metadata?.name 
+    || user?.name 
+    || user?.email 
+    || 'You'
+  const initials = userDisplayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 
   const remoteUser = remoteUsers[0] ?? null;
+
+  // Fix: exchange names via socket so both sides see each other's names
+  const [remoteUserName, setRemoteUserName] = useState(interpreterName || null)
+
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket || !joined) return
+
+    // Emit our name when joining
+    socket.emit('call-user-info', {
+      roomId: channelId,
+      name: userDisplayName,
+      role: role,
+    })
+
+    // Listen for other user's name
+    const onUserInfo = (data) => {
+      if (data.name && data.role !== role) {
+        setRemoteUserName(data.name)
+      }
+    }
+    socket.on('call-user-info', onUserInfo)
+
+    return () => socket.off('call-user-info', onUserInfo)
+  }, [joined, channelId, userDisplayName, role])
 
   if (error) {
     return (
@@ -225,7 +257,7 @@ export default function CallRoom() {
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <VideoTile
                     track={remoteUser.camOff ? null : (remoteUser.videoTrack ?? null)}
-                    label={interpreterName ?? `Participant ${remoteUser.uid}`}
+                    label={remoteUserName ?? interpreterName ?? `Participant ${remoteUser.uid}`}
                     avatarInitials={interpreterInitials}
                     muted={remoteUser.micMuted}
                     camOff={remoteUser.camOff}
@@ -236,7 +268,7 @@ export default function CallRoom() {
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <VideoTile
                     track={camOff ? null : localTracks.cam}
-                    label={user?.user_metadata?.name ?? user?.email ?? 'You'}
+                    label={userDisplayName}
                     avatarInitials={initials}
                     muted={micMuted}
                     camOff={camOff}
@@ -250,7 +282,7 @@ export default function CallRoom() {
                 <div className="absolute bottom-3 right-3 w-[22%] aspect-video rounded-xl overflow-hidden shadow-2xl ring-2 ring-white/10 z-10">
                   <VideoTile
                     track={camOff ? null : localTracks.cam}
-                    label={user?.user_metadata?.name ?? user?.email ?? 'You'}
+                    label={userDisplayName}
                     avatarInitials={initials}
                     muted={micMuted}
                     camOff={camOff}
@@ -266,7 +298,7 @@ export default function CallRoom() {
                 <div className={`w-20 h-20 rounded-full bg-[#EEEDFE] flex items-center justify-center text-2xl font-semibold text-[#534AB7] ring-4 transition-all ${!micMuted ? 'ring-[#7F77DD]' : 'ring-transparent'}`}>
                   {initials}
                 </div>
-                <p className="text-white/70 text-xs">{user?.user_metadata?.name ?? 'You'}</p>
+                <p className="text-white/70 text-xs">{userDisplayName}</p>
                 {micMuted && (
                   <span className="flex items-center gap-1 text-[10px] text-[#F09595]">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -282,7 +314,7 @@ export default function CallRoom() {
                   <div className={`w-20 h-20 rounded-full bg-[#E1F5EE] flex items-center justify-center text-2xl font-semibold text-[#0F6E56] ring-4 transition-all ${!u.micMuted ? 'ring-[#1D9E75]' : 'ring-transparent'}`}>
                     {interpreterInitials}
                   </div>
-                  <p className="text-white/70 text-xs">{interpreterName ?? `Participant ${u.uid}`}</p>
+                  <p className="text-white/70 text-xs">{remoteUserName ?? interpreterName ?? `Participant ${u.uid}`}</p>
                   {u.micMuted && (
                     <span className="flex items-center gap-1 text-[10px] text-[#F09595]">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -314,7 +346,7 @@ export default function CallRoom() {
               )}
               {remoteUsers.map(u => captions[u.uid] ? (
                 <div key={u.uid} className="self-start max-w-[80%] px-3 py-1.5 rounded-lg bg-black/70 text-white text-sm">
-                  <span className="text-[10px] text-white/40 block mb-0.5">{interpreterName ?? 'Participant'}</span>
+                  <span className="text-[10px] text-white/40 block mb-0.5">{remoteUserName ?? interpreterName ?? 'Participant'}</span>
                   {captions[u.uid]}
                 </div>
               ) : null)}

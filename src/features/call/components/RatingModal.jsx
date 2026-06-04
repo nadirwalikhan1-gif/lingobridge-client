@@ -1,9 +1,6 @@
 import { useState } from 'react'
 
-// RatingModal.jsx — post-call rating modal
-// Client sees: call quality + interpreter rating + comment
-// Interpreter sees: call quality only
-
+// ─── Star Rating ─────────────────────────────────────────────────────────────
 function StarRating({ value, onChange, label }) {
   return (
     <div className="flex flex-col gap-2">
@@ -37,17 +34,53 @@ function StarRating({ value, onChange, label }) {
   )
 }
 
-export default function RatingModal({ role = 'client', sessionDuration = 0, sessionCost = 0, interpreterName = null, onSubmit, onSkip }) {
+// ─── Issue Flag Chip ─────────────────────────────────────────────────────────
+function IssueFlag({ label, selected, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        selected 
+          ? 'bg-[#7F77DD]/30 text-[#AFA9EC] border border-[#7F77DD]/50' 
+          : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'
+      }`}
+    >
+      {label}
+    </button>
+  )
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+export default function RatingModal({ 
+  role = 'client', 
+  sessionDuration = 0, 
+  sessionCost = 0, 
+  interpreterName = null, 
+  onSubmit, 
+  onSkip 
+}) {
   const isClient = role === 'client'
 
-  // Format duration mm:ss → "X min"
   const durationMins = Math.max(1, Math.round(sessionDuration / 60))
   const durationLabel = `${durationMins} min`
+  const finalEarnings = sessionCost.toFixed(2)
 
   const [callQuality, setCallQuality]         = useState(0)
   const [interpreterRating, setInterpreterRating] = useState(0)
   const [comment, setComment]                 = useState('')
   const [submitted, setSubmitted]             = useState(false)
+  
+  // FIX: Interpreter issue flags
+  const [flags, setFlags] = useState({
+    connectionIssues: false,
+    inappropriateBehavior: false,
+    sessionCutShort: false,
+    terminologyDifficulty: false,
+  })
+
+  const toggleFlag = (key) => {
+    setFlags(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   function handleSubmit() {
     if (callQuality === 0) return
@@ -55,7 +88,11 @@ export default function RatingModal({ role = 'client', sessionDuration = 0, sess
 
     const payload = isClient
       ? { callQuality, interpreterRating, comment }
-      : { callQuality }
+      : { 
+          callQuality, 
+          comment,
+          flags: Object.entries(flags).filter(([_, v]) => v).map(([k]) => k)
+        }
 
     onSubmit(payload)
     setSubmitted(true)
@@ -87,12 +124,16 @@ export default function RatingModal({ role = 'client', sessionDuration = 0, sess
             <h2 className="text-white text-lg font-semibold">Rate your call</h2>
             <p className="text-white/50 text-xs mt-0.5">Your feedback helps us improve</p>
           </div>
-          <button onClick={onSkip} className="text-white/30 hover:text-white/60 transition-colors text-xs">
+          {/* FIX: Skip is less prominent — ratings are valuable */}
+          <button 
+            onClick={onSkip} 
+            className="text-white/20 hover:text-white/50 transition-colors text-[11px] px-2 py-1 rounded hover:bg-white/5"
+          >
             Skip
           </button>
         </div>
 
-        {/* Fix #3 — Session summary */}
+        {/* Session summary */}
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#0f0f1a] border border-white/10">
           <div className="w-9 h-9 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[11px] font-semibold text-[#534AB7] shrink-0">
             {interpreterName ? interpreterName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : '?'}
@@ -102,7 +143,7 @@ export default function RatingModal({ role = 'client', sessionDuration = 0, sess
             <p className="text-white/40 text-[11px]">Session complete · {durationLabel}</p>
           </div>
           <div className="flex flex-col items-end shrink-0">
-            <span className="text-white text-[13px] font-semibold">${sessionCost.toFixed(2)}</span>
+            <span className="text-white text-[13px] font-semibold">${finalEarnings}</span>
             <span className="text-[#4ade80] text-[10px]">charged</span>
           </div>
         </div>
@@ -128,6 +169,47 @@ export default function RatingModal({ role = 'client', sessionDuration = 0, sess
                 value={comment}
                 onChange={e => setComment(e.target.value)}
                 placeholder="Share your experience…"
+                rows={3}
+                className="bg-[#0f0f1a] border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 resize-none focus:outline-none focus:border-[#7F77DD] transition-colors"
+              />
+            </div>
+          </>
+        )}
+
+        {/* FIX: Interpreter feedback — issue flags + written feedback */}
+        {!isClient && (
+          <>
+            <div className="flex flex-col gap-2">
+              <p className="text-white/70 text-sm">Flag issues encountered</p>
+              <div className="flex flex-wrap gap-2">
+                <IssueFlag 
+                  label="Connection issues" 
+                  selected={flags.connectionIssues} 
+                  onClick={() => toggleFlag('connectionIssues')} 
+                />
+                <IssueFlag 
+                  label="Inappropriate behavior" 
+                  selected={flags.inappropriateBehavior} 
+                  onClick={() => toggleFlag('inappropriateBehavior')} 
+                />
+                <IssueFlag 
+                  label="Session cut short" 
+                  selected={flags.sessionCutShort} 
+                  onClick={() => toggleFlag('sessionCutShort')} 
+                />
+                <IssueFlag 
+                  label="Terminology difficulty" 
+                  selected={flags.terminologyDifficulty} 
+                  onClick={() => toggleFlag('terminologyDifficulty')} 
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-white/70 text-sm">Comments (optional)</p>
+              <textarea
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                placeholder="Note any terminology challenges, cultural context, or other feedback…"
                 rows={3}
                 className="bg-[#0f0f1a] border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 resize-none focus:outline-none focus:border-[#7F77DD] transition-colors"
               />

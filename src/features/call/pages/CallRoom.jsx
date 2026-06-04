@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useAgora } from '../../../hooks/useAgora';
@@ -14,15 +14,17 @@ function fmt(s) {
   return `${m}:${ss < 10 ? '0' : ''}${ss}`;
 }
 
-// ─── Session Context Panel — Fix #7 ──────────────────────────────────────────
-function SessionContextPanel({ fromLang, toLang, category, sessionType, duration, rate, secs }) {
-  const durationSeconds = parseInt(duration) * 60 || 300
-  const remaining = Math.max(0, durationSeconds - (secs || 0))
-  const isUrgent = remaining <= 60
-  const isWarning = remaining <= 120 && remaining > 60
-  // Resolve display names using LANGUAGE_LABELS (Fix #2)
-  const fromLabel = LANGUAGE_LABELS[fromLang] || fromLang || '—'
-  const toLabel   = LANGUAGE_LABELS[toLang]   || toLang   || '—'
+// ─── Session Context Panel ────────────────────────────────────────────────────
+// Fix #1: channelId and onExtend passed as props (was referencing channelId from
+//         outer scope, causing ReferenceError at runtime)
+function SessionContextPanel({ fromLang, toLang, category, sessionType, duration, rate, secs, channelId, onExtend }) {
+  const durationSeconds = parseInt(duration) * 60 || 300;
+  const remaining = Math.max(0, durationSeconds - (secs || 0));
+  const isUrgent  = remaining <= 60;
+  const isWarning = remaining <= 120 && remaining > 60;
+
+  const fromLabel = LANGUAGE_LABELS[fromLang] || fromLang || '—';
+  const toLabel   = LANGUAGE_LABELS[toLang]   || toLang   || '—';
 
   return (
     <div className="absolute top-4 left-4 z-20 max-w-xs">
@@ -81,12 +83,12 @@ function SessionContextPanel({ fromLang, toLang, category, sessionType, duration
                 Ending soon
               </span>
             )}
-            {isWarning && (
+            {/* Fix #2: extend button shown for both isWarning AND isUrgent —
+                previously only showed during isWarning, disappearing at the
+                moment users need it most */}
+            {(isWarning || isUrgent) && (
               <button
-                onClick={() => {
-                  const socket = getSocket()
-                  socket?.emit('extend-session', { roomId: channelId, additionalMinutes: 5 })
-                }}
+                onClick={onExtend}
                 className="text-[10px] px-2 py-0.5 rounded bg-[#7F77DD]/30 text-[#AFA9EC] hover:bg-[#7F77DD]/50 transition-colors"
               >
                 +5 min
@@ -96,7 +98,7 @@ function SessionContextPanel({ fromLang, toLang, category, sessionType, duration
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function CallRoom() {
@@ -104,13 +106,11 @@ export default function CallRoom() {
   const [searchParams]                = useSearchParams();
   const sessionType                   = searchParams.get('type') === 'video' ? 'video' : 'audio';
   const agoraToken                    = searchParams.get('token') || null;
-  // Fix #1 — interpreter name passed from BookingPage via ?interpreterName=
   const interpreterName               = searchParams.get('interpreterName') || null;
   const interpreterInitials           = interpreterName
     ? interpreterName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
-  // Fix #7 — session context from URL params
   const fromLang                      = searchParams.get('fromLang') || 'en-us';
   const toLang                        = searchParams.get('toLang') || 'ps-east';
   const selectedCategory              = searchParams.get('category') || '';
@@ -121,13 +121,23 @@ export default function CallRoom() {
   const [notes, setNotes]             = useState('');
   const [notesOpen, setNotesOpen]     = useState(false);
   const [onHold, setOnHold]           = useState(false);
+  // Fix #3: track who initiated hold and at what elapsed time
+  const [holdMeta, setHoldMeta]       = useState(null); // { initiator: 'Provider'|'You', at: '2:18' }
   const [showRating, setShowRating]   = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [secs, setSecs]               = useState(0);
   const timerRef                      = useRef(null);
+  // Fix #4: ref to track hold state inside interval without stale closure
+  const onHoldRef                     = useRef(false);
 
-  const rate = parseFloat(searchParams.get('rate')) || (sessionType === 'video' ? 1.20 : 0.99)
-  const sessionCost = Math.max(0, parseFloat(((secs / 60) * rate).toFixed(2)))
+  const rate = parseFloat(searchParams.get('rate')) || (sessionType === 'video' ? 1.20 : 0.99);
+
+  // Fix #5: memoize sessionCost so it doesn't recalculate on every render
+  const sessionCost = useMemo(
+    () => Math.max(0, parseFloat(((secs / 60) * rate).toFixed(2))),
+    [secs, rate]
+  );
+
   const role = user?.user_metadata?.role ?? 'client';
 
   const {
@@ -136,10 +146,16 @@ export default function CallRoom() {
     toggleMic, toggleCam, leave,
   } = useAgora({ channel: channelId, sessionType, token: agoraToken });
 
-  // Timer — starts when remote joins
+  // Fix #4: timer pauses while onHold is true — billing promise is now backed
+  //         by logic. Uses a ref so the interval callback always sees current
+  //         hold state without needing to be recreated on every state change.
   useEffect(() => {
     if (joined && remoteUsers.length > 0) {
-      timerRef.current = setInterval(() => setSecs(s => s + 1), 1000);
+      timerRef.current = setInterval(() => {
+        if (!onHoldRef.current) {
+          setSecs(s => s + 1);
+        }
+      }, 1000);
     } else {
       clearInterval(timerRef.current);
     }
@@ -171,6 +187,48 @@ export default function CallRoom() {
     return () => socket.off('call-ended', onCallEnded);
   }, [leave]);
 
+  // Fix #3: listen for hold-session events from the remote side so we can
+  //         show the correct initiator attribution in the hold overlay
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+    const onHoldSession = (data) => {
+      if (data.roomId !== channelId) return;
+      const isHeld = data.onHold;
+      onHoldRef.current = isHeld;
+      setOnHold(isHeld);
+      if (isHeld) {
+        // data.initiatorRole comes from the emitting side (see handleHold below)
+        const initiatorLabel = data.initiatorRole === role ? 'You' : (data.initiatorRole === 'interpreter' ? 'Interpreter' : 'Provider');
+        setHoldMeta({ initiator: initiatorLabel, at: fmt(secs) });
+      } else {
+        setHoldMeta(null);
+      }
+    };
+    socket.on('hold-session', onHoldSession);
+    return () => socket.off('hold-session', onHoldSession);
+  }, [channelId, role, secs]);
+
+  // Fix #1: extend handler defined in CallRoom where channelId is in scope,
+  //         passed down to SessionContextPanel as onExtend prop
+  const handleExtend = useCallback(() => {
+    const socket = getSocket();
+    socket?.emit('extend-session', { roomId: channelId, additionalMinutes: 5 });
+  }, [channelId]);
+
+  // Unified hold toggle — sets local state, updates ref, emits with initiatorRole
+  const handleHold = useCallback((nextHold) => {
+    onHoldRef.current = nextHold;
+    setOnHold(nextHold);
+    if (nextHold) {
+      setHoldMeta({ initiator: 'You', at: fmt(secs) });
+    } else {
+      setHoldMeta(null);
+    }
+    const socket = getSocket();
+    socket?.emit('hold-session', { roomId: channelId, onHold: nextHold, initiatorRole: role });
+  }, [channelId, role, secs]);
+
   async function confirmLeave() {
     setShowConfirm(false);
     const socket = getSocket();
@@ -185,42 +243,37 @@ export default function CallRoom() {
     setTimeout(() => navigate('/client/dashboard'), 1500);
   }
 
-  // Fix: better name resolution — prefer displayName, then name, then email initial
   const rawName =
-  user?.user_metadata?.full_name    ||   // Supabase standard field
-  user?.user_metadata?.displayName  ||
-  user?.user_metadata?.name         ||
-  user?.email?.split('@')[0]        ||   // strips domain — better than full email
-  'You'
-const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
-  const initials = userDisplayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    user?.user_metadata?.full_name   ||
+    user?.user_metadata?.displayName ||
+    user?.user_metadata?.name        ||
+    user?.email?.split('@')[0]       ||
+    'You';
+  const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const initials = userDisplayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const remoteUser = remoteUsers[0] ?? null;
 
-  // Fix: exchange names via socket so both sides see each other's names
-  const [remoteUserName, setRemoteUserName] = useState(interpreterName || null)
+  const [remoteUserName, setRemoteUserName] = useState(interpreterName || null);
 
   useEffect(() => {
-    const socket = getSocket()
-    if (!socket || !joined) return
+    const socket = getSocket();
+    if (!socket || !joined) return;
 
-    // Emit our name when joining
     socket.emit('call-user-info', {
       roomId: channelId,
       name: userDisplayName,
       role: role,
-    })
+    });
 
-    // Listen for other user's name
     const onUserInfo = (data) => {
       if (data.name && data.role !== role) {
-        setRemoteUserName(data.name)
+        setRemoteUserName(data.name);
       }
-    }
-    socket.on('call-user-info', onUserInfo)
-
-    return () => socket.off('call-user-info', onUserInfo)
-  }, [joined, channelId, userDisplayName, role])
+    };
+    socket.on('call-user-info', onUserInfo);
+    return () => socket.off('call-user-info', onUserInfo);
+  }, [joined, channelId, userDisplayName, role]);
 
   if (error) {
     return (
@@ -237,7 +290,6 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
     <div className="flex h-dvh bg-[#0f0f1a] overflow-hidden">
       <div className="flex flex-col flex-1 min-w-0 relative">
 
-        {/* Fix #7: Session context panel */}
         <SessionContextPanel
           fromLang={fromLang}
           toLang={toLang}
@@ -246,6 +298,8 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
           duration={duration}
           rate={rate}
           secs={secs}
+          channelId={channelId}
+          onExtend={handleExtend}
         />
 
         {/* Timer bar */}
@@ -257,7 +311,6 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
               </span>
             ) : (
               <div className="flex items-center gap-2">
-                {/* Pulsing dots */}
                 <div className="flex items-center gap-1">
                   {[0, 1, 2].map(i => (
                     <span
@@ -279,10 +332,7 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
         {/* Video / Audio area */}
         <div className="flex-1 p-3 overflow-hidden relative">
           {sessionType === 'video' ? (
-            // Fix #2 — two-tile layout only, no third black panel
             <div className="relative w-full h-full">
-
-              {/* Main tile — remote user (large, full area) */}
               {remoteUser ? (
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <VideoTile
@@ -294,7 +344,6 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
                   />
                 </div>
               ) : (
-                /* Waiting state — local fills the main area */
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <VideoTile
                     track={camOff ? null : localTracks.cam}
@@ -307,7 +356,6 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
                 </div>
               )}
 
-              {/* PiP tile — local user (small, bottom-right) */}
               {remoteUser && (
                 <div className="absolute bottom-3 right-3 w-[22%] aspect-video rounded-xl overflow-hidden shadow-2xl ring-2 ring-white/10 z-10">
                   <VideoTile
@@ -322,7 +370,6 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
               )}
             </div>
           ) : (
-            /* ── Audio call layout ── */
             <div className="flex items-center justify-center h-full gap-8 flex-wrap">
               <div className="flex flex-col items-center gap-2">
                 <div className={`w-20 h-20 rounded-full bg-[#EEEDFE] flex items-center justify-center text-2xl font-semibold text-[#534AB7] ring-4 transition-all ${!micMuted ? 'ring-[#7F77DD]' : 'ring-transparent'}`}>
@@ -391,7 +438,9 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
           </div>
         )}
 
-        {/* Hold overlay */}
+        {/* Fix #3: Hold overlay — now shows billing reassurance and initiator
+            attribution matching Scrn 349 spec. Copy is context-aware:
+            "You placed this session on hold" vs "Hold initiated by Provider" */}
         {onHold && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0f0f1a]/70 z-20">
             <div className="flex flex-col items-center gap-3">
@@ -400,14 +449,33 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
                 </svg>
               </div>
-              <p className="text-white font-semibold text-lg">Session on hold</p>
-              <p className="text-white/50 text-sm">Waiting for provider to return</p>
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-[#BA7517]/40 bg-[#BA7517]/15">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#EF9F27] animate-pulse" />
+                <span className="text-[11px] text-[#FAC775] font-semibold uppercase tracking-wider">Session on hold</span>
+              </div>
+              <p className="text-white font-semibold text-lg">Session paused</p>
+              <p className="text-white/50 text-sm">
+                {holdMeta?.initiator === 'You'
+                  ? 'You placed this session on hold'
+                  : `Waiting for ${holdMeta?.initiator ?? 'provider'} to resume`}
+              </p>
+              {/* Billing reassurance — matches Scrn 349 */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#BA7517]/15 border border-[#BA7517]/30 text-[12px] text-[#EF9F27]">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M10 15V9m4 6V9" />
+                </svg>
+                Timer paused · hold time not billed
+              </div>
+              {/* Initiator attribution — context-aware */}
+              {holdMeta && (
+                <p className="text-[11px] text-white/35">
+                  {holdMeta.initiator === 'You'
+                    ? `You placed this session on hold at ${holdMeta.at}`
+                    : `Hold initiated by ${holdMeta.initiator} at ${holdMeta.at}`}
+                </p>
+              )}
               <button
-                onClick={() => {
-                  setOnHold(false)
-                  const socket = getSocket()
-                  socket?.emit('hold-session', { roomId: channelId, onHold: false })
-                }}
+                onClick={() => handleHold(false)}
                 className="mt-2 px-4 py-2 rounded-lg bg-[#7F77DD] text-white text-sm font-medium hover:bg-[#534AB7] transition-colors"
               >
                 Resume session
@@ -449,11 +517,7 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
               onLeave={() => setShowConfirm(true)}
             />
             <button
-              onClick={() => {
-                setOnHold(!onHold)
-                const socket = getSocket()
-                socket?.emit('hold-session', { roomId: channelId, onHold: !onHold })
-              }}
+              onClick={() => handleHold(!onHold)}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                 onHold ? 'bg-[#BA7517] text-white animate-pulse' : 'bg-white/10 text-white/70 hover:bg-white/20'
               }`}

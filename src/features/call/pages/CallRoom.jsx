@@ -67,7 +67,17 @@ function SessionContextPanel({ fromLang, toLang, category, sessionType, duration
               </svg>
               ${rate}/min
             </span>
-            {secs >= (parseInt(duration) * 60 - 120) && (
+            {isWarning && (
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#BA7517]/30 text-[#BA7517] font-semibold">
+                Wrap up
+              </span>
+            )}
+            {isUrgent && (
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#E24B4A]/30 text-[#E24B4A] font-semibold animate-pulse">
+                Ending soon
+              </span>
+            )}
+            {isWarning && (
               <button
                 onClick={() => {
                   const socket = getSocket()
@@ -231,6 +241,7 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
           sessionType={sessionType}
           duration={duration}
           rate={rate}
+          secs={secs}
         />
 
         {/* Timer bar */}

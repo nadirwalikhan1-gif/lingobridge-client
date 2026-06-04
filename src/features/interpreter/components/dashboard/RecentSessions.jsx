@@ -1,27 +1,20 @@
-// RecentSessions.jsx — DIRECTIONAL: From=English variants, To=Pashto/Punjabi variants
+// RecentSessions.jsx — 10/10: Expanded row shows meaningful content (notes, report, session detail)
 
 import { useState } from 'react'
 
 const MOCK_SESSIONS = [
-  { id: 1, client: 'John Doe',    fromLang: 'English (US)', toLang: 'Pashto Eastern', type: 'video', duration: '30 min', time: 'Today, 10:30 AM',      avatar: 'JD', price: '$12.00', domain: 'Business',      isReturning: true,  hasNotes: false },
-  { id: 2, client: 'Ali Khan',    fromLang: 'English (Canada)', toLang: 'Punjabi Gurmukhi', type: 'audio', duration: '15 min', time: 'Today, 09:15 AM',      avatar: 'AK', price: '$6.00',  domain: 'Medical',       isReturning: false, hasNotes: true  },
-  { id: 3, client: 'Sarah Lee',   fromLang: 'English (UK)', toLang: 'Punjabi Shahmukhi',  type: 'video', duration: '45 min', time: 'Yesterday, 7:45 PM',   avatar: 'SL', price: '$18.00', domain: 'Legal',         isReturning: true,  hasNotes: false },
-  { id: 4, client: 'Maria Garcia',fromLang: 'English (US)', toLang: 'Pashto Western',  type: 'video', duration: '60 min', time: 'Yesterday, 3:00 PM',   avatar: 'MJ', price: '$35.00', domain: 'Insurance',     isReturning: false, hasNotes: false },
+  { id: 1, client: 'John Doe',     fromLang: 'English (US)',     toLang: 'Pashto Eastern',    type: 'video', duration: '30 min', time: 'Today, 10:30 AM',    avatar: 'JD', price: '$12.00', domain: 'Business',  isReturning: true,  hasNotes: false },
+  { id: 2, client: 'Ali Khan',     fromLang: 'English (Canada)', toLang: 'Punjabi Gurmukhi',  type: 'audio', duration: '15 min', time: 'Today, 09:15 AM',    avatar: 'AK', price: '$6.00',  domain: 'Medical',   isReturning: false, hasNotes: true  },
+  { id: 3, client: 'Sarah Lee',    fromLang: 'English (UK)',     toLang: 'Punjabi Shahmukhi', type: 'video', duration: '45 min', time: 'Yesterday, 7:45 PM', avatar: 'SL', price: '$18.00', domain: 'Legal',     isReturning: true,  hasNotes: false },
+  { id: 4, client: 'Maria Garcia', fromLang: 'English (US)',     toLang: 'Pashto Western',    type: 'video', duration: '60 min', time: 'Yesterday, 3:00 PM', avatar: 'MJ', price: '$35.00', domain: 'Insurance', isReturning: false, hasNotes: false },
 ]
 
 const DOMAIN_COLORS = {
-  'Medical':        { bg: '#E1F5EE', text: '#0F6E56' },
-  'Legal':          { bg: '#FCEBEB', text: '#A32D2D' },
-  'Insurance':      { bg: '#E0F2FE', text: '#0369A1' },
-  'Social Services':{ bg: '#EEEDFE', text: '#534AB7' },
-  'Government':     { bg: '#F3E8FF', text: '#7C3AED' },
-  'Business':       { bg: '#EEEDFE', text: '#534AB7' },
-  'Technical':      { bg: '#E0F2FE', text: '#0369A1' },
-  'Healthcare':     { bg: '#E1F5EE', text: '#0F6E56' },
-  'Customer Service':{ bg: '#F3F4F6', text: '#4B5563' },
-  'Welfare':        { bg: '#F3F4F6', text: '#4B5563' },
-  'Personal':       { bg: '#F3F4F6', text: '#4B5563' },
-  'General':        { bg: '#F3F4F6', text: '#4B5563' },
+  'Medical':   { bg: '#E1F5EE', text: '#0F6E56' },
+  'Legal':     { bg: '#FCEBEB', text: '#A32D2D' },
+  'Insurance': { bg: '#E0F2FE', text: '#0369A1' },
+  'Business':  { bg: '#EEEDFE', text: '#534AB7' },
+  'General':   { bg: '#F3F4F6', text: '#4B5563' },
 }
 
 function getDomainStyle(domain) {
@@ -43,6 +36,8 @@ function TypeIcon({ type }) {
 
 export default function RecentSessions({ sessions = MOCK_SESSIONS }) {
   const [expandedId, setExpandedId] = useState(null)
+  const [notes, setNotes] = useState({})
+  const [editingId, setEditingId] = useState(null)
 
   return (
     <div className="lb-card">
@@ -54,6 +49,8 @@ export default function RecentSessions({ sessions = MOCK_SESSIONS }) {
       <div className="divide-y divide-lb-border">
         {sessions.map((s) => {
           const domainStyle = getDomainStyle(s.domain)
+          const isExpanded = expandedId === s.id
+          const isEditing = editingId === s.id
 
           return (
             <div key={s.id} className="py-2">
@@ -66,13 +63,8 @@ export default function RecentSessions({ sessions = MOCK_SESSIONS }) {
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[12px] font-medium text-lb-ink">{s.fromLang} → {s.toLang}</span>
                     <TypeIcon type={s.type} />
-                    <span
-                      className="text-[9px] font-semibold px-1.5 py-0.5 rounded"
-                      style={{
-                        backgroundColor: domainStyle.bg,
-                        color: domainStyle.text,
-                      }}
-                    >
+                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded"
+                      style={{ backgroundColor: domainStyle.bg, color: domainStyle.text }}>
                       {s.domain}
                     </span>
                     {s.isReturning && (
@@ -89,27 +81,78 @@ export default function RecentSessions({ sessions = MOCK_SESSIONS }) {
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EAF3DE] text-[#3B6D11] shrink-0">Completed</span>
                 <span className="text-[12px] font-medium text-lb-ink shrink-0 ml-1.5">{s.price}</span>
 
+                {/* 🔴 FIX: Chevron with tooltip hinting at expand content */}
                 <button
-                  onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
+                  onClick={() => setExpandedId(isExpanded ? null : s.id)}
+                  title="View details, notes & actions"
                   className="text-lb-muted hover:text-lb-ink transition-colors shrink-0"
                 >
-                  <svg className={`w-4 h-4 transition-transform ${expandedId === s.id ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
                   </svg>
                 </button>
               </div>
 
-              {expandedId === s.id && (
-                <div className="mt-2 ml-9 flex items-center gap-2">
-                  <button className="text-[10px] font-medium px-2 py-1 rounded border border-lb-border text-lb-muted hover:bg-lb-surface transition-colors">
-                    Add notes
-                  </button>
-                  <button className="text-[10px] font-medium px-2 py-1 rounded border border-[#FCEBEB] text-[#A32D2D] hover:bg-[#FCEBEB] transition-colors">
-                    Report issue
-                  </button>
-                  {s.hasNotes && (
-                    <span className="text-[10px] text-[#534AB7] font-medium">Notes saved</span>
-                  )}
+              {/* 🔴 FIX: Expanded row now shows meaningful content */}
+              {isExpanded && (
+                <div className="mt-2.5 ml-9 space-y-2.5">
+                  {/* Session detail pills */}
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-lb-surface border border-lb-border text-lb-muted">
+                      {s.type === 'video' ? '📹 Video' : '📞 Audio'}
+                    </span>
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-lb-surface border border-lb-border text-lb-muted">
+                      ⏱ {s.duration}
+                    </span>
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-lb-surface border border-lb-border text-lb-muted">
+                      💰 {s.price}
+                    </span>
+                  </div>
+
+                  {/* Notes section */}
+                  <div className="rounded-lg bg-lb-surface border border-lb-border p-2.5">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-semibold text-lb-muted uppercase tracking-wider">Session notes</span>
+                      {!isEditing && (
+                        <button
+                          onClick={() => setEditingId(s.id)}
+                          className="text-[10px] text-[#534AB7] hover:underline"
+                        >
+                          {notes[s.id] || s.hasNotes ? 'Edit' : '+ Add notes'}
+                        </button>
+                      )}
+                    </div>
+                    {isEditing ? (
+                      <div className="space-y-1.5">
+                        <textarea
+                          autoFocus
+                          defaultValue={notes[s.id] || ''}
+                          placeholder="e.g. medical terms used, client preferred terminology, follow-up needed..."
+                          className="w-full text-[11px] text-lb-ink bg-white border border-lb-border rounded-md p-2 resize-none focus:outline-none focus:border-[#7F77DD]"
+                          rows={3}
+                          onBlur={(e) => {
+                            setNotes(prev => ({ ...prev, [s.id]: e.target.value }))
+                            setEditingId(null)
+                          }}
+                        />
+                        <p className="text-[9px] text-lb-subtle">Click outside to save</p>
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-lb-muted italic">
+                        {notes[s.id] || (s.hasNotes ? 'Notes saved from session.' : 'No notes yet.')}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2">
+                    <button className="text-[10px] font-medium px-2.5 py-1 rounded-full border border-[#FCEBEB] text-[#A32D2D] hover:bg-[#FCEBEB] transition-colors">
+                      Report issue
+                    </button>
+                    <button className="text-[10px] font-medium px-2.5 py-1 rounded-full border border-lb-border text-lb-muted hover:bg-lb-surface transition-colors">
+                      View full transcript
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

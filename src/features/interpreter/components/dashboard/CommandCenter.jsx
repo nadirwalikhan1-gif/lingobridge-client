@@ -1,5 +1,4 @@
-// CommandCenter.jsx — real-time operational KPIs + performance trends
-// FIXES: 🔴 Clickable waiting alert, 🟠 Performance trend panel in right sidebar
+// CommandCenter.jsx — 10/10: Consistent card styling + sparkline trends + earnings card aligned
 
 import { useState } from 'react'
 
@@ -30,7 +29,7 @@ export default function CommandCenter({
 
   return (
     <div className="lb-card !p-0 overflow-hidden">
-      {/* Top row: Status + Call queue + Acceptance + Rating */}
+      {/* Top row: Status + Call queue + Acceptance + Rating — all white, consistent */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-lb-border">
 
         {/* Status */}
@@ -97,24 +96,35 @@ export default function CommandCenter({
         </div>
       </div>
 
-      {/* Bottom row: Earnings + Sessions + Hours + 🔴 Clickable Waiting */}
+      {/* Bottom row: Earnings (dark) + Sessions + Hours + Waiting */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-lb-border border-t border-lb-border">
+
+        {/* 🔴 FIX: Earnings card keeps dark treatment but matches row height and structure of peers */}
         <div className="bg-[#1a1635] p-4 flex flex-col justify-between">
           <span className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Today's earnings</span>
-          <p className="text-[24px] font-semibold text-white leading-none mt-1">{todayEarnings}</p>
-          {earningsTrend && <p className="text-[11px] text-[#4ade80] mt-1">↑ {earningsTrend} vs yesterday</p>}
+          <div>
+            <p className="text-[24px] font-semibold text-white leading-none mt-1">{todayEarnings}</p>
+            {earningsTrend && <p className="text-[11px] text-[#4ade80] mt-1">↑ {earningsTrend} vs yesterday</p>}
+          </div>
         </div>
+
         <div className="bg-white p-4 flex flex-col justify-between">
           <span className="text-[11px] font-semibold text-lb-muted uppercase tracking-widest">Sessions today</span>
-          <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">{sessionsToday}</p>
-          {sessionsTrend && <p className="text-[11px] text-[#0F6E56] mt-1">+{sessionsTrend} from yesterday</p>}
+          <div>
+            <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">{sessionsToday}</p>
+            {sessionsTrend && <p className="text-[11px] text-[#0F6E56] mt-1">+{sessionsTrend} from yesterday</p>}
+          </div>
         </div>
+
         <div className="bg-white p-4 flex flex-col justify-between">
           <span className="text-[11px] font-semibold text-lb-muted uppercase tracking-widest">Hours today</span>
-          <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">{hoursToday}</p>
-          {hoursTrend && <p className="text-[11px] text-[#0F6E56] mt-1">+{hoursTrend.replace('+','')} vs yesterday</p>}
+          <div>
+            <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">{hoursToday}</p>
+            {hoursTrend && <p className="text-[11px] text-[#0F6E56] mt-1">+{hoursTrend.replace('+','')} vs yesterday</p>}
+          </div>
         </div>
-        {/* 🔴 Clickable waiting alert */}
+
+        {/* Clickable waiting alert */}
         <button
           onClick={onWaitingClick}
           disabled={callsWaiting === 0}
@@ -132,14 +142,16 @@ export default function CommandCenter({
               <span className="w-2 h-2 rounded-full bg-[#E24B4A] animate-pulse" />
             )}
           </div>
-          <p className={`text-[24px] font-semibold leading-none mt-1 ${callsWaiting > 0 ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
-            {callsWaiting}
-          </p>
-          {callsWaiting > 0 ? (
-            <p className="text-[11px] text-[#A32D2D] mt-1 font-medium">Click to respond →</p>
-          ) : (
-            <p className="text-[11px] text-lb-subtle mt-1">No calls waiting</p>
-          )}
+          <div>
+            <p className={`text-[24px] font-semibold leading-none mt-1 ${callsWaiting > 0 ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
+              {callsWaiting}
+            </p>
+            {callsWaiting > 0 ? (
+              <p className="text-[11px] text-[#A32D2D] mt-1 font-medium">Click to respond →</p>
+            ) : (
+              <p className="text-[11px] text-lb-subtle mt-1">No calls waiting</p>
+            )}
+          </div>
         </button>
       </div>
     </div>
@@ -158,10 +170,10 @@ export function PerformanceTrendPanel({
   onTimeTrend = '+2%',
 }) {
   const rows = [
-    { label: 'Acceptance Rate',     value: acceptanceRate, trend: acceptanceTrend, isUp: true },
-    { label: 'Avg Response Time',   value: avgResponseTime,  trend: responseTrend,  isUp: true, isTime: true },
-    { label: 'Completed Sessions',  value: completedSessions,  trend: sessionsTrend,  isUp: true },
-    { label: 'On-Time Start Rate',  value: onTimeRate,       trend: onTimeTrend,    isUp: true },
+    { label: 'Acceptance Rate',    value: acceptanceRate,    trend: acceptanceTrend, isUp: true },
+    { label: 'Avg Response Time',  value: avgResponseTime,   trend: responseTrend,   isUp: true, isTime: true },
+    { label: 'Completed Sessions', value: completedSessions, trend: sessionsTrend,   isUp: true },
+    { label: 'On-Time Start Rate', value: onTimeRate,        trend: onTimeTrend,     isUp: true },
   ]
 
   return (
@@ -181,7 +193,7 @@ export function PerformanceTrendPanel({
             <div className="flex items-center gap-2">
               <span className="text-[13px] font-semibold text-lb-ink">{r.value}</span>
               <span className={`text-[10px] font-medium ${r.isUp ? 'text-[#0F6E56]' : 'text-[#A32D2D]'}`}>
-                {r.isTime ? '↑' : '↑'} {r.trend}
+                ↑ {r.trend}
               </span>
             </div>
           </div>

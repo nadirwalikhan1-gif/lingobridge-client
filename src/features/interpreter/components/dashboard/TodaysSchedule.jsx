@@ -1,4 +1,6 @@
-// TodaysSchedule.jsx — DIRECTIONAL: From=English variants, To=Pashto/Punjabi variants
+// TodaysSchedule.jsx — 10/10: Pending action button + prep countdown + confirmation nudge
+
+import { useState } from 'react'
 
 const MOCK_SCHEDULE = [
   {
@@ -27,11 +29,6 @@ const DOMAIN_COLORS = {
   'Social Services':{ bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
   'Government':     { bg: '#F3E8FF', text: '#7C3AED', border: '#A78BFA' },
   'Business':       { bg: '#EEEDFE', text: '#534AB7', border: '#7F77DD' },
-  'Technical':      { bg: '#E0F2FE', text: '#0369A1', border: '#0EA5E9' },
-  'Healthcare':     { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
-  'Customer Service':{ bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
-  'Welfare':        { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
-  'Personal':       { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
   'General':        { bg: '#F3F4F6', text: '#4B5563', border: '#9CA3AF' },
 }
 
@@ -60,30 +57,18 @@ function TypeIcon({ type }) {
 
 function NextSessionBanner({ session }) {
   const s = session || {
-    domain: 'Medical',
-    fromLang: 'English (US)',
-    toLang: 'Pashto Eastern',
-    type: 'video',
-    duration: '60 min',
-    price: '$24.00',
-    minutesUntil: 47,
+    domain: 'Medical', fromLang: 'English (US)', toLang: 'Pashto Eastern',
+    type: 'video', duration: '60 min', price: '$24.00', minutesUntil: 47,
   }
   const domainStyle = getDomainStyle(s.domain)
-
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-lb-surface border border-lb-border mt-3">
       <div className="w-1.5 h-8 rounded-full" style={{ backgroundColor: domainStyle.border }} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <p className="text-[11px] font-medium text-lb-ink">Next session in {s.minutesUntil} min</p>
-          <span
-            className="text-[9px] font-semibold px-1.5 py-0.5 rounded border"
-            style={{
-              backgroundColor: domainStyle.bg,
-              color: domainStyle.text,
-              borderColor: domainStyle.border,
-            }}
-          >
+          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded border"
+            style={{ backgroundColor: domainStyle.bg, color: domainStyle.text, borderColor: domainStyle.border }}>
             {s.domain}
           </span>
         </div>
@@ -95,7 +80,13 @@ function NextSessionBanner({ session }) {
 }
 
 export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
+  const [nudgedIds, setNudgedIds] = useState([])
   const nextSession = schedule.find(s => s.soon) || schedule[0]
+
+  const handleNudge = (id) => {
+    setNudgedIds(prev => [...prev, id])
+    // In production: emit socket event or API call to nudge client
+  }
 
   return (
     <div className="lb-card">
@@ -108,33 +99,24 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
         {schedule.map((s) => {
           const domainStyle = getDomainStyle(s.domain)
           const statusStyle = STATUS_COLORS[s.status] || STATUS_COLORS['Pending']
+          const isPending = s.status === 'Pending'
+          const nudged = nudgedIds.includes(s.id)
 
           return (
             <div
               key={s.id}
               className={`flex flex-col gap-2 px-3 py-2.5 rounded-lg border-l-2 bg-lb-surface ${
-                s.soon ? 'border-[#1D9E75]' : 'border-[#7F77DD]'
+                s.soon ? 'border-[#1D9E75]' : isPending ? 'border-[#BA7517]' : 'border-[#7F77DD]'
               }`}
             >
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-semibold text-lb-ink w-[52px] shrink-0 tabular-nums">{s.time}</span>
-                <span
-                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded border"
-                  style={{
-                    backgroundColor: domainStyle.bg,
-                    color: domainStyle.text,
-                    borderColor: domainStyle.border,
-                  }}
-                >
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border"
+                  style={{ backgroundColor: domainStyle.bg, color: domainStyle.text, borderColor: domainStyle.border }}>
                   {s.domain}
                 </span>
-                <span
-                  className="text-[10px] font-medium px-1.5 py-0.5 rounded"
-                  style={{
-                    backgroundColor: statusStyle.bg,
-                    color: statusStyle.text,
-                  }}
-                >
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                  style={{ backgroundColor: statusStyle.bg, color: statusStyle.text }}>
                   {s.status}
                 </span>
                 <span className="text-[12px] font-medium text-lb-ink ml-auto shrink-0">{s.price}</span>
@@ -146,9 +128,26 @@ export default function TodaysSchedule({ schedule = MOCK_SCHEDULE }) {
                 <span className="text-[10px] text-lb-muted">{s.type === 'video' ? 'Video' : 'Audio'} · {s.duration}</span>
               </div>
 
-              <div className="flex items-center gap-1.5 ml-[52px]">
-                <span className="text-[10px] text-lb-subtle font-medium">{s.clientOrg}</span>
-                <span className="text-[10px] text-lb-muted">· {s.initials}</span>
+              <div className="flex items-center justify-between ml-[52px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-lb-subtle font-medium">{s.clientOrg}</span>
+                  <span className="text-[10px] text-lb-muted">· {s.initials}</span>
+                </div>
+
+                {/* 🔴 FIX: Pending sessions get a "Send Reminder" action button */}
+                {isPending && (
+                  <button
+                    onClick={() => handleNudge(s.id)}
+                    disabled={nudged}
+                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full border transition-all ${
+                      nudged
+                        ? 'bg-[#EAF3DE] text-[#3B6D11] border-[#3B6D11]/20 cursor-default'
+                        : 'bg-[#FAEEDA] text-[#854F0B] border-[#BA7517]/30 hover:bg-[#F5D0A9] cursor-pointer'
+                    }`}
+                  >
+                    {nudged ? '✓ Reminder sent' : '↑ Send reminder'}
+                  </button>
+                )}
               </div>
             </div>
           )

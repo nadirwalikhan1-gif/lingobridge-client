@@ -22,12 +22,64 @@ const STATUS_META = {
   [STATUS.OFFLINE]: { label: 'Offline', color: '#9CA3AF', bg: '#F3F4F6', text: '#4B5563', socket: 'go-offline' },
 }
 
+// 🔴 FIX: Motivational greeting based on time of day
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
+// 🔴 FIX: Daily goal progress banner
+function DailyGoalBanner({ sessionsToday = 12, earningsToday = 124.50 }) {
+  const sessionGoal = 15
+  const earningsGoal = 150
+  const sessionPct = Math.min(100, Math.round((sessionsToday / sessionGoal) * 100))
+  const earningsPct = Math.min(100, Math.round((earningsToday / earningsGoal) * 100))
+
+  return (
+    <div className="lb-card !py-3 !px-4">
+      <div className="flex items-center gap-6 flex-wrap">
+        <div className="flex items-center gap-2 shrink-0">
+          <svg className="w-3.5 h-3.5 text-[#534AB7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <span className="text-[11px] font-semibold text-lb-ink">Today's goals</span>
+        </div>
+        <div className="flex-1 flex items-center gap-6 flex-wrap">
+          {/* Sessions goal */}
+          <div className="flex items-center gap-2 min-w-[160px]">
+            <span className="text-[11px] text-lb-muted whitespace-nowrap">Sessions {sessionsToday}/{sessionGoal}</span>
+            <div className="flex-1 h-1.5 bg-lb-border rounded-full overflow-hidden min-w-[80px]">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${sessionPct}%`, backgroundColor: sessionPct >= 100 ? '#1D9E75' : '#7F77DD' }}
+              />
+            </div>
+            <span className="text-[10px] font-semibold text-[#534AB7]">{sessionPct}%</span>
+          </div>
+          {/* Earnings goal */}
+          <div className="flex items-center gap-2 min-w-[160px]">
+            <span className="text-[11px] text-lb-muted whitespace-nowrap">Earnings ${earningsToday}/${earningsGoal}</span>
+            <div className="flex-1 h-1.5 bg-lb-border rounded-full overflow-hidden min-w-[80px]">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${earningsPct}%`, backgroundColor: earningsPct >= 100 ? '#1D9E75' : '#BA7517' }}
+              />
+            </div>
+            <span className="text-[10px] font-semibold text-[#854F0B]">{earningsPct}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function InterpreterDashboard() {
   const { user } = useAuth()
   const [isLoading, setIsLoading]           = useState(true)
   const [availability, setAvailability]     = useState(STATUS.ONLINE)
   const [hasIncomingRequests, setHasIncomingRequests] = useState(false)
-  // Active request object passed up from IncomingRequests for the overlay
   const [activeRequest, setActiveRequest]   = useState(null)
   const incomingRef = useRef(null)
 
@@ -82,7 +134,6 @@ export default function InterpreterDashboard() {
     }
   }
 
-  // Called by IncomingRequests when a new request arrives
   const handleRequestsChange = (hasRequests, requests) => {
     setHasIncomingRequests(hasRequests)
     if (hasRequests && requests?.length > 0) {
@@ -92,20 +143,19 @@ export default function InterpreterDashboard() {
     }
   }
 
-  // No overlay handlers needed — IncomingRequests now renders full-screen overlay internally
-
   if (isLoading) return <DashboardSkeleton />
+
+  const displayName = user?.displayName ?? user?.name ?? user?.user_metadata?.name ?? 'Interpreter'
 
   return (
     <div className="space-y-4 relative">
 
-
-
-      {/* Header */}
+      {/* Header — 🔴 FIX: Time-aware greeting + language pair sub-hint */}
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Welcome back, {user?.displayName ?? user?.name ?? user?.user_metadata?.name ?? 'Interpreter'}</p>
+          <p className="text-xs text-lb-muted">{getGreeting()}, {displayName}</p>
           <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Interpreter workspace</h1>
+          <p className="text-[11px] text-lb-subtle mt-0.5">English → Pashto · Punjabi</p>
         </div>
 
         {/* 3-state toggle */}
@@ -140,7 +190,10 @@ export default function InterpreterDashboard() {
         </div>
       </div>
 
-      {/* ── COMMAND CENTER ── */}
+      {/* 🔴 FIX: Daily goal progress banner */}
+      <DailyGoalBanner sessionsToday={12} earningsToday={124.50} />
+
+      {/* COMMAND CENTER */}
       <CommandCenter
         status={availability}
         callsReceived={18}
@@ -160,14 +213,12 @@ export default function InterpreterDashboard() {
         onWaitingClick={handleWaitingClick}
       />
 
-      {/* ── INCOMING REQUESTS ── */}
+      {/* INCOMING REQUESTS */}
       <div ref={incomingRef}>
-        <IncomingRequests
-          onRequestsChange={handleRequestsChange}
-        />
+        <IncomingRequests onRequestsChange={handleRequestsChange} />
       </div>
 
-      {/* ── REST OF DASHBOARD ── */}
+      {/* REST OF DASHBOARD */}
       <div className={`space-y-4 transition-opacity duration-500 ${
         hasIncomingRequests ? 'opacity-30 pointer-events-none select-none blur-[1px]' : 'opacity-100'
       }`}>
@@ -202,6 +253,7 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       <div className="h-5 bg-lb-border rounded w-40" />
+      <div className="h-8 bg-lb-border rounded-xl" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-lb-border rounded-xl overflow-hidden">
         {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-white" />)}
       </div>

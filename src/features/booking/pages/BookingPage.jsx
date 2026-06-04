@@ -399,7 +399,8 @@ export default function BookingPage() {
   `&fromLang=${encodeURIComponent(fromLang)}` +
   `&toLang=${encodeURIComponent(toLang)}` +
   `&category=${encodeURIComponent(selectedCategory ?? '')}` +
-  `&duration=${duration}`
+  `&duration=${duration}` +
+  `&rate=${rate}`
 )
     })
 

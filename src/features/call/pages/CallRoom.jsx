@@ -67,6 +67,17 @@ function SessionContextPanel({ fromLang, toLang, category, sessionType, duration
               </svg>
               ${rate}/min
             </span>
+            {secs >= (parseInt(duration) * 60 - 120) && (
+              <button
+                onClick={() => {
+                  const socket = getSocket()
+                  socket?.emit('extend-session', { roomId: channelId, additionalMinutes: 5 })
+                }}
+                className="text-[10px] px-2 py-0.5 rounded bg-[#7F77DD]/30 text-[#AFA9EC] hover:bg-[#7F77DD]/50 transition-colors"
+              >
+                +5 min
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -95,12 +106,13 @@ export default function CallRoom() {
   const [chatOpen, setChatOpen]       = useState(false);
   const [notes, setNotes]             = useState('');
   const [notesOpen, setNotesOpen]     = useState(false);
+  const [onHold, setOnHold]           = useState(false);
   const [showRating, setShowRating]   = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [secs, setSecs]               = useState(0);
   const timerRef                      = useRef(null);
 
-  const rate = sessionType === 'video' ? 1.20 : 0.99
+  const rate = parseFloat(searchParams.get('rate')) || (sessionType === 'video' ? 1.20 : 0.99)
   const sessionCost = Math.max(0, parseFloat(((secs / 60) * rate).toFixed(2)))
   const role = user?.user_metadata?.role ?? 'client';
 
@@ -364,14 +376,48 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
           </div>
         )}
 
+        {/* Hold overlay */}
+        {onHold && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0f0f1a]/70 z-20">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-16 h-16 rounded-full bg-[#BA7517]/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-[#BA7517]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
+                </svg>
+              </div>
+              <p className="text-white font-semibold text-lg">Session on hold</p>
+              <p className="text-white/50 text-sm">Waiting for provider to return</p>
+              <button
+                onClick={() => {
+                  setOnHold(false)
+                  const socket = getSocket()
+                  socket?.emit('hold-session', { roomId: channelId, onHold: false })
+                }}
+                className="mt-2 px-4 py-2 rounded-lg bg-[#7F77DD] text-white text-sm font-medium hover:bg-[#534AB7] transition-colors"
+              >
+                Resume session
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Controls bar */}
         <div className="flex items-center justify-between px-4 bg-[#0f0f1a] border-t border-white/10">
           <div className="w-48">
             {joined && (
               <div className="flex flex-col">
                 <span className="text-[10px] text-white/30 uppercase tracking-wide">Session</span>
-                <span className="text-[11px] text-white/60 font-mono tabular-nums">
+                <span className={`text-[11px] font-mono tabular-nums ${
+                  secs >= (parseInt(duration) * 60 - 30) ? 'text-[#E24B4A] animate-pulse font-bold' :
+                  secs >= (parseInt(duration) * 60 - 60) ? 'text-[#BA7517]' :
+                  'text-white/60'
+                }`}>
                   {fmt(secs)} / {duration} min
+                  {secs >= (parseInt(duration) * 60 - 60) && (
+                    <span className="ml-1 text-[9px] uppercase tracking-wider">
+                      {secs >= (parseInt(duration) * 60 - 30) ? 'Ending soon' : 'Wrap up'}
+                    </span>
+                  )}
                 </span>
               </div>
             )}
@@ -387,6 +433,25 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
               onToggleChat={() => setChatOpen(o => !o)}
               onLeave={() => setShowConfirm(true)}
             />
+            <button
+              onClick={() => {
+                setOnHold(!onHold)
+                const socket = getSocket()
+                socket?.emit('hold-session', { roomId: channelId, onHold: !onHold })
+              }}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                onHold ? 'bg-[#BA7517] text-white animate-pulse' : 'bg-white/10 text-white/70 hover:bg-white/20'
+              }`}
+              title={onHold ? 'Resume' : 'Hold'}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                {onHold ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
+                )}
+              </svg>
+            </button>
             <button
               onClick={() => setNotesOpen(o => !o)}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
@@ -410,7 +475,7 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
       )}
 
       {notesOpen && (
-        <div className="w-72 shrink-0 bg-[#1a1a2e] border-l border-white/10 flex flex-col">
+        <div className="absolute top-16 right-4 z-30 w-80 bg-[#1a1a2e]/95 backdrop-blur-sm rounded-xl border border-white/10 shadow-2xl flex flex-col max-h-[70vh]">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
             <span className="text-[13px] font-medium text-white">Session Notes</span>
             <button onClick={() => setNotesOpen(false)} className="text-white/50 hover:text-white text-sm">✕</button>
@@ -419,7 +484,7 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Jot terminology, names, case numbers..."
-            className="flex-1 bg-transparent text-white/80 text-[13px] p-4 resize-none focus:outline-none placeholder:text-white/30"
+            className="flex-1 bg-transparent text-white/80 text-[13px] p-4 resize-none focus:outline-none placeholder:text-white/30 min-h-[200px]"
           />
           <div className="px-4 py-2 border-t border-white/10 text-[10px] text-white/30">
             Notes are private and auto-saved locally

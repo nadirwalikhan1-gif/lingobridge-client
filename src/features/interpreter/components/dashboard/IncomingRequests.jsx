@@ -304,13 +304,13 @@ function RequestCard({ req, onAccept, onDecline }) {
         <div className="flex flex-col gap-2 w-full">
           <button
             onClick={() => onAccept(req.id, req)}
-            className="w-full h-12 text-[14px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
+            className="w-full h-16 text-[16px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
           >
             Accept Call
           </button>
           <button
             onClick={() => onDecline(req.id)}
-            className="w-full h-10 text-[12px] rounded-xl border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors"
+            className="w-full h-12 text-[14px] rounded-xl border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors"
           >
             Decline
           </button>
@@ -450,17 +450,17 @@ const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
         <>
           {/* Full-screen alarm overlay for incoming calls */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+            <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up mx-4">
               {/* Alarm header */}
-              <div className="bg-[#7F77DD] px-5 py-3 flex items-center justify-between">
+              <div className="bg-[#7F77DD] px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-                  <span className="text-[13px] font-semibold text-white">Incoming Call</span>
+                  <span className="text-[16px] font-semibold text-white">Incoming Call</span>
                 </div>
-                <span className="text-[12px] text-white/80">{newCount} request{newCount > 1 ? 's' : ''}</span>
+                <span className="text-[14px] text-white/80">{newCount} request{newCount > 1 ? 's' : ''}</span>
               </div>
 
-              <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+              <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
                 {requests.map(r => (
                   <RequestCard key={r.id} req={r} onAccept={handleAccept} onDecline={handleDecline} />
                 ))}

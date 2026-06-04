@@ -175,7 +175,7 @@ function StarRating({ rating = 0 }) {
 }
 
 function RequestCard({ req, onAccept, onDecline }) {
-  const [secs, setSecs] = useState(req.expiresIn ?? 300)
+  const [secs, setSecs] = useState(req.expiresIn ?? 60)
 
   useEffect(() => {
     const id = setInterval(() => setSecs(s => Math.max(0, s - 1)), 1000)

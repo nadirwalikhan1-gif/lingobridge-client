@@ -93,6 +93,8 @@ export default function CallRoom() {
   const navigate                      = useNavigate();
   const { user }                      = useAuth();
   const [chatOpen, setChatOpen]       = useState(false);
+  const [notes, setNotes]             = useState('');
+  const [notesOpen, setNotesOpen]     = useState(false);
   const [showRating, setShowRating]   = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [secs, setSecs]               = useState(0);
@@ -258,7 +260,7 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <VideoTile
                     track={remoteUser.camOff ? null : (remoteUser.videoTrack ?? null)}
-                    label={remoteUserName ?? interpreterName ?? `Participant ${remoteUser.uid}`}
+                    label={remoteUserName ?? interpreterName ?? (role === 'interpreter' ? 'LEP' : 'Interpreter')}
                     avatarInitials={interpreterInitials}
                     muted={remoteUser.micMuted}
                     camOff={remoteUser.camOff}
@@ -315,7 +317,7 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
                   <div className={`w-20 h-20 rounded-full bg-[#E1F5EE] flex items-center justify-center text-2xl font-semibold text-[#0F6E56] ring-4 transition-all ${!u.micMuted ? 'ring-[#1D9E75]' : 'ring-transparent'}`}>
                     {interpreterInitials}
                   </div>
-                  <p className="text-white/70 text-xs">{remoteUserName ?? interpreterName ?? `Participant ${u.uid}`}</p>
+                  <p className="text-white/70 text-xs">{remoteUserName ?? interpreterName ?? (role === 'interpreter' ? 'LEP' : 'Interpreter')}</p>
                   {u.micMuted && (
                     <span className="flex items-center gap-1 text-[10px] text-[#F09595]">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -347,7 +349,7 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
               )}
               {remoteUsers.map(u => captions[u.uid] ? (
                 <div key={u.uid} className="self-start max-w-[80%] px-3 py-1.5 rounded-lg bg-black/70 text-white text-sm">
-                  <span className="text-[10px] text-white/40 block mb-0.5">{remoteUserName ?? interpreterName ?? 'Participant'}</span>
+                  <span className="text-[10px] text-white/40 block mb-0.5">{remoteUserName ?? interpreterName ?? (role === 'interpreter' ? 'LEP' : 'Interpreter')}</span>
                   {captions[u.uid]}
                 </div>
               ) : null)}
@@ -364,19 +366,39 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
 
         {/* Controls bar */}
         <div className="flex items-center justify-between px-4 bg-[#0f0f1a] border-t border-white/10">
-          <div className="w-24">
-            {sessionType === 'video' && <span className="text-[11px] text-white/30 uppercase tracking-wide">Video call</span>}
+          <div className="w-48">
+            {joined && (
+              <div className="flex flex-col">
+                <span className="text-[10px] text-white/30 uppercase tracking-wide">Session</span>
+                <span className="text-[11px] text-white/60 font-mono tabular-nums">
+                  {fmt(secs)} / {duration} min
+                </span>
+              </div>
+            )}
           </div>
-          <Controls
-            micMuted={micMuted}
-            camOff={camOff}
-            sessionType={sessionType}
-            chatOpen={chatOpen}
-            onToggleMic={toggleMic}
-            onToggleCam={toggleCam}
-            onToggleChat={() => setChatOpen(o => !o)}
-            onLeave={() => setShowConfirm(true)}
-          />
+          <div className="flex items-center gap-2">
+            <Controls
+              micMuted={micMuted}
+              camOff={camOff}
+              sessionType={sessionType}
+              chatOpen={chatOpen}
+              onToggleMic={toggleMic}
+              onToggleCam={toggleCam}
+              onToggleChat={() => setChatOpen(o => !o)}
+              onLeave={() => setShowConfirm(true)}
+            />
+            <button
+              onClick={() => setNotesOpen(o => !o)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                notesOpen ? 'bg-[#7F77DD] text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'
+              }`}
+              title="Notes"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+          </div>
           <div className="w-24" />
         </div>
       </div>
@@ -384,6 +406,24 @@ const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
       {chatOpen && (
         <div className="w-72 shrink-0">
           <ChatSidebar channel={channelId} currentUser={user} />
+        </div>
+      )}
+
+      {notesOpen && (
+        <div className="w-72 shrink-0 bg-[#1a1a2e] border-l border-white/10 flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+            <span className="text-[13px] font-medium text-white">Session Notes</span>
+            <button onClick={() => setNotesOpen(false)} className="text-white/50 hover:text-white text-sm">✕</button>
+          </div>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Jot terminology, names, case numbers..."
+            className="flex-1 bg-transparent text-white/80 text-[13px] p-4 resize-none focus:outline-none placeholder:text-white/30"
+          />
+          <div className="px-4 py-2 border-t border-white/10 text-[10px] text-white/30">
+            Notes are private and auto-saved locally
+          </div>
         </div>
       )}
 

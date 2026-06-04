@@ -190,19 +190,12 @@ function RequestCard({ req, onAccept, onDecline }) {
   const isVideo = req.sessionType === 'video' || req.type === 'video'
 
   const pair = formatLanguagePair(req)
-
   const sector = resolveSector(req.category ?? req.purpose ?? req.domain ?? req.sector)
   const duration = req.duration ?? '—'
   const price    = req.price    ?? '—'
 
   const clientName = req.clientName ?? req.client ?? req.clientId ?? req.requesterName ?? req.requester ?? 'Client'
-  const clientOrg  = req.clientOrg ?? req.organization ?? req.clientOrganization ?? req.company ?? null
   const avatar     = req.avatar ?? (clientName?.[0] ?? 'C').toUpperCase()
-
-  const isReturning = req.isReturningClient === true || req.clientHistory?.sessions > 0
-  const clientRating = req.clientRating ?? req.client?.rating ?? null
-  const isRecording = req.isRecording ?? req.recording ?? false
-  const isUrgent    = req.isUrgent === true || req.urgency === 'emergency' || req.urgency === 'urgent'
   const expectedDuration = req.expectedDuration ?? req.duration ?? '30 min'
 
   const perMinuteRate = req.perMinuteRate ?? req.rate ?? 0.85
@@ -212,105 +205,80 @@ function RequestCard({ req, onAccept, onDecline }) {
   const sectorStyle = getSectorStyle(sector)
 
   return (
-    <div className={`grid gap-x-4 p-4 rounded-xl border-2 items-start transition-all ${
+    <div className={`p-5 rounded-xl border-2 transition-all ${
       urgent
         ? 'border-[#E24B4A] bg-[rgba(226,75,74,0.04)]'
         : 'border-[#7F77DD] bg-[rgba(127,119,221,0.04)]'
-    }`} style={{ gridTemplateColumns: '44px 1fr auto' }}>
-
-      <div className="row-span-2 w-11 h-11 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[13px] font-semibold text-[#534AB7] shrink-0">
-        {avatar}
-      </div>
-
-      <div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={`text-[15px] font-semibold leading-tight ${pair.warning ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
-            {pair.from} → {pair.to}
-          </span>
-          {pair.warning && (
-            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">Unsupported</span>
-          )}
-          <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${
-            isReturning ? 'bg-[#EEEDFE] text-[#534AB7]' : 'bg-[#EAF3DE] text-[#3B6D11]'
-          }`}>
-            {isReturning ? 'Returning' : 'New'}
-          </span>
-          {isUrgent && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FCEBEB] text-[#A32D2D] animate-pulse">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-              </svg>
-              Emergency
-            </span>
-          )}
+    }`}>
+      {/* Top row: Avatar + Language pair + Timer */}
+      <div className="flex items-start gap-3">
+        <div className="w-12 h-12 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[15px] font-semibold text-[#534AB7] shrink-0">
+          {avatar}
         </div>
-
-        <div className="flex flex-wrap items-center gap-2 mt-1.5">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border border-lb-border bg-lb-surface text-lb-muted">
-            {isVideo ? (
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 10l4.553-2.069A1 1 0 0121 8.829v6.342a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
-            ) : (
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-[16px] font-semibold leading-tight ${pair.warning ? 'text-[#A32D2D]' : 'text-lb-ink'}`}>
+              {pair.from} → {pair.to}
+            </span>
+            {pair.warning && (
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">Unsupported</span>
             )}
-            {isVideo ? 'Video' : 'Audio'} · {expectedDuration}
-          </span>
-          <span
-            className="inline-flex text-[11px] font-semibold px-2.5 py-1 rounded-full border"
-            style={{
-              backgroundColor: sectorStyle.bg,
-              color: sectorStyle.text,
-              borderColor: sectorStyle.border,
-            }}
-          >
-            {sector}
-          </span>
-          {isRecording && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FCEBEB] text-[#A32D2D]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E24B4A] animate-pulse" />
-              Recording
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-1.5">
+            <span className="inline-flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-full border border-lb-border bg-lb-surface text-lb-muted">
+              {isVideo ? (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 10l4.553-2.069A1 1 0 0121 8.829v6.342a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+              ) : (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+              )}
+              {isVideo ? 'Video' : 'Audio'} · {expectedDuration}
             </span>
-          )}
+            <span
+              className="inline-flex text-[12px] font-semibold px-2.5 py-1 rounded-full border"
+              style={{
+                backgroundColor: sectorStyle.bg,
+                color: sectorStyle.text,
+                borderColor: sectorStyle.border,
+              }}
+            >
+              {sector}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-[13px] font-semibold text-lb-ink">{clientName}</span>
+            <span className="text-[11px] text-lb-muted">· ${perMinuteRate.toFixed(2)}/min</span>
+          </div>
         </div>
-
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
-          <span className="text-[12px] font-semibold text-lb-ink">{clientName}</span>
-          {clientRating && (
-            <div className="flex items-center gap-1">
-              <StarRating rating={clientRating} />
-              <span className="text-[10px] text-lb-subtle font-semibold">{clientRating}</span>
-            </div>
-          )}
-          {clientOrg && (
-            <span className="text-[10px] text-lb-muted">· {clientOrg}</span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2 mt-1.5">
-          <span className="text-[11px] text-lb-muted">${perMinuteRate.toFixed(2)}/min</span>
-          <span className="text-[11px] text-[#534AB7] font-semibold">≈ ${estimatedEarnings} est.</span>
-        </div>
-      </div>
-
-      <div className="row-span-2 flex flex-col items-end gap-2 justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-[15px] font-semibold text-[#26215C]">{price}</span>
-          <span className={`text-[12px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 font-mono tabular-nums ${
+        <div className="shrink-0">
+          <span className={`text-[14px] font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 font-mono tabular-nums ${
             urgent ? 'bg-[#FCEBEB] text-[#A32D2D]' : 'bg-[#EAF3DE] text-[#3B6D11]'
           }`}>
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" d="M12 6v6l4 2"/></svg>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" d="M12 6v6l4 2"/></svg>
             {fmt(secs)}
           </span>
         </div>
-        <div className="flex flex-col gap-4 w-full">
+      </div>
+
+      {/* Divider */}
+      <div className="my-4 border-t border-lb-border/50" />
+
+      {/* Bottom: Earnings + Accept/Decline */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <span className="text-[11px] text-lb-muted">Estimated earnings</span>
+          <span className="text-[20px] font-bold text-[#26215C]">${estimatedEarnings}</span>
+          <span className="text-[11px] text-[#534AB7]">{price} total · {perMinuteRate.toFixed(2)}/min</span>
+        </div>
+        <div className="flex flex-col gap-2 w-60 shrink-0">
           <button
             onClick={() => onAccept(req.id, req)}
-            className="w-full h-20 text-[20px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
+            className="w-full h-16 text-[16px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
           >
-            Accept Call
+            Accept — ${estimatedEarnings}
           </button>
           <button
             onClick={() => onDecline(req.id)}
-            className="w-full h-14 text-[18px] rounded-xl border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors"
+            className="w-full h-12 text-[14px] rounded-xl text-lb-muted hover:text-[#E24B4A] hover:bg-[#FCEBEB] transition-colors"
           >
             Decline
           </button>
@@ -450,9 +418,9 @@ const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
         <>
           {/* Full-screen alarm overlay for incoming calls */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
-            <div className="w-[95vw] bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+            <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up mx-auto">
               {/* Alarm header */}
-              <div className="bg-[#7F77DD] px-6 py-4 flex items-center justify-between">
+              <div className="bg-[#7F77DD] px-5 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                   <span className="text-[16px] font-semibold text-white">Incoming Call</span>

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { getSocket } from '../../../lib/socket'
 import CommandCenter, { PerformanceTrendPanel } from '../components/dashboard/CommandCenter'
 import IncomingRequests from '../components/dashboard/IncomingRequests'
+import IncomingCallOverlay from '../components/dashboard/IncomingCallOverlay'
 import EarningsChart from '../components/dashboard/EarningsChart'
 import TodaysSchedule from '../components/dashboard/TodaysSchedule'
 import RecentSessions from '../components/dashboard/RecentSessions'
@@ -22,9 +23,11 @@ const STATUS_META = {
 }
 
 export default function InterpreterDashboard() {
-  const [isLoading, setIsLoading]                     = useState(true)
-  const [availability, setAvailability]                 = useState(STATUS.ONLINE)
+  const [isLoading, setIsLoading]           = useState(true)
+  const [availability, setAvailability]     = useState(STATUS.ONLINE)
   const [hasIncomingRequests, setHasIncomingRequests] = useState(false)
+  // Active request object passed up from IncomingRequests for the overlay
+  const [activeRequest, setActiveRequest]   = useState(null)
   const incomingRef = useRef(null)
 
   useEffect(() => {
@@ -35,8 +38,11 @@ export default function InterpreterDashboard() {
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
-    const onNew      = () => setHasIncomingRequests(true)
-    const onCancelled = () => setHasIncomingRequests(false)
+    const onNew       = () => setHasIncomingRequests(true)
+    const onCancelled = () => {
+      setHasIncomingRequests(false)
+      setActiveRequest(null)
+    }
     socket.on('new-request',       onNew)
     socket.on('request-cancelled', onCancelled)
     socket.on('call-accepted',     onCancelled)
@@ -63,25 +69,39 @@ export default function InterpreterDashboard() {
     if (!socket) return
     const onReconnect = () => {
       const meta = STATUS_META[availability]
-      if (meta.socket === 'register') {
-        socket.emit('register', { role: 'interpreter' })
-      }
+      if (meta.socket === 'register') socket.emit('register', { role: 'interpreter' })
     }
     socket.on('connect', onReconnect)
     return () => socket.off('connect', onReconnect)
   }, [availability])
 
-  // 🔴 Scroll to incoming requests when "waiting" is clicked
   const handleWaitingClick = () => {
     if (incomingRef.current) {
       incomingRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
 
+  // Called by IncomingRequests when a new request arrives
+  const handleRequestsChange = (hasRequests, requests) => {
+    setHasIncomingRequests(hasRequests)
+    if (hasRequests && requests?.length > 0) {
+      setActiveRequest(requests[0])
+    } else {
+      setActiveRequest(null)
+    }
+  }
+
+  // No overlay handlers needed — IncomingRequests now renders full-screen overlay internally
+
   if (isLoading) return <DashboardSkeleton />
 
   return (
     <div className="space-y-4 relative">
+
+      {/* Background dim when incoming call active — IncomingRequests handles the overlay */}
+      {hasIncomingRequests && (
+        <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px] pointer-events-none" />
+      )}
 
       {/* Header */}
       <div className="flex items-center justify-between pb-1">
@@ -101,14 +121,9 @@ export default function InterpreterDashboard() {
                   key={statusKey}
                   onClick={() => setAvailability(statusKey)}
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all ${
-                    isActive
-                      ? 'shadow-sm'
-                      : 'text-lb-muted hover:text-lb-ink hover:bg-white/50'
+                    isActive ? 'shadow-sm' : 'text-lb-muted hover:text-lb-ink hover:bg-white/50'
                   }`}
-                  style={isActive ? {
-                    backgroundColor: meta.bg,
-                    color: meta.text,
-                  } : {}}
+                  style={isActive ? { backgroundColor: meta.bg, color: meta.text } : {}}
                 >
                   <span
                     className={`w-2.5 h-2.5 rounded-full ${isActive ? 'animate-pulse' : ''}`}
@@ -120,8 +135,8 @@ export default function InterpreterDashboard() {
             })}
           </div>
           <p className="text-[10px] text-lb-subtle">
-            {availability === STATUS.ONLINE && 'You are visible to clients and will receive calls'}
-            {availability === STATUS.BREAK && 'You are on break — no calls, metrics preserved'}
+            {availability === STATUS.ONLINE  && 'You are visible to clients and will receive calls'}
+            {availability === STATUS.BREAK   && 'You are on break — no calls, metrics preserved'}
             {availability === STATUS.OFFLINE && 'You are hidden from clients'}
           </p>
         </div>
@@ -147,35 +162,23 @@ export default function InterpreterDashboard() {
         onWaitingClick={handleWaitingClick}
       />
 
-      {/* ── INCOMING REQUEST HIGHLIGHT ── */}
-      <div ref={incomingRef} className={`transition-all duration-500 ${
-        hasIncomingRequests
-          ? 'ring-2 ring-[#7F77DD] ring-offset-2 ring-offset-lb-canvas rounded-2xl shadow-[0_0_40px_rgba(127,119,221,0.25)]'
-          : ''
-      }`}>
-        {hasIncomingRequests && (
-          <div className="flex items-center gap-2 px-4 pt-3 pb-1">
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#534AB7] uppercase tracking-widest">
-              <span className="w-2 h-2 rounded-full bg-[#7F77DD] animate-ping inline-block" />
-              Incoming call — respond now
-            </span>
-          </div>
-        )}
-        <IncomingRequests onRequestsChange={setHasIncomingRequests} />
+      {/* ── INCOMING REQUESTS ── */}
+      <div ref={incomingRef}>
+        <IncomingRequests
+          onRequestsChange={handleRequestsChange}
+        />
       </div>
 
       {/* ── REST OF DASHBOARD ── */}
-      <div className={`space-y-4 transition-opacity duration-500 ${hasIncomingRequests ? 'opacity-40 pointer-events-none select-none' : 'opacity-100'}`}>
-
+      <div className={`space-y-4 transition-opacity duration-500 ${
+        hasIncomingRequests ? 'opacity-30 pointer-events-none select-none blur-[1px]' : 'opacity-100'
+      }`}>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          {/* LEFT COLUMN (Operations — 70%) */}
           <div className="xl:col-span-2 space-y-4">
             <TodaysSchedule />
             <RecentSessions />
             <EarningsChart />
           </div>
-
-          {/* RIGHT COLUMN (Finance + Career — 30%) */}
           <div className="space-y-4">
             <PerformanceTrendPanel
               acceptanceRate="94%"
@@ -192,7 +195,6 @@ export default function InterpreterDashboard() {
             <RecentReviews />
           </div>
         </div>
-
       </div>
     </div>
   )

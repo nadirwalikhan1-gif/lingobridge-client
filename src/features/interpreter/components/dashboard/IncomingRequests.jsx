@@ -6,6 +6,24 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSocket } from '../../../../lib/socket'
 
+// ─── Overlay Animations ──────────────────────────────────────────────────────
+const overlayStyles = `
+  @keyframes lb-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes lb-slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .animate-fade-in {
+    animation: lb-fade-in 200ms ease-out forwards;
+  }
+  .animate-slide-up {
+    animation: lb-slide-up 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+`
+
 // ─── FROM languages (English variants only) ───
 const FROM_LANGUAGES = {
   'en':         'English (US)',
@@ -283,18 +301,18 @@ function RequestCard({ req, onAccept, onDecline }) {
             {fmt(secs)}
           </span>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onDecline(req.id)}
-            className="text-[12px] px-4 py-1.5 rounded-lg border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors"
-          >
-            Decline
-          </button>
+        <div className="flex flex-col gap-2 w-full">
           <button
             onClick={() => onAccept(req.id, req)}
-            className="text-[12px] px-4 py-1.5 rounded-lg bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-sm"
+            className="w-full h-12 text-[14px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
           >
-            Accept
+            Accept Call
+          </button>
+          <button
+            onClick={() => onDecline(req.id)}
+            className="w-full h-10 text-[12px] rounded-xl border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors"
+          >
+            Decline
           </button>
         </div>
       </div>
@@ -401,7 +419,9 @@ const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
   const newCount = requests.length
 
   return (
-    <div className={`lb-card transition-all duration-300 ${newCount > 0 ? 'p-5' : ''}`}>
+    <>
+      <style>{overlayStyles}</style>
+      <div className={`lb-card transition-all duration-300 ${newCount > 0 ? 'p-5' : ''}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <h3 className={`font-semibold text-lb-ink transition-all ${newCount > 0 ? 'text-[16px]' : 'text-[14px]'}`}>
@@ -420,27 +440,36 @@ const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
 
       {newCount === 0 ? (
         <>
-          <div className="flex flex-col items-center gap-2 py-4">
-            <div className="w-10 h-10 rounded-full bg-lb-surface flex items-center justify-center">
-              <svg className="w-5 h-5 text-lb-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/>
-              </svg>
-            </div>
-            <p className="text-[13px] font-medium text-lb-ink">No incoming requests</p>
-            <p className="text-[11px] text-lb-muted text-center leading-relaxed">New requests will appear here instantly.<br/>Make sure you&apos;re set to Online to receive them.</p>
+          <div className="flex items-center gap-2 py-2 px-3 rounded-lg bg-lb-surface/50 border border-lb-border/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-lb-border" />
+            <p className="text-[11px] text-lb-muted">No incoming requests — you&apos;re set to Online</p>
           </div>
           <NextSessionBanner />
         </>
       ) : (
         <>
-          <p className="text-[12px] text-lb-muted mb-3">Accept before the timer expires to secure the session</p>
-          <div className="space-y-3">
-            {requests.map(r => (
-              <RequestCard key={r.id} req={r} onAccept={handleAccept} onDecline={handleDecline} />
-            ))}
+          {/* Full-screen alarm overlay for incoming calls */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+              {/* Alarm header */}
+              <div className="bg-[#7F77DD] px-5 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+                  <span className="text-[13px] font-semibold text-white">Incoming Call</span>
+                </div>
+                <span className="text-[12px] text-white/80">{newCount} request{newCount > 1 ? 's' : ''}</span>
+              </div>
+
+              <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+                {requests.map(r => (
+                  <RequestCard key={r.id} req={r} onAccept={handleAccept} onDecline={handleDecline} />
+                ))}
+              </div>
+            </div>
           </div>
         </>
       )}
     </div>
+    </>
   )
 }

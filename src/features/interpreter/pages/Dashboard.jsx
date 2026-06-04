@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
 import CommandCenter, { PerformanceTrendPanel } from '../components/dashboard/CommandCenter'
 import IncomingRequests from '../components/dashboard/IncomingRequests'
@@ -22,6 +23,7 @@ const STATUS_META = {
 }
 
 export default function InterpreterDashboard() {
+  const { user } = useAuth()
   const [isLoading, setIsLoading]           = useState(true)
   const [availability, setAvailability]     = useState(STATUS.ONLINE)
   const [hasIncomingRequests, setHasIncomingRequests] = useState(false)
@@ -102,7 +104,7 @@ export default function InterpreterDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Welcome back, Maria</p>
+          <p className="text-xs text-lb-muted">Welcome back, {user?.displayName ?? user?.name ?? user?.user_metadata?.name ?? 'Interpreter'}</p>
           <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Interpreter workspace</h1>
         </div>
 

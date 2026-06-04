@@ -194,7 +194,7 @@ function RequestCard({ req, onAccept, onDecline }) {
   const duration = req.duration ?? '—'
   const price    = req.price    ?? '—'
 
-  const clientName = req.clientName ?? req.client ?? req.clientId ?? req.requesterName ?? req.requester ?? 'Client'
+  const clientName = req.clientName ?? req.client ?? req.userName ?? req.fromUser ?? req.requesterName ?? req.requester ?? req.name ?? 'Client'
   const avatar     = req.avatar ?? (clientName?.[0] ?? 'C').toUpperCase()
   const expectedDuration = req.expectedDuration ?? req.duration ?? '30 min'
 

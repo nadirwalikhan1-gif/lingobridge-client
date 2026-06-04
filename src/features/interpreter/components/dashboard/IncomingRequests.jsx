@@ -243,11 +243,17 @@ function RequestCard({ req, onAccept, onDecline }) {
             >
               {sector}
             </span>
+            {req.sessionContext && (
+              <span className="text-[11px] text-lb-subtle">{req.sessionContext}</span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-2">
             <span className="text-[13px] font-semibold text-lb-ink">{clientName}</span>
             <span className="text-[11px] text-lb-muted">· ${perMinuteRate.toFixed(2)}/min</span>
           </div>
+          {req.note && (
+            <p className="text-[11px] text-lb-subtle mt-1">{req.note}</p>
+          )}
         </div>
         <div className="shrink-0">
           <span className={`text-[14px] font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 font-mono tabular-nums ${

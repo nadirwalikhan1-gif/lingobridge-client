@@ -205,10 +205,10 @@ function RequestCard({ req, onAccept, onDecline }) {
   const sectorStyle = getSectorStyle(sector)
 
   return (
-    <div className={`p-5 rounded-xl border-2 transition-all ${
+    <div className={`p-4 rounded-xl border transition-all ${
       urgent
-        ? 'border-[#E24B4A] bg-[rgba(226,75,74,0.04)]'
-        : 'border-[#7F77DD] bg-[rgba(127,119,221,0.04)]'
+        ? 'border-[#E24B4A]/60 bg-[rgba(226,75,74,0.03)]'
+        : 'border-[#7F77DD]/60 bg-[rgba(127,119,221,0.03)]'
     }`}>
       {/* Top row: Avatar + Language pair + Timer */}
       <div className="flex items-start gap-3">
@@ -248,12 +248,11 @@ function RequestCard({ req, onAccept, onDecline }) {
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-[13px] font-semibold text-lb-ink">{clientName}</span>
-            <span className="text-[11px] text-lb-muted">· ${perMinuteRate.toFixed(2)}/min</span>
+            <span className="text-[12px] text-lb-muted">${perMinuteRate.toFixed(2)}/min</span>
+            {req.note && (
+              <span className="text-[11px] text-lb-subtle">· {req.note}</span>
+            )}
           </div>
-          {req.note && (
-            <p className="text-[11px] text-lb-subtle mt-1">{req.note}</p>
-          )}
         </div>
         <div className="shrink-0">
           <span className={`text-[14px] font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 font-mono tabular-nums ${
@@ -278,13 +277,13 @@ function RequestCard({ req, onAccept, onDecline }) {
         <div className="flex flex-col gap-2 w-60 shrink-0">
           <button
             onClick={() => onAccept(req.id, req)}
-            className="w-full h-16 text-[16px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
+            className="w-full h-14 text-[16px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
           >
             Accept — ${estimatedEarnings}
           </button>
           <button
             onClick={() => onDecline(req.id)}
-            className="w-full h-12 text-[14px] rounded-xl text-lb-muted hover:text-[#E24B4A] hover:bg-[#FCEBEB] transition-colors"
+            className="w-full h-10 text-[14px] rounded-xl text-lb-muted hover:text-[#E24B4A] hover:bg-[#FCEBEB] transition-colors"
           >
             Decline
           </button>
@@ -434,7 +433,7 @@ const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
                 <span className="text-[14px] text-white/80">{newCount} request{newCount > 1 ? 's' : ''}</span>
               </div>
 
-              <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto w-full">
+              <div className="p-5 space-y-3 max-h-[80vh] overflow-y-auto w-full">
                 {requests.map(r => (
                   <RequestCard key={r.id} req={r} onAccept={handleAccept} onDecline={handleDecline} />
                 ))}

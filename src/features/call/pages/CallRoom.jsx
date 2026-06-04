@@ -15,7 +15,11 @@ function fmt(s) {
 }
 
 // ─── Session Context Panel — Fix #7 ──────────────────────────────────────────
-function SessionContextPanel({ fromLang, toLang, category, sessionType, duration, rate }) {
+function SessionContextPanel({ fromLang, toLang, category, sessionType, duration, rate, secs }) {
+  const durationSeconds = parseInt(duration) * 60 || 300
+  const remaining = Math.max(0, durationSeconds - (secs || 0))
+  const isUrgent = remaining <= 60
+  const isWarning = remaining <= 120 && remaining > 60
   // Resolve display names using LANGUAGE_LABELS (Fix #2)
   const fromLabel = LANGUAGE_LABELS[fromLang] || fromLang || '—'
   const toLabel   = LANGUAGE_LABELS[toLang]   || toLang   || '—'

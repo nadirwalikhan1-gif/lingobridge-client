@@ -301,16 +301,16 @@ function RequestCard({ req, onAccept, onDecline }) {
             {fmt(secs)}
           </span>
         </div>
-        <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-col gap-4 w-full">
           <button
             onClick={() => onAccept(req.id, req)}
-            className="w-full h-20 text-[18px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
+            className="w-full h-20 text-[20px] rounded-xl bg-[#7F77DD] text-white font-semibold hover:bg-[#534AB7] transition-colors shadow-lg active:scale-[0.98]"
           >
             Accept Call
           </button>
           <button
             onClick={() => onDecline(req.id)}
-            className="w-full h-14 text-[16px] rounded-xl border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors"
+            className="w-full h-14 text-[18px] rounded-xl border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors"
           >
             Decline
           </button>
@@ -449,7 +449,7 @@ const onCallAccepted = ({ roomId, channelName, agoraToken, sessionType }) => {
       ) : (
         <>
           {/* Full-screen alarm overlay for incoming calls */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
             <div className="w-[95vw] bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
               {/* Alarm header */}
               <div className="bg-[#7F77DD] px-6 py-4 flex items-center justify-between">

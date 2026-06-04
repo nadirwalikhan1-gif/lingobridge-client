@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { getSocket } from '../../../lib/socket'
 import CommandCenter, { PerformanceTrendPanel } from '../components/dashboard/CommandCenter'
 import IncomingRequests from '../components/dashboard/IncomingRequests'
+import IncomingCallOverlay from '../components/dashboard/IncomingCallOverlay'
 import EarningsChart from '../components/dashboard/EarningsChart'
 import TodaysSchedule from '../components/dashboard/TodaysSchedule'
 import RecentSessions from '../components/dashboard/RecentSessions'
@@ -97,10 +98,7 @@ export default function InterpreterDashboard() {
   return (
     <div className="space-y-4 relative">
 
-      {/* Background dim when incoming call active — IncomingRequests handles the overlay */}
-      {hasIncomingRequests && (
-        <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px] pointer-events-none" />
-      )}
+
 
       {/* Header */}
       <div className="flex items-center justify-between pb-1">

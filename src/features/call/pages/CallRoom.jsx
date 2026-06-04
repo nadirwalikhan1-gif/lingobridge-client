@@ -302,32 +302,74 @@ export default function CallRoom() {
           onExtend={handleExtend}
         />
 
-        {/* Timer bar */}
+        {/* Timer bar — Scrn 349 */}
         {joined && (
-          <div className="flex items-center justify-center py-2 bg-[#0f0f1a] border-b border-white/10">
-            {remoteUser ? (
-              <span className="text-white/70 text-sm font-mono tabular-nums tracking-widest">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-black/25 border-b border-white/10">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className={`text-[16px] font-medium font-mono tabular-nums ${
+                onHold ? 'text-[#FAC775]' : 'text-white'
+              }`}>
                 {fmt(secs)}
               </span>
-            ) : (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  {[0, 1, 2].map(i => (
-                    <span
-                      key={i}
-                      className="w-1.5 h-1.5 rounded-full bg-[#7F77DD] animate-pulse"
-                      style={{ animationDelay: `${i * 200}ms` }}
-                    />
-                  ))}
-                </div>
-                <span className="text-white/50 text-sm">Connecting your interpreter</span>
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#7F77DD]/20 text-[#AFA9EC]">
-                  &lt; 1 min
+              {onHold && (
+                <span className="flex items-center gap-1 text-[10px] text-[#FAC775] bg-[rgba(186,117,23,0.2)] border border-[#BA7517]/40 rounded px-1.5 py-0.5">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6"/></svg>
+                  paused
                 </span>
+              )}
+            </div>
+            <div className="flex-1 relative">
+              <div className="h-1 bg-white/10 rounded-full relative overflow-visible">
+                <div 
+                  className="h-full rounded-full transition-all duration-1000"
+                  style={{ 
+                    width: `${Math.min(100, (secs / (parseInt(duration) * 60)) * 100)}%`,
+                    backgroundColor: secs >= (parseInt(duration) * 60 - 30) ? '#E24B4A' : 
+                                     secs >= (parseInt(duration) * 60 - 120) ? '#EF9F27' : '#1D9E75'
+                  }}
+                />
+                <div className="absolute top-[-3px] w-0.5 h-3 rounded-full bg-[#EF9F27]" style={{ left: `${((parseInt(duration) * 60 - 120) / (parseInt(duration) * 60)) * 100}%` }} />
+                <div className="absolute top-[-3px] w-0.5 h-3 rounded-full bg-[#E24B4A]" style={{ left: `${((parseInt(duration) * 60 - 30) / (parseInt(duration) * 60)) * 100}%` }} />
               </div>
-            )}
+            </div>
+            <button
+              onClick={handleExtend}
+              className="flex items-center gap-1.5 text-[12px] text-[#9FE1CB] bg-[rgba(29,158,117,0.12)] border border-[#1D9E75]/35 rounded-md px-2.5 py-1 hover:bg-[rgba(29,158,117,0.2)] transition-colors shrink-0"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0zM12 2v2m0 16v2" />
+              </svg>
+              +5 min
+            </button>
           </div>
         )}
+
+        {/* Participants bar — Scrn 349 */}
+        <div className="flex items-center justify-center gap-4 bg-white/5 border-b border-white/10 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#1D9E75]" />
+            <div>
+              <p className="text-[10px] text-white/40">Provider</p>
+              <p className="text-[12px] font-medium text-white/80">{remoteUserName ?? 'Provider'}</p>
+            </div>
+          </div>
+          <div className="w-px h-6 bg-white/10" />
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#7F77DD]" />
+            <div>
+              <p className="text-[10px] text-white/40">LEP</p>
+              <p className="text-[12px] font-medium text-white/80">{userDisplayName}</p>
+            </div>
+          </div>
+          <div className="w-px h-6 bg-white/10" />
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#EF9F27]" />
+            <div>
+              <p className="text-[10px] text-white/40">Interpreter</p>
+              <p className="text-[12px] font-medium text-white/80">You</p>
+            </div>
+          </div>
+        </div>
 
         {/* Video / Audio area */}
         <div className="flex-1 p-3 overflow-hidden relative">
@@ -484,66 +526,44 @@ export default function CallRoom() {
           </div>
         )}
 
-        {/* Controls bar */}
-        <div className="flex items-center justify-between px-4 bg-[#0f0f1a] border-t border-white/10">
-          <div className="w-48">
-            {joined && (
-              <div className="flex flex-col">
-                <span className="text-[10px] text-white/30 uppercase tracking-wide">Session</span>
-                <span className={`text-[11px] font-mono tabular-nums ${
-                  secs >= (parseInt(duration) * 60 - 30) ? 'text-[#E24B4A] animate-pulse font-bold' :
-                  secs >= (parseInt(duration) * 60 - 60) ? 'text-[#BA7517]' :
-                  'text-white/60'
-                }`}>
-                  {fmt(secs)} / {duration} min
-                  {secs >= (parseInt(duration) * 60 - 60) && (
-                    <span className="ml-1 text-[9px] uppercase tracking-wider">
-                      {secs >= (parseInt(duration) * 60 - 30) ? 'Ending soon' : 'Wrap up'}
-                    </span>
-                  )}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Controls
-              micMuted={micMuted}
-              camOff={camOff}
-              sessionType={sessionType}
-              chatOpen={chatOpen}
-              onToggleMic={toggleMic}
-              onToggleCam={toggleCam}
-              onToggleChat={() => setChatOpen(o => !o)}
-              onLeave={() => setShowConfirm(true)}
-            />
-            <button
-              onClick={() => handleHold(!onHold)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                onHold ? 'bg-[#BA7517] text-white animate-pulse' : 'bg-white/10 text-white/70 hover:bg-white/20'
-              }`}
-              title={onHold ? 'Resume' : 'Hold'}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                {onHold ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
-                )}
-              </svg>
-            </button>
-            <button
-              onClick={() => setNotesOpen(o => !o)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                notesOpen ? 'bg-[#7F77DD] text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'
-              }`}
-              title="Notes"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </button>
-          </div>
-          <div className="w-24" />
+        {/* Toolbar — Scrn 349 */}
+        <div className="grid grid-cols-6 bg-[#111120] border-t border-white/10 py-2">
+          <button onClick={toggleMic} className={`flex flex-col items-center gap-1 py-1.5 rounded-lg mx-1 hover:bg-white/5 transition-colors ${micMuted ? 'text-[#F09595]' : 'text-white/65'}`}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              {micMuted ? <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /> : <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />}
+            </svg>
+            <span className="text-[10px] text-white/40">{micMuted ? 'Unmute' : 'Mute'}</span>
+          </button>
+          <button onClick={toggleCam} className={`flex flex-col items-center gap-1 py-1.5 rounded-lg mx-1 hover:bg-white/5 transition-colors ${camOff ? 'text-[#F09595]' : 'text-white/65'}`}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.829v6.342a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+            </svg>
+            <span className="text-[10px] text-white/40">{camOff ? 'Start video' : 'Stop video'}</span>
+          </button>
+          <button onClick={() => handleHold(!onHold)} className={`flex flex-col items-center gap-1 py-1.5 rounded-lg mx-1 hover:bg-white/5 transition-colors ${onHold ? 'text-[#EF9F27]' : 'text-white/65'}`}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
+            </svg>
+            <span className={`text-[10px] ${onHold ? 'text-[#FAC775]' : 'text-white/40'}`}>{onHold ? 'On hold' : 'Hold'}</span>
+          </button>
+          <button onClick={() => setChatOpen(o => !o)} className={`flex flex-col items-center gap-1 py-1.5 rounded-lg mx-1 hover:bg-white/5 transition-colors ${chatOpen ? 'text-[#7F77DD]' : 'text-white/65'}`}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span className="text-[10px] text-white/40">Chat</span>
+          </button>
+          <button onClick={() => setNotesOpen(o => !o)} className={`flex flex-col items-center gap-1 py-1.5 rounded-lg mx-1 hover:bg-white/5 transition-colors ${notesOpen ? 'text-[#7F77DD]' : 'text-white/65'}`}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span className="text-[10px] text-white/40">Notes</span>
+          </button>
+          <button onClick={() => setShowConfirm(true)} className="flex flex-col items-center gap-1 py-1.5 rounded-lg mx-1 hover:bg-white/5 transition-colors text-[#F09595]/70">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28M5 3a2 2 0 012-2h5.28M5 3L3 5m0 0l2 2" />
+            </svg>
+            <span className="text-[10px] text-[#F09595]/70">End call</span>
+          </button>
         </div>
       </div>
 
@@ -554,20 +574,17 @@ export default function CallRoom() {
       )}
 
       {notesOpen && (
-        <div className="absolute top-16 right-4 z-30 w-80 bg-[#1a1a2e]/95 backdrop-blur-sm rounded-xl border border-white/10 shadow-2xl flex flex-col max-h-[70vh]">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-            <span className="text-[13px] font-medium text-white">Session Notes</span>
-            <button onClick={() => setNotesOpen(false)} className="text-white/50 hover:text-white text-sm">✕</button>
+        <div className="absolute top-3 right-3 z-30 w-44 bg-[rgba(20,20,36,0.9)] border border-white/10 rounded-md shadow-lg flex flex-col max-h-[200px] overflow-hidden">
+          <div className="px-2.5 py-1.5 border-b border-white/10 flex items-center justify-between">
+            <span className="text-[10px] text-white/35 uppercase tracking-wider">Session notes</span>
+            <button onClick={() => setNotesOpen(false)} className="text-white/40 hover:text-white text-[10px]">✕</button>
           </div>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Jot terminology, names, case numbers..."
-            className="flex-1 bg-transparent text-white/80 text-[13px] p-4 resize-none focus:outline-none placeholder:text-white/30 min-h-[200px]"
+            placeholder="Jot terminology..."
+            className="flex-1 bg-transparent text-white/70 text-[11px] p-2.5 resize-none focus:outline-none placeholder:text-white/25 min-h-[80px]"
           />
-          <div className="px-4 py-2 border-t border-white/10 text-[10px] text-white/30">
-            Notes are private and auto-saved locally
-          </div>
         </div>
       )}
 

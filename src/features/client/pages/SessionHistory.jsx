@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Filter } from 'lucide-react';
 import SessionHistoryList from '@/features/client/components/dashboard/SessionHistoryList';
 // FIX: vault-model — import client rates for dynamic pricing
-import { CLIENT_RATES } from '../../../config/constants';
+import { CLIENT_RATES } from '@/config/constants';
 
 export default function SessionHistory() {
   const [dateFilter, setDateFilter] = useState('all');

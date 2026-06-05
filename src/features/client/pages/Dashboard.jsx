@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 // FIX: vault-model — import client rates for dynamic pricing
-import { CLIENT_RATES } from '../../../config/constants'
+import { CLIENT_RATES } from '@/config/constants'
 
 // ─── Language System (7 codes only — synced from BookingPage.jsx) ─────────────
 const LANGUAGE_NAMES = {

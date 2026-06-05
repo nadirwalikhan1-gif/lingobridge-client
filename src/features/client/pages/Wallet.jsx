@@ -1,7 +1,7 @@
 // Wallet.jsx — rebuilt to match interpreter lb-* design language
 // FIX: vault-model — demo transactions and stats use CLIENT_RATES pricing
 
-import { useWallet } from '@/hooks'
+import { useWallet } from '@/hooks/useWallet.js'
 // FIX: vault-model — import client rates for dynamic pricing
 import { CLIENT_RATES } from '../../../config/constants'
 

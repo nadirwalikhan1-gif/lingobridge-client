@@ -1,9 +1,10 @@
 import React from 'react';
 import { ChevronRight, Video, Phone } from 'lucide-react';
+// FIX: vault-model — import client rates for dynamic demo data
+import { CLIENT_RATES } from '../../../config/constants';
 
 /**
  * Reusable StarRating sub-component
- * Extracted to eliminate duplication across SessionHistoryList, SessionHistory, RecentReviews, and Favourites
  */
 function StarRating({ rating, size = 'w-3 h-3' }) {
   return (
@@ -21,11 +22,10 @@ function StarRating({ rating, size = 'w-3 h-3' }) {
   );
 }
 
-// Export StarRating for use in other components
 export { StarRating };
 
 export default function SessionHistoryList({ sessions, showHeader = true, maxItems }) {
-  // Demo data if no sessions prop provided
+  // FIX: vault-model — demo data calculated from CLIENT_RATES instead of hardcoded old prices
   const demoSessions = [
     {
       id: 1,
@@ -33,7 +33,7 @@ export default function SessionHistoryList({ sessions, showHeader = true, maxIte
       type: 'video',
       language: 'Spanish → English',
       duration: '45 min',
-      price: 32.50,
+      minutes: 45,
       rating: 5,
       date: '2024-01-15',
       status: 'completed',
@@ -44,7 +44,7 @@ export default function SessionHistoryList({ sessions, showHeader = true, maxIte
       type: 'audio',
       language: 'French → English',
       duration: '30 min',
-      price: 22.00,
+      minutes: 30,
       rating: 4,
       date: '2024-01-12',
       status: 'completed',
@@ -55,12 +55,16 @@ export default function SessionHistoryList({ sessions, showHeader = true, maxIte
       type: 'video',
       language: 'Mandarin → English',
       duration: '60 min',
-      price: 45.00,
+      minutes: 60,
       rating: 5,
       date: '2024-01-10',
       status: 'completed',
     },
-  ];
+  ].map(s => ({
+    ...s,
+    // FIX: vault-model — compute price dynamically from CLIENT_RATES
+    price: +(s.minutes * (CLIENT_RATES[s.type] || 0)).toFixed(2),
+  }));
 
   const displaySessions = sessions || demoSessions;
   const limitedSessions = maxItems ? displaySessions.slice(0, maxItems) : displaySessions;
@@ -107,12 +111,10 @@ export default function SessionHistoryList({ sessions, showHeader = true, maxIte
             {/* Right Column */}
             <div className="flex flex-col items-end gap-1">
               <p className="text-sm font-semibold text-slate-800">${s.price.toFixed(2)}</p>
-              {/* Date made more readable at text-[10px] */}
               <p className="text-[10px] text-slate-400">{s.date}</p>
               <StarRating rating={s.rating} />
             </div>
 
-            {/* Chevron - appears on hover via group class */}
             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors flex-shrink-0" />
           </div>
         ))}

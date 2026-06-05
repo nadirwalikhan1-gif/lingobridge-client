@@ -1,10 +1,12 @@
 // Dashboard.jsx — Client dashboard v3
+// FIX: vault-model — demo sessions and stats use CLIENT_RATES pricing
 // Languages: 3 English variants (from) → 2 Pashto + 2 Punjabi variants (to)
 // Interpreters: South Asian names matched to correct language/dialect
-// Synced with BookingPage.jsx language codes and langDisplay() helper
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
+// FIX: vault-model — import client rates for dynamic pricing
+import { CLIENT_RATES } from '../../../config/constants'
 
 // ─── Language System (7 codes only — synced from BookingPage.jsx) ─────────────
 const LANGUAGE_NAMES = {
@@ -19,9 +21,6 @@ const LANGUAGE_NAMES = {
 const langDisplay = (code) => LANGUAGE_NAMES[code] ?? code
 
 // ─── Interpreters (South Asian names matched to dialect) ──────────────────────
-// Pashto:           Pashtun tribal surnames (Ahmadzai, Wardak, Shinwari, Safi)
-// Punjabi Gurmukhi: Sikh naming convention — Singh (male) / Kaur (female)
-// Punjabi Shahmukhi: Pakistani Punjabi Muslim surnames (Chaudhry, Butt, Rajput)
 const INTERPRETERS = [
   { id: 1,  name: 'Khalid Ahmadzai',   initials: 'KA', langs: ['ps-east', 'ps-west'] },
   { id: 2,  name: 'Noorullah Wardak',  initials: 'NW', langs: ['ps-east'] },
@@ -35,18 +34,14 @@ const INTERPRETERS = [
   { id: 10, name: 'Usman Rajput',      initials: 'UR', langs: ['pa-shahmukhi'] },
 ]
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const MOCK_STATS = {
-  totalSessions:   '24',
-  sessionsTrend:   '+3 this month',
-  favourites:      '12',
-  favouritesTrend: '+2 new',
-  walletBalance:   '$45.60',
-  walletAvailable: 45.60,
-  walletTrend:     'Available',
+// FIX: vault-model — helper to compute price from minutes and session type
+const computePrice = (minutes, type) => {
+  const rate = CLIENT_RATES[type] || 0
+  return +(minutes * rate).toFixed(2)
 }
 
-const MOCK_SESSIONS = [
+// FIX: vault-model — raw session data with minutes, price computed dynamically
+const MOCK_SESSIONS_RAW = [
   {
     id: 1,
     interpreter: 'Khalid Ahmadzai',
@@ -55,7 +50,7 @@ const MOCK_SESSIONS = [
     toLang:      'ps-east',
     type:        'video',
     duration:    '45 min',
-    price:       '$32.50',
+    minutes:     45,
     rating:      5,
     date:        'Today, 10:30 AM',
   },
@@ -67,7 +62,7 @@ const MOCK_SESSIONS = [
     toLang:      'pa-shahmukhi',
     type:        'audio',
     duration:    '30 min',
-    price:       '$22.00',
+    minutes:     30,
     rating:      4,
     date:        'Yesterday, 2:15 PM',
   },
@@ -79,7 +74,7 @@ const MOCK_SESSIONS = [
     toLang:      'pa-gurmukhi',
     type:        'video',
     duration:    '60 min',
-    price:       '$45.00',
+    minutes:     60,
     rating:      5,
     date:        'Jan 10, 4:00 PM',
   },
@@ -91,11 +86,33 @@ const MOCK_SESSIONS = [
     toLang:      'ps-west',
     type:        'audio',
     duration:    '30 min',
-    price:       '$18.00',
+    minutes:     30,
     rating:      5,
     date:        'Jan 8, 11:00 AM',
   },
 ]
+
+// FIX: vault-model — compute prices from CLIENT_RATES
+const MOCK_SESSIONS = MOCK_SESSIONS_RAW.map(s => ({
+  ...s,
+  price: `$${computePrice(s.minutes, s.type).toFixed(2)}`,
+}))
+
+// FIX: vault-model — compute stats from actual session data
+const totalSpent = MOCK_SESSIONS_RAW.reduce((sum, s) => sum + computePrice(s.minutes, s.type), 0)
+const todaySpent = MOCK_SESSIONS_RAW
+  .filter(s => s.date.startsWith('Today'))
+  .reduce((sum, s) => sum + computePrice(s.minutes, s.type), 0)
+
+const MOCK_STATS = {
+  totalSessions:   '24',
+  sessionsTrend:   '+3 this month',
+  favourites:      '12',
+  favouritesTrend: '+2 new',
+  walletBalance:   '$45.60',
+  walletAvailable: 45.60,
+  walletTrend:     'Available',
+}
 
 const MOCK_ACTIVITY = [
   { id: 1, type: 'session', text: 'Completed video session with Khalid A.', time: '2 hours ago' },
@@ -128,8 +145,7 @@ const MOCK_UPCOMING = [
   },
 ]
 
-// Last session for QuickActions rebook shortcut
-const LAST_SESSION = MOCK_SESSIONS[0] // Khalid Ahmadzai · en-us → ps-east
+const LAST_SESSION = MOCK_SESSIONS[0]
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function VideoIcon({ className = 'w-2.5 h-2.5' }) {
@@ -192,7 +208,6 @@ function ClientStats({ stats }) {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-      {/* Wallet hero */}
       <div className={`rounded-xl px-6 py-5 flex flex-col justify-between min-h-[110px] ${lowBalance ? 'bg-[#7B1F1F]' : 'bg-[#1a1635]'}`}>
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Wallet balance</p>
@@ -211,7 +226,6 @@ function ClientStats({ stats }) {
         </div>
       </div>
 
-      {/* Total sessions */}
       <div className="rounded-xl px-4 py-4 bg-[#EEEDFE] flex flex-col justify-between min-h-[110px]">
         <p className="text-[11px] text-[#534AB7] uppercase tracking-widest font-medium">Total sessions</p>
         <div className="mt-2">
@@ -220,7 +234,6 @@ function ClientStats({ stats }) {
         </div>
       </div>
 
-      {/* Favourites */}
       <div className="rounded-xl px-4 py-4 bg-lb-surface border border-lb-border flex flex-col justify-between min-h-[110px]">
         <p className="text-[10px] text-lb-muted uppercase tracking-widest font-medium">Favourites</p>
         <div>
@@ -442,10 +455,11 @@ function QuickActions({ lastSession }) {
 // ─── Wallet Snapshot ──────────────────────────────────────────────────────────
 function WalletSnapshot({ balance }) {
   const low = balance < 20
+  // FIX: vault-model — compute stats from actual session data
   const rows = [
-    { label: 'Spent today',      value: '$32.50'  },
-    { label: 'Spent this week',  value: '$99.50'  },
-    { label: 'Spent this month', value: '$150.00' },
+    { label: 'Spent today',      value: `$${todaySpent.toFixed(2)}` },
+    { label: 'Spent this week',  value: `$${totalSpent.toFixed(2)}` },
+    { label: 'Spent this month', value: `$${totalSpent.toFixed(2)}` },
   ]
   return (
     <div className="lb-card">
@@ -505,7 +519,6 @@ export default function ClientDashboard() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between pb-1">
         <div>
           <p className="text-xs text-lb-muted">Welcome back, {user?.displayName ?? user?.name ?? 'Client'}</p>
@@ -516,18 +529,14 @@ export default function ClientDashboard() {
         </button>
       </div>
 
-      {/* Stats strip */}
       <ClientStats stats={MOCK_STATS} />
 
-      {/* Main grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {/* Left col — sessions + activity */}
         <div className="xl:col-span-2 space-y-4">
           <RecentSessionsList sessions={MOCK_SESSIONS} />
           <RecentActivity activity={MOCK_ACTIVITY} />
         </div>
 
-        {/* Right col — actions + schedule + wallet */}
         <div className="space-y-4">
           <QuickActions lastSession={LAST_SESSION} />
           <UpcomingSessions sessions={MOCK_UPCOMING} />

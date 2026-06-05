@@ -1,14 +1,48 @@
 // Wallet.jsx — rebuilt to match interpreter lb-* design language
-// Same card anatomy · same token usage · same spacing rhythm
+// FIX: vault-model — demo transactions and stats use CLIENT_RATES pricing
 
-import { useWallet } from '@/hooks/useWallet'
+import { useWallet } from '@/hooks'
+// FIX: vault-model — import client rates for dynamic pricing
+import { CLIENT_RATES } from '../../../config/constants'
 
+// FIX: vault-model — demo transactions computed from rates instead of hardcoded old prices
 const TRANSACTIONS = [
-  { id: 1, type: 'debit',  description: 'Video session with Maria G.', amount: 32.50, date: 'Today, 10:30 AM' },
-  { id: 2, type: 'debit',  description: 'Audio session with John D.',   amount: 22.00, date: 'Yesterday, 2:15 PM' },
-  { id: 3, type: 'credit', description: 'Wallet top-up',                amount: 50.00, date: 'Jan 10, 9:00 AM' },
-  { id: 4, type: 'debit',  description: 'Video session with Sarah C.',  amount: 45.00, date: 'Jan 08, 4:00 PM' },
-]
+  { 
+    id: 1, 
+    type: 'debit',  
+    description: 'Video session with Maria G.', 
+    minutes: 45,
+    sessionType: 'video',
+    date: 'Today, 10:30 AM' 
+  },
+  { 
+    id: 2, 
+    type: 'debit',  
+    description: 'Audio session with John D.',   
+    minutes: 30,
+    sessionType: 'audio',
+    date: 'Yesterday, 2:15 PM' 
+  },
+  { 
+    id: 3, 
+    type: 'credit', 
+    description: 'Wallet top-up',                
+    amount: 50.00, 
+    date: 'Jan 10, 9:00 AM' 
+  },
+  { 
+    id: 4, 
+    type: 'debit',  
+    description: 'Video session with Sarah C.',  
+    minutes: 60,
+    sessionType: 'video',
+    date: 'Jan 08, 4:00 PM' 
+  },
+].map(t => t.type === 'debit' ? {
+  ...t,
+  // FIX: vault-model — compute amount from CLIENT_RATES (audio $1.49, video $1.79)
+  amount: +(t.minutes * (CLIENT_RATES[t.sessionType] || 0)).toFixed(2),
+} : t)
 
 function UpArrow() {
   return (
@@ -36,23 +70,34 @@ export default function Wallet() {
   const { balance } = useWallet()
   const currentBalance = balance ?? 45.60
 
+  // FIX: vault-model — compute stats from actual transaction amounts
+  const todayDebits = TRANSACTIONS
+    .filter(t => t.type === 'debit' && t.date.startsWith('Today'))
+    .reduce((sum, t) => sum + t.amount, 0)
+  const todayCredits = TRANSACTIONS
+    .filter(t => t.type === 'credit' && t.date.startsWith('Today'))
+    .reduce((sum, t) => sum + t.amount, 0)
+  const totalDebits = TRANSACTIONS
+    .filter(t => t.type === 'debit')
+    .reduce((sum, t) => sum + t.amount, 0)
+
   const statsRows = [
-    { label: 'Added today',   value: '$50.00' },
-    { label: 'Spent today',   value: '$32.50' },
-    { label: 'Spent this week', value: '$99.50' },
-    { label: 'Spent this month', value: '$150.00' },
+    { label: 'Added today',      value: `$${todayCredits.toFixed(2)}` },
+    { label: 'Spent today',      value: `$${todayDebits.toFixed(2)}` },
+    { label: 'Spent this week',  value: `$${totalDebits.toFixed(2)}` },
+    { label: 'Spent this month', value: `$${totalDebits.toFixed(2)}` },
   ]
 
   return (
     <div className="space-y-3 max-w-2xl">
 
-      {/* Header — mirrors interpreter page header pattern */}
+      {/* Header */}
       <div className="pb-1">
         <p className="text-xs text-lb-muted">Manage your funds</p>
         <h1 className="text-lg font-medium text-lb-ink mt-0.5">Wallet</h1>
       </div>
 
-      {/* Balance card — same structure as interpreter WalletSummary */}
+      {/* Balance card */}
       <div className="lb-card">
         <h3 className="text-[13px] font-medium text-lb-ink mb-3">Balance summary</h3>
 
@@ -77,7 +122,7 @@ export default function Wallet() {
         </div>
       </div>
 
-      {/* Upgrade nudge — calm, not loud */}
+      {/* Upgrade nudge */}
       <div className="lb-card flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-[#EEEDFE] flex items-center justify-center shrink-0">
           <svg className="w-4 h-4 text-[#534AB7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -93,7 +138,7 @@ export default function Wallet() {
         </button>
       </div>
 
-      {/* Transactions — same row pattern as interpreter RecentSessions */}
+      {/* Transactions */}
       <div className="lb-card">
         <div className="flex items-baseline justify-between mb-3">
           <h3 className="text-[13px] font-medium text-lb-ink">Transactions</h3>
@@ -103,20 +148,17 @@ export default function Wallet() {
         <div className="divide-y divide-lb-border">
           {TRANSACTIONS.map((t) => (
             <div key={t.id} className="flex items-center gap-2.5 py-2">
-              {/* Icon */}
               <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
                 t.type === 'credit' ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-lb-surface text-lb-muted'
               }`}>
                 {t.type === 'credit' ? <UpArrow /> : <DownArrow />}
               </div>
 
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-medium text-lb-ink truncate">{t.description}</p>
                 <p className="text-[11px] text-lb-muted mt-0.5">{t.date}</p>
               </div>
 
-              {/* Amount */}
               <span className={`text-[12px] font-medium shrink-0 ${
                 t.type === 'credit' ? 'text-[#0F6E56]' : 'text-lb-ink'
               }`}>
@@ -127,7 +169,7 @@ export default function Wallet() {
         </div>
       </div>
 
-      {/* Payment methods — same lb-card shell */}
+      {/* Payment methods */}
       <div className="lb-card">
         <div className="flex items-baseline justify-between mb-3">
           <h3 className="text-[13px] font-medium text-lb-ink">Payment methods</h3>

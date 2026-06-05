@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Filter } from 'lucide-react';
 import SessionHistoryList from '@/features/client/components/dashboard/SessionHistoryList';
+// FIX: vault-model — import client rates for dynamic pricing
+import { CLIENT_RATES } from '../../../config/constants';
 
 export default function SessionHistory() {
   const [dateFilter, setDateFilter] = useState('all');
@@ -19,7 +21,7 @@ export default function SessionHistory() {
     { value: 'video', label: 'Video' },
   ];
 
-  // Demo sessions data
+  // FIX: vault-model — demo sessions with minutes field, price computed dynamically
   const allSessions = [
     {
       id: 1,
@@ -27,7 +29,7 @@ export default function SessionHistory() {
       type: 'video',
       language: 'Spanish → English',
       duration: '45 min',
-      price: 32.50,
+      minutes: 45,
       rating: 5,
       date: '2024-01-15',
       status: 'completed',
@@ -38,7 +40,7 @@ export default function SessionHistory() {
       type: 'audio',
       language: 'French → English',
       duration: '30 min',
-      price: 22.00,
+      minutes: 30,
       rating: 4,
       date: '2024-01-12',
       status: 'completed',
@@ -49,7 +51,7 @@ export default function SessionHistory() {
       type: 'video',
       language: 'Mandarin → English',
       duration: '60 min',
-      price: 45.00,
+      minutes: 60,
       rating: 5,
       date: '2024-01-10',
       status: 'completed',
@@ -60,16 +62,19 @@ export default function SessionHistory() {
       type: 'audio',
       language: 'Arabic → English',
       duration: '25 min',
-      price: 18.50,
+      minutes: 25,
       rating: 5,
       date: '2024-01-08',
       status: 'completed',
     },
-  ];
+  ].map(s => ({
+    ...s,
+    // FIX: vault-model — compute price from CLIENT_RATES (audio $1.49, video $1.79)
+    price: +(s.minutes * (CLIENT_RATES[s.type] || 0)).toFixed(2),
+  }));
 
   const filteredSessions = allSessions.filter((s) => {
     if (typeFilter !== 'all' && s.type !== typeFilter) return false;
-    // Date filtering logic would go here
     return true;
   });
 
@@ -82,7 +87,6 @@ export default function SessionHistory() {
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-slate-400" />
 
-          {/* Date Filter - styled select */}
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
@@ -93,7 +97,6 @@ export default function SessionHistory() {
             ))}
           </select>
 
-          {/* Session Type Toggle Chips */}
           <div className="flex items-center gap-1">
             {typeOptions.map((opt) => (
               <button
@@ -112,7 +115,6 @@ export default function SessionHistory() {
         </div>
       </div>
 
-      {/* Use SessionHistoryList component - single source of truth */}
       <SessionHistoryList sessions={filteredSessions} showHeader={false} />
     </div>
   );

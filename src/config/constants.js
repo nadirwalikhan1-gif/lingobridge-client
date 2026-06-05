@@ -4,15 +4,14 @@ export const ROLES = {
   INTERPRETER: 'interpreter',
   CLIENT: 'client',
 }
+
 // ── Languages ──
-// FROM: English variants (source language)
 export const FROM_LANGUAGES = [
   { code: 'en-us', label: 'English (US)', flag: 'https://flagcdn.com/w40/us.png' },
   { code: 'en-ca', label: 'English (Canada)', flag: 'https://flagcdn.com/w40/ca.png' },
   { code: 'en-gb', label: 'English (UK)', flag: 'https://flagcdn.com/w40/gb.png' },
 ]
 
-// TO: Pashto & Punjabi variants (target language)
 export const TO_LANGUAGES = [
   { code: 'ps-east', label: 'Pashto (Eastern)', flag: 'https://flagcdn.com/w40/pk.png' },
   { code: 'ps-west', label: 'Pashto (Western)', flag: 'https://flagcdn.com/w40/af.png' },
@@ -20,7 +19,6 @@ export const TO_LANGUAGES = [
   { code: 'pa-gurmukhi', label: 'Punjabi (Gurmukhi)', flag: 'https://flagcdn.com/w40/in.png' },
 ]
 
-// Combined for session summary display
 export const ALL_LANGUAGES = [...FROM_LANGUAGES, ...TO_LANGUAGES]
 export const LANGUAGE_LABELS = Object.fromEntries(
   ALL_LANGUAGES.map((l) => [l.code, l.label])
@@ -32,29 +30,77 @@ export const SESSION_TYPES = [
   { value: 'video', label: 'Video Call', icon: 'Video' },
 ]
 
-// ── Durations & Pricing ──
+// ── Durations ──
 export const DURATIONS = [5, 10, 15, 30, 45, 60]
 
-export const AUDIO_PRICE_PER_MINUTE = 0.99
-export const VIDEO_PRICE_PER_MINUTE = 1.20
-export const INTERPRETER_AUDIO_PAY = 0.45
-export const INTERPRETER_VIDEO_PAY = 0.50
-export const PLATFORM_FEE_RATE = 0.05
+// FIX: vault-model — client rates (what client pays per active minute)
+export const CLIENT_RATES = {
+  audio: 1.49,
+  video: 1.79,
+}
 
+// FIX: vault-model — interpreter earnings (never exposed to client UI)
+export const INTERPRETER_EARN_RATES = {
+  audio: 0.45,
+  video: 0.50,
+}
+
+// FIX: vault-model — interpreter hold pay (flat, any session type)
+export const INTERPRETER_HOLD_EARN_RATE = 0.10
+
+// FIX: vault-model — minimum payout threshold
+export const MIN_PAYOUT = 50.00
+
+// FIX: vault-model — hold tier rates (what client pays during hold)
+export const HOLD_TIERS = {
+  audio: [
+    { upTo: 5, rate: 0.00 },
+    { upTo: 10, rate: 0.65 },
+    { upTo: Infinity, rate: 1.49 },
+  ],
+  video: [
+    { upTo: 5, rate: 0.00 },
+    { upTo: 10, rate: 0.75 },
+    { upTo: Infinity, rate: 1.79 },
+  ],
+}
+
+// DEPRECATED: old pricing — remove after full migration
+// export const AUDIO_PRICE_PER_MINUTE = 0.99
+// export const VIDEO_PRICE_PER_MINUTE = 1.20
+// export const PLATFORM_FEE_RATE = 0.05
+
+// FIX: vault-model — client price calculator
 export function calculatePrice(minutes, sessionType = 'audio') {
-  const rate = sessionType === 'video' ? VIDEO_PRICE_PER_MINUTE : AUDIO_PRICE_PER_MINUTE
-  const base = minutes * rate
-  const fee = base * PLATFORM_FEE_RATE
+  const rate = CLIENT_RATES[sessionType] ?? 1.49
   return {
-    base: Number(base.toFixed(2)),
-    fee: Number(fee.toFixed(2)),
-    total: Number((base + fee).toFixed(2)),
+    base: Number((minutes * rate).toFixed(2)),
+    total: Number((minutes * rate).toFixed(2)),
   }
 }
 
+// FIX: vault-model — interpreter pay calculator
 export function calculateInterpreterPay(minutes, sessionType = 'audio') {
-  const rate = sessionType === 'video' ? INTERPRETER_VIDEO_PAY : INTERPRETER_AUDIO_PAY
+  const rate = INTERPRETER_EARN_RATES[sessionType] ?? 0.45
   return Number((minutes * rate).toFixed(2))
+}
+
+// FIX: vault-model — hold cost calculator (client perspective)
+export function calculateHoldCost(holdMinutes, sessionType = 'audio') {
+  const tiers = HOLD_TIERS[sessionType] ?? HOLD_TIERS.audio
+  let cost = 0
+  let cursor = 0
+
+  for (const tier of tiers) {
+    if (cursor >= holdMinutes) break
+    const tierEnd = Math.min(holdMinutes, tier.upTo)
+    const minutesInTier = tierEnd - cursor
+    if (minutesInTier <= 0) continue
+    cost += minutesInTier * tier.rate
+    cursor = tierEnd
+  }
+
+  return Number(cost.toFixed(2))
 }
 
 // ── Interpreter Specialties ──
@@ -88,7 +134,7 @@ export const PAYOUT_METHODS = [
   { value: 'wise', label: 'Wise' },
 ]
 
-// ── API (stub) ──
+// ── API ──
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 
 export const ENDPOINTS = {

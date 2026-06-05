@@ -30,6 +30,12 @@ import CategoryGrid from '../components/CategoryGrid'
 import InterpreterCards from '../components/InterpreterCards'
 import SessionSummary from '../components/SessionSummary'
 
+// FIX: vault-model — import new rates (USD only)
+import {
+  CLIENT_RATES,
+  HOLD_TIERS,
+} from '../../../config/constants'
+
 // ─── Static Data ───────────────────────────────────────────────────────────────
 const INTERPRETERS = [
   { id: 1, name: 'Abid Khan' },
@@ -129,6 +135,14 @@ function RepeatIcon() {
   return (
     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+  )
+}
+// FIX: vault-model — info icon for hold cost preview
+function InfoIcon() {
+  return (
+    <svg className="w-3.5 h-3.5 text-lb-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 16v-4m0-4h.01" />
     </svg>
   )
 }
@@ -361,14 +375,27 @@ export default function BookingPage() {
     setStep(6)
   }
 
-  // ─── Derived values ───────────────────────────────────────────────────────
-  const rate           = sessionType === 'video' ? 1.20 : 0.99
+  // ─── FIX: vault-model pricing ───────────────────────────────────────────
+  const rate           = sessionType ? CLIENT_RATES[sessionType] : 0
   const base           = duration ? +(duration * rate).toFixed(2) : 0
-  const platformFee    = +(base * 0.05).toFixed(2)
-  const total          = +(base + platformFee).toFixed(2)
+  const total          = base // vault-model: no platform fee shown to client (spread is internal)
   const interpreterName = INTERPRETERS.find((i) => i.id === selectedInterpreter)?.name ?? null
   const fromLangName   = langDisplay(fromLang)
   const toLangName     = langDisplay(toLang)
+
+  // FIX: vault-model — hold cost preview helper
+  const holdCostPreview = (holdMinutes) => {
+    const tiers = HOLD_TIERS[sessionType || 'audio']
+    let cost = 0, cursor = 0
+    for (const tier of tiers) {
+      if (cursor >= holdMinutes) break
+      const tierEnd = Math.min(holdMinutes, tier.upTo)
+      const minutesInTier = tierEnd - cursor
+      if (minutesInTier > 0) cost += minutesInTier * tier.rate
+      cursor = tierEnd
+    }
+    return cost.toFixed(2)
+  }
 
   // Fix #11: insufficient funds only applies when wallet is the chosen payment method
   const walletCoversTotal    = total <= WALLET_BALANCE
@@ -649,6 +676,19 @@ export default function BookingPage() {
                         value={interpreterName ?? '—'}
                         onEdit={() => { setDirection('back'); setStep(5) }}
                       />
+                    </div>
+
+                    {/* FIX: vault-model — hold cost preview */}
+                    <div className="p-3 bg-[#FAEEDA]/40 rounded-lg border border-[#BA7517]/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <InfoIcon />
+                        <p className="text-[11px] font-semibold text-[#854F0B] uppercase tracking-wider">Hold time pricing</p>
+                      </div>
+                      <div className="space-y-1 text-[11px] text-lb-muted">
+                        <p>0–5 min hold: <span className="text-[#1D9E75] font-medium">Free</span></p>
+                        <p>5–10 min hold: <span className="text-lb-ink font-medium">${sessionType === 'video' ? '0.75' : '0.65'}/min</span></p>
+                        <p>10+ min hold: <span className="text-lb-ink font-medium">${sessionType === 'video' ? '1.79' : '1.49'}/min</span> (full rate)</p>
+                      </div>
                     </div>
 
                     {/* Fix #11: Payment — Wallet tile + card tiles */}

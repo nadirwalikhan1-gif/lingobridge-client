@@ -1,9 +1,26 @@
 // SessionTypeSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
+// FIX: vault-model — display client rates ($1.49 audio / $1.79 video)
+
 import { Headphones, Video } from 'lucide-react'
+import { CLIENT_RATES } from '../../../config/constants'
 
 const types = [
-  { value: 'audio', label: 'Audio Call', desc: 'Best for quick conversations', icon: Headphones, available: true },
-  { value: 'video', label: 'Video Call', desc: 'Face-to-face interpretation', icon: Video, available: true },
+  { 
+    value: 'audio', 
+    label: 'Audio Call', 
+    desc: 'Best for quick conversations', 
+    rate: CLIENT_RATES.audio,
+    icon: Headphones, 
+    available: true 
+  },
+  { 
+    value: 'video', 
+    label: 'Video Call', 
+    desc: 'Face-to-face interpretation', 
+    rate: CLIENT_RATES.video,
+    icon: Video, 
+    available: true 
+  },
 ]
 
 export default function SessionTypeSelector({ selected, onSelect }) {
@@ -36,7 +53,11 @@ export default function SessionTypeSelector({ selected, onSelect }) {
               <p className={`text-[13px] font-medium transition-colors ${isActive ? 'text-[#26215C]' : 'text-lb-ink'}`}>
                 {type.label}
               </p>
-              <p className={`text-[10px] mt-0.5 transition-colors ${isActive ? 'text-[#534AB7]' : 'text-lb-muted'}`}>
+              {/* FIX: vault-model — show rate per minute */}
+              <p className={`text-[11px] font-semibold mt-0.5 transition-colors ${isActive ? 'text-[#534AB7]' : 'text-[#7F77DD]'}`}>
+                ${type.rate.toFixed(2)}/min
+              </p>
+              <p className={`text-[10px] mt-0.5 transition-colors ${isActive ? 'text-[#534AB7]/70' : 'text-lb-muted'}`}>
                 {type.desc}
               </p>
             </div>

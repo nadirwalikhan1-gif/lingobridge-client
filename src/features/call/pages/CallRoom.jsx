@@ -7,7 +7,8 @@ import Controls from '../components/Controls';
 import ChatSidebar from '../components/ChatSidebar';
 import RatingModal from '../components/RatingModal';
 import { getSocket } from '../../../lib/socket';
-import { LANGUAGE_LABELS } from '../../../config/constants';
+// FIX: vault-model — import CLIENT_RATES for fallback
+import { LANGUAGE_LABELS, CLIENT_RATES } from '../../../config/constants';
 
 function fmt(s) {
   const m = Math.floor(s / 60), ss = s % 60;
@@ -141,7 +142,8 @@ export default function CallRoom() {
   // FIX: stable ref for `leave` so socket listeners registered once don't capture stale fn
   const leaveRef        = useRef(null);
 
-  const rate = parseFloat(searchParams.get('rate')) || (sessionType === 'video' ? 1.20 : 0.99);
+  // FIX: vault-model — use CLIENT_RATES as fallback instead of old hardcoded 1.20/0.99
+  const rate = parseFloat(searchParams.get('rate')) || CLIENT_RATES[sessionType] || (sessionType === 'video' ? 1.79 : 1.49);
 
   const sessionCost = useMemo(
     () => Math.max(0, parseFloat(((secs / 60) * rate).toFixed(2))),

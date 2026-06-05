@@ -1,10 +1,13 @@
 // DurationSelector.jsx — Fix #9: all options in a single 2×4 grid, no pagination
-import { AUDIO_PRICE_PER_MINUTE, VIDEO_PRICE_PER_MINUTE } from '../../../config/constants'
+// FIX: vault-model — use CLIENT_RATES instead of old per-type constants
+
+import { CLIENT_RATES } from '../../../config/constants'
 
 const DURATIONS = [5, 15, 30, 45, 60, 90, 120, 180]
 
 export default function DurationSelector({ selected, onSelect, sessionType }) {
-  const rate = sessionType === 'video' ? VIDEO_PRICE_PER_MINUTE : AUDIO_PRICE_PER_MINUTE
+  // FIX: vault-model — unified rate lookup
+  const rate = sessionType ? CLIENT_RATES[sessionType] : CLIENT_RATES.audio
 
   return (
     <div className="grid grid-cols-2 gap-2" style={{ gridTemplateRows: 'repeat(4, 1fr)' }}>

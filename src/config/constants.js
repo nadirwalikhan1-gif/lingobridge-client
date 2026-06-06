@@ -34,7 +34,7 @@ export const SESSION_TYPES = [
 export const DURATIONS = [5, 10, 15, 30, 45, 60]
 
 // FIX: vault-model — client rates (what client pays per active minute)
-export const CLIENT_RATES = {
+export const DISPLAY_RATES = {
   audio: 1.49,
   video: 1.79,
 }
@@ -52,16 +52,16 @@ export const INTERPRETER_HOLD_EARN_RATE = 0.10
 export const MIN_PAYOUT = 50.00
 
 // FIX: vault-model — hold tier rates (what client pays during hold)
-export const HOLD_TIERS = {
+export const HOLD_TIER_DISPLAY = {
   audio: [
-    { upTo: 5, rate: 0.00 },
-    { upTo: 10, rate: 0.65 },
-    { upTo: Infinity, rate: 1.49 },
+    { label: 'First 5 minutes',  rate: 'Free'        },
+    { label: '5–10 minutes',     rate: '$0.65 / min'  },
+    { label: 'After 10 minutes', rate: '$1.49 / min'  },
   ],
   video: [
-    { upTo: 5, rate: 0.00 },
-    { upTo: 10, rate: 0.75 },
-    { upTo: Infinity, rate: 1.79 },
+    { label: 'First 5 minutes',  rate: 'Free'        },
+    { label: '5–10 minutes',     rate: '$0.75 / min'  },
+    { label: 'After 10 minutes', rate: '$1.79 / min'  },
   ],
 }
 
@@ -72,9 +72,9 @@ export const HOLD_TIERS = {
 
 // FIX: vault-model — client price calculator
 export function calculatePrice(minutes, sessionType = 'audio') {
-  const rate = CLIENT_RATES[sessionType] ?? 1.49
+  const rate = DISPLAY_RATES[sessionType] ?? 1.49   // was CLIENT_RATES
   return {
-    base: Number((minutes * rate).toFixed(2)),
+    base:  Number((minutes * rate).toFixed(2)),
     total: Number((minutes * rate).toFixed(2)),
   }
 }

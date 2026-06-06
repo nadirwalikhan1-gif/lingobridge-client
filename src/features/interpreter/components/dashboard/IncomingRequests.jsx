@@ -95,7 +95,11 @@ function RequestCard({ req, onAccept, onDecline }) {
   const clientName = req.clientName ?? req.client ?? req.userName ?? req.fromUser ?? req.requesterName ?? req.requester ?? req.name ?? 'Client'
   const avatar = req.avatar ?? (clientName?.[0] ?? 'C').toUpperCase()
   const expectedDuration = req.expectedDuration ?? req.duration ?? '30 min'
-  const perMinuteRate = req.perMinuteRate ?? req.rate ?? 0.85
+ // Replace line 98 with this
+import { INTERPRETER_EARN_RATES } from '../../../../config/constants';
+
+const sessionType = req.sessionType ?? req.call_type ?? 'audio';
+const perMinuteRate = req.perMinuteRate ?? INTERPRETER_EARN_RATES[sessionType];
   const durationMinutes = parseInt(expectedDuration) || 30
   const estimatedEarnings = (perMinuteRate * durationMinutes).toFixed(2)
   const sectorStyle = getSectorStyle(sector)

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSocket } from '../../../../lib/socket'
+import { INTERPRETER_EARN_RATES } from '../../../../config/constants'
 
 const overlayStyles = `
   @keyframes lb-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -95,16 +96,12 @@ function RequestCard({ req, onAccept, onDecline }) {
   const clientName = req.clientName ?? req.client ?? req.userName ?? req.fromUser ?? req.requesterName ?? req.requester ?? req.name ?? 'Client'
   const avatar = req.avatar ?? (clientName?.[0] ?? 'C').toUpperCase()
   const expectedDuration = req.expectedDuration ?? req.duration ?? '30 min'
- // Replace line 98 with this
-import { INTERPRETER_EARN_RATES } from '../../../../config/constants';
-
-const sessionType = req.sessionType ?? req.call_type ?? 'audio';
-const perMinuteRate = req.perMinuteRate ?? INTERPRETER_EARN_RATES[sessionType];
+  const sessionType = req.sessionType ?? req.call_type ?? 'audio'
+  const perMinuteRate = req.perMinuteRate ?? req.rate ?? INTERPRETER_EARN_RATES[sessionType]
   const durationMinutes = parseInt(expectedDuration) || 30
   const estimatedEarnings = (perMinuteRate * durationMinutes).toFixed(2)
   const sectorStyle = getSectorStyle(sector)
 
-  // 🔴 FIX: Returning client and provider org context
   const isReturning = req.isReturning ?? req.returning ?? false
   const providerOrg = req.providerOrg ?? req.organization ?? req.clientOrg ?? req.org ?? null
 
@@ -119,7 +116,6 @@ const perMinuteRate = req.perMinuteRate ?? INTERPRETER_EARN_RATES[sessionType];
           <div className="w-12 h-12 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[15px] font-semibold text-[#534AB7]">
             {avatar}
           </div>
-          {/* 🔴 FIX: Returning client badge on avatar */}
           {isReturning && (
             <span className="absolute -bottom-1 -right-1 text-[8px] font-bold px-1 py-0.5 rounded-full bg-[#534AB7] text-white leading-none">
               ↩
@@ -152,7 +148,6 @@ const perMinuteRate = req.perMinuteRate ?? INTERPRETER_EARN_RATES[sessionType];
             </span>
           </div>
 
-          {/* 🔴 FIX: Provider org + New/Returning label */}
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <span className="text-[12px] text-lb-muted">${perMinuteRate.toFixed(2)}/min</span>
             {providerOrg && (

@@ -38,7 +38,7 @@ export const DISPLAY_RATES = {
   audio: 1.49,
   video: 1.79,
 }
-
+// Alias — keeps existing imports working until fully migrated
 // FIX: vault-model — interpreter earnings (never exposed to client UI)
 export const INTERPRETER_EARN_RATES = {
   audio: 0.45,

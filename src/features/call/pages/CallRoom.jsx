@@ -8,7 +8,7 @@ import ChatSidebar from '../components/ChatSidebar';
 import RatingModal from '../components/RatingModal';
 import { getSocket } from '../../../lib/socket';
 // FIX: vault-model — import CLIENT_RATES for fallback
-import { LANGUAGE_LABELS, CLIENT_RATES } from '../../../config/constants';
+import { LANGUAGE_LABELS, CLIENT_RATES, INTERPRETER_EARN_RATES } from '../../../config/constants';
 
 function fmt(s) {
   const m = Math.floor(s / 60), ss = s % 60;
@@ -143,12 +143,20 @@ export default function CallRoom() {
   const leaveRef        = useRef(null);
 
   // FIX: vault-model — use CLIENT_RATES as fallback instead of old hardcoded 1.20/0.99
-  const rate = parseFloat(searchParams.get('rate')) || CLIENT_RATES[sessionType] || (sessionType === 'video' ? 1.79 : 1.49);
+import { LANGUAGE_LABELS, CLIENT_RATES, INTERPRETER_EARN_RATES } from '../../../config/constants';
 
-  const sessionCost = useMemo(
-    () => Math.max(0, parseFloat(((secs / 60) * rate).toFixed(2))),
-    [secs, rate]
-  );
+// Rate shown in UI depends on role:
+// — interpreters see their earning rate (0.45 audio / 0.50 video)
+// — clients see the display rate (1.49 audio / 1.79 video)
+const role = user?.user_metadata?.role ?? 'client';
+const rate = role === 'interpreter'
+  ? INTERPRETER_EARN_RATES[sessionType]
+  : (parseFloat(searchParams.get('rate')) || CLIENT_RATES[sessionType]);
+
+const sessionCost = useMemo(
+  () => Math.max(0, parseFloat(((secs / 60) * rate).toFixed(2))),
+  [secs, rate]
+);
 
   const role = user?.user_metadata?.role ?? 'client';
 

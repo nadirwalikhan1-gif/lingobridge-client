@@ -57,7 +57,8 @@ export default function Requests() {
         <div className="space-y-2.5">
           {active.map((r) => {
             const domainStyle = DOMAIN_COLORS[r.category] || DOMAIN_COLORS['General']
-            const perMinuteRate = 0.85
+           import { INTERPRETER_EARN_RATES } from '../../../config/constants'
+            const perMinuteRate = INTERPRETER_EARN_RATES[r.sessionType] ?? INTERPRETER_EARN_RATES.audio
             const est = (perMinuteRate * parseInt(r.expectedDuration || 30)).toFixed(2)
 
             return (

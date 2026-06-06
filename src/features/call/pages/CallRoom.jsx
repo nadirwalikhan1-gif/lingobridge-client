@@ -143,7 +143,6 @@ export default function CallRoom() {
   const leaveRef        = useRef(null);
 
   // FIX: vault-model — use CLIENT_RATES as fallback instead of old hardcoded 1.20/0.99
-import { LANGUAGE_LABELS, CLIENT_RATES, INTERPRETER_EARN_RATES } from '../../../config/constants';
 
 // Rate shown in UI depends on role:
 // — interpreters see their earning rate (0.45 audio / 0.50 video)
@@ -158,7 +157,6 @@ const sessionCost = useMemo(
   [secs, rate]
 );
 
-  const role = user?.user_metadata?.role ?? 'client';
 
   const {
     localTracks, remoteUsers, joined,

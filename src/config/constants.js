@@ -38,7 +38,8 @@ export const DISPLAY_RATES = {
   audio: 1.49,
   video: 1.79,
 }
-// Alias — keeps existing imports working until fully migrated
+// Alias — keeps existing CLIENT_RATES imports working across the codebase
+export const CLIENT_RATES = DISPLAY_RATES
 // FIX: vault-model — interpreter earnings (never exposed to client UI)
 export const INTERPRETER_EARN_RATES = {
   audio: 0.45,
@@ -52,16 +53,17 @@ export const INTERPRETER_HOLD_EARN_RATE = 0.10
 export const MIN_PAYOUT = 50.00
 
 // FIX: vault-model — hold tier rates (what client pays during hold)
-export const HOLD_TIER_DISPLAY = {
+// Numeric hold tiers — used by BookingPage and calculateHoldCost
+export const HOLD_TIERS = {
   audio: [
-    { label: 'First 5 minutes',  rate: 'Free'        },
-    { label: '5–10 minutes',     rate: '$0.65 / min'  },
-    { label: 'After 10 minutes', rate: '$1.49 / min'  },
+    { upTo: 5,        rate: 0.00 },
+    { upTo: 10,       rate: 0.65 },
+    { upTo: Infinity, rate: 1.49 },
   ],
   video: [
-    { label: 'First 5 minutes',  rate: 'Free'        },
-    { label: '5–10 minutes',     rate: '$0.75 / min'  },
-    { label: 'After 10 minutes', rate: '$1.79 / min'  },
+    { upTo: 5,        rate: 0.00 },
+    { upTo: 10,       rate: 0.75 },
+    { upTo: Infinity, rate: 1.79 },
   ],
 }
 

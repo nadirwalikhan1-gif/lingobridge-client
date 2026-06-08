@@ -157,7 +157,7 @@ export default function Settings() {
         <Section icon={Monitor} title="Appearance & Accessibility" description="Make LingoBridge work for you">
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[{ key: 'light', label: 'Light', icon: Sun }, { key: 'dark', label: 'Dark', icon: Moon }, { key: 'system', label: 'System', icon: Monitor }].map((theme) => (
+              {[{ key: 'light', label: 'Light', icon: SunIcon }, { key: 'dark', label: 'Dark', icon: MoonIcon }, { key: 'system', label: 'System', icon: Monitor }].map((theme) => (
                 <button
                   key={theme.key}
                   onClick={() => update('theme', theme.key)}
@@ -177,15 +177,15 @@ export default function Settings() {
           </div>
         </Section>
 
-        <Section icon={Smartphone} title="Session Defaults" description="Pre-fill your most common booking preferences">
+        <Section icon={SmartphoneIcon} title="Session Defaults" description="Pre-fill your most common booking preferences">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <SelectField label="Default Session Type" icon={Monitor} value={settings.defaultSessionType} onChange={(e) => update('defaultSessionType', e.target.value)} options={[{ value: 'video', label: 'Video Interpretation' }, { value: 'audio', label: 'Audio Only' }, { value: 'inperson', label: 'In-Person' }]} />
-            <SelectField label="Default Duration" icon={Clock} value={settings.defaultDuration} onChange={(e) => update('defaultDuration', Number(e.target.value))} options={DURATIONS.map((d) => ({ value: d, label: d + ' minutes' }))} />
+            <SelectField label="Default Duration" icon={ClockIcon} value={settings.defaultDuration} onChange={(e) => update('defaultDuration', Number(e.target.value))} options={DURATIONS.map((d) => ({ value: d, label: d + ' minutes' }))} />
           </div>
           <div className="border-t border-slate-100 pt-4 mt-4 space-y-3">
             <Toggle checked={settings.autoRecord} onChange={(v) => update('autoRecord', v)} label="Auto-record sessions" description="Record all sessions by default (with interpreter consent)" />
             <Toggle checked={settings.requireInterpreterCertification} onChange={(v) => update('requireInterpreterCertification', v)} label="Require certified interpreters only" description="Filter for interpreters with verified credentials (recommended for legal/medical)" />
-            <SelectField label="Preferred Interpreter Gender" icon={User} value={settings.preferredGender} onChange={(e) => update('preferredGender', e.target.value)} options={[{ value: 'any', label: 'No preference' }, { value: 'female', label: 'Female' }, { value: 'male', label: 'Male' }]} />
+            <SelectField label="Preferred Interpreter Gender" icon={UserIcon} value={settings.preferredGender} onChange={(e) => update('preferredGender', e.target.value)} options={[{ value: 'any', label: 'No preference' }, { value: 'female', label: 'Female' }, { value: 'male', label: 'Male' }]} />
           </div>
         </Section>
 
@@ -262,18 +262,18 @@ export default function Settings() {
   );
 }
 
-function Sun({ size, className }) {
+function SunIcon({ size, className }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>;
 }
-function Moon({ size, className }) {
+function MoonIcon({ size, className }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>;
 }
-function Clock({ size, className }) {
+function ClockIcon({ size, className }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
 }
-function User({ size, className }) {
+function UserIcon({ size, className }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>;
 }
-function Smartphone({ size, className }) {
+function SmartphoneIcon({ size, className }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>;
 }

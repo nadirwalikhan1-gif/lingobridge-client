@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import {
   ArrowUpRight, ArrowDownLeft, CreditCard, Zap, Search,
   Download, FileText, Calendar, ChevronLeft, ChevronRight, Check,
-  AlertCircle, Receipt, Wallet as WalletIcon, TrendingDown,
+  AlertCircle, Receipt, Plus, TrendingDown,
   TrendingUp, Clock, Loader2,
 } from 'lucide-react';
 
@@ -153,7 +153,7 @@ export default function Wallet() {
             {exporting ? <Loader2 size={12} className="animate-spin" /> : <FileText size={12} />} PDF
           </button>
           <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 text-white text-[12px] font-medium hover:bg-violet-700 transition-colors shadow-sm">
-            <WalletIcon size={12} /> Add Funds
+            <Plus size={12} /> Add Funds
           </button>
         </div>
       </div>

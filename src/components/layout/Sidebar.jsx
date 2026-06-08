@@ -1,10 +1,34 @@
 // Sidebar.jsx — shared sidebar for all roles
-// Added: item.dot (live pulse dot beside label), item.pulseBadge (animates badge)
+// Fixed: name now derives from firstName/lastName/email if name is missing
 
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+
+// ── helpers ──
+const getUserName = (user) => {
+  if (!user) return 'User';
+  return (
+    user.name ||
+    (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : null) ||
+    user.firstName ||
+    user.displayName ||
+    user.email?.split('@')[0] ||
+    'User'
+  );
+};
+
+const getUserInitials = (user) => {
+  const name = getUserName(user);
+  if (name === 'User') return 'U';
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
 
 export default function Sidebar({
   role,
@@ -27,9 +51,13 @@ export default function Sidebar({
     if (onCollapse) {
       onCollapse();
     } else {
-      setInternalCollapsed(c => !c);
+      setInternalCollapsed((c) => !c);
     }
   };
+
+  const userName = getUserName(user);
+  const userInitials = getUserInitials(user);
+  const userEmail = user?.email || '';
 
   return (
     <div
@@ -40,7 +68,11 @@ export default function Sidebar({
       {/* ── Logo ── */}
       <div className={`border-b border-white/8 shrink-0 ${isCollapsed ? 'p-3' : 'p-4'}`}>
         <div className="flex items-center justify-between gap-2">
-          <div className={`w-7 h-7 rounded-lg bg-[#7F77DD] flex items-center justify-center shrink-0 ${isCollapsed ? 'mx-auto' : ''}`}>
+          <div
+            className={`w-7 h-7 rounded-lg bg-[#7F77DD] flex items-center justify-center shrink-0 ${
+              isCollapsed ? 'mx-auto' : ''
+            }`}
+          >
             <span className="text-[11px] font-bold text-white">L</span>
           </div>
 
@@ -61,10 +93,11 @@ export default function Sidebar({
               className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors shrink-0"
               title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              {isCollapsed
-                ? <ChevronRight className="w-3.5 h-3.5" />
-                : <ChevronLeft  className="w-3.5 h-3.5" />
-              }
+              {isCollapsed ? (
+                <ChevronRight className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronLeft className="w-3.5 h-3.5" />
+              )}
             </button>
           )}
         </div>
@@ -74,7 +107,8 @@ export default function Sidebar({
       <nav className="flex-1 overflow-y-auto no-scrollbar py-2 px-2 space-y-0.5">
         {navItems.map((item) => {
           const to = item.to || item.path;
-          const isActive = location.pathname === to || location.pathname.startsWith(`${to}/`);
+          const isActive =
+            location.pathname === to || location.pathname.startsWith(`${to}/`);
 
           return (
             <NavLink
@@ -84,9 +118,7 @@ export default function Sidebar({
               title={isCollapsed ? item.label : undefined}
               className={() =>
                 `relative flex items-center rounded-lg transition-colors ${
-                  isCollapsed
-                    ? 'justify-center p-2.5'
-                    : 'gap-3 px-3 py-2.5'
+                  isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5'
                 } ${
                   isActive
                     ? 'bg-[#7F77DD]/20 text-white'
@@ -109,7 +141,9 @@ export default function Sidebar({
               {/* Label + live dot + badge — hidden when collapsed */}
               {!isCollapsed && (
                 <>
-                  <span className="flex-1 truncate text-[13px] font-medium">{item.label}</span>
+                  <span className="flex-1 truncate text-[13px] font-medium">
+                    {item.label}
+                  </span>
 
                   {/* Live dot — pulsing green indicator (e.g. Live Sessions) */}
                   {item.dot && (
@@ -118,11 +152,13 @@ export default function Sidebar({
 
                   {/* Badge — optional pulse for urgent counts */}
                   {item.badge && (
-                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0 ${
-                      item.pulseBadge
-                        ? 'bg-[#7F77DD] text-white animate-pulse'
-                        : 'bg-[#7F77DD]/20 text-[#A8A3E8]'
-                    }`}>
+                    <span
+                      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0 ${
+                        item.pulseBadge
+                          ? 'bg-[#7F77DD] text-white animate-pulse'
+                          : 'bg-[#7F77DD]/20 text-[#A8A3E8]'
+                      }`}
+                    >
                       {item.badge}
                     </span>
                   )}
@@ -131,9 +167,11 @@ export default function Sidebar({
 
               {/* Collapsed: badge dot — pulses if pulseBadge */}
               {isCollapsed && item.badge && (
-                <span className={`absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full ${
-                  item.pulseBadge ? 'bg-[#E24B4A] animate-pulse' : 'bg-[#7F77DD]'
-                }`} />
+                <span
+                  className={`absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full ${
+                    item.pulseBadge ? 'bg-[#E24B4A] animate-pulse' : 'bg-[#7F77DD]'
+                  }`}
+                />
               )}
 
               {/* Collapsed: live dot — green pulse for dot items */}
@@ -152,7 +190,7 @@ export default function Sidebar({
             <div className="flex justify-center">
               <div className="w-7 h-7 rounded-full bg-[#7F77DD]/20 flex items-center justify-center">
                 <span className="text-[10px] font-semibold text-[#A8A3E8]">
-                  {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+                  {userInitials}
                 </span>
               </div>
             </div>
@@ -166,10 +204,10 @@ export default function Sidebar({
             <div className="flex flex-col items-center gap-2">
               <div
                 className="w-7 h-7 rounded-full bg-[#7F77DD]/20 flex items-center justify-center cursor-default"
-                title={user?.name || 'User'}
+                title={userName}
               >
                 <span className="text-[10px] font-semibold text-[#A8A3E8]">
-                  {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+                  {userInitials}
                 </span>
               </div>
               <button
@@ -185,12 +223,14 @@ export default function Sidebar({
               <div className="flex items-center gap-2.5 mb-2.5">
                 <div className="w-7 h-7 rounded-full bg-[#7F77DD]/20 flex items-center justify-center shrink-0">
                   <span className="text-[10px] font-semibold text-[#A8A3E8]">
-                    {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+                    {userInitials}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-medium text-white truncate">{user?.name || 'User'}</p>
-                  <p className="text-[10px] text-white/40 truncate">{user?.email || ''}</p>
+                  <p className="text-[12px] font-medium text-white truncate">
+                    {userName}
+                  </p>
+                  <p className="text-[10px] text-white/40 truncate">{userEmail}</p>
                 </div>
               </div>
               <button

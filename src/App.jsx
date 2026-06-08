@@ -7,14 +7,16 @@ import InterpreterDashboard from './features/interpreter/pages/Dashboard';
 import BookingPage from './features/booking/pages/BookingPage';
 import LoginPage from './pages/LoginPage';
 
-// Client pages
+// ── Client pages ──────────────────────────────────────────────
 import ClientDashboard from './features/client/pages/Dashboard';
 import SessionHistory from './features/client/pages/SessionHistory';
-import WalletPage from './features/client/pages/Wallet';
-import MessagesPage from './features/client/pages/Messages';
-import FavouritesPage from './features/client/pages/Favourites';
-import ProfilePage from './features/client/pages/Profile';
-import TeamsPage from './features/booking/pages/TeamsPage';
+import Wallet from './features/client/pages/Wallet';
+import Messages from './features/client/pages/Messages';
+import Favourites from './features/client/pages/Favourites';
+import RecentReviews from './features/client/pages/RecentReviews';
+import Profile from './features/client/pages/Profile';
+import Settings from './features/client/pages/Settings';
+import Teams from './features/booking/pages/Teams';
 
 // ─── Route Guards ─────────────────────────────────────────────
 
@@ -29,7 +31,6 @@ function ProtectedRoute({ children, allowedRoles }) {
 
   const role = user.user_metadata?.role;
   if (allowedRoles && !allowedRoles.includes(role)) {
-    // User is authenticated but wrong role → send to their home
     return <Navigate to={roleHome(role)} replace />;
   }
 
@@ -102,12 +103,13 @@ function ClientRoutes() {
         <Route path="dashboard" element={<ClientDashboard />} />
         <Route path="booking" element={<BookingPage />} />
         <Route path="history" element={<SessionHistory />} />
-        <Route path="wallet" element={<WalletPage />} />
-        <Route path="messages" element={<MessagesPage />} />
-        <Route path="favourites" element={<FavouritesPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="teams" element={<TeamsPage />} />
-        <Route path="settings" element={<Placeholder title="Settings" />} />
+        <Route path="wallet" element={<Wallet />} />
+        <Route path="messages" element={<Messages />} />
+        <Route path="favourites" element={<Favourites />} />
+        <Route path="reviews" element={<RecentReviews />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="teams" element={<Teams />} />
+        <Route path="settings" element={<Settings />} />
         <Route path="help" element={<Placeholder title="Help & Support" />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
@@ -122,7 +124,6 @@ export default function App() {
 
   if (loading) return null;
 
-  // Not logged in → only login page is reachable
   if (!user) {
     return (
       <Routes>
@@ -136,10 +137,8 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Root redirect based on actual role */}
       <Route path="/" element={<Navigate to={roleHome(role)} replace />} />
 
-      {/* Admin namespace — guarded */}
       <Route
         path="/admin/*"
         element={
@@ -149,7 +148,6 @@ export default function App() {
         }
       />
 
-      {/* Interpreter namespace — guarded */}
       <Route
         path="/interpreter/*"
         element={
@@ -159,7 +157,6 @@ export default function App() {
         }
       />
 
-      {/* Client namespace — guarded */}
       <Route
         path="/client/*"
         element={
@@ -169,7 +166,6 @@ export default function App() {
         }
       />
 
-      {/* Call room — accessible to all authenticated roles */}
       <Route
         path="/call/:channelId"
         element={

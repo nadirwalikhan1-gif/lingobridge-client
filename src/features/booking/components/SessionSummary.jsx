@@ -4,14 +4,17 @@
 import { Globe, Headphones, Video, Clock, Calendar, User, Tag, AlertTriangle, PauseCircle } from 'lucide-react'
 import { LANGUAGE_LABELS, CLIENT_RATES, HOLD_TIERS } from '../../../config/constants'
 
-function Row({ icon: Icon, label, value, valuePill }) {
+function Row({ icon: Icon, label, value, valuePill, pending }) {
   return (
     <div className="flex items-center justify-between py-1.5">
       <span className="flex items-center gap-1.5 text-[12px] text-lb-muted">
         <Icon className="w-3.5 h-3.5" />
         {label}
       </span>
-      {valuePill ? (
+      {/* FIX 1: pending state renders an em-dash instead of "null", "undefined", or blank */}
+      {pending ? (
+        <span className="text-[12px] text-lb-muted">—</span>
+      ) : valuePill ? (
         <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">
           {value}
         </span>
@@ -34,22 +37,34 @@ export default function SessionSummary({
   currentStep,
   isOnDemand = false,
 }) {
-  // FIX: vault-model — use CLIENT_RATES (what client pays)
-  const rate = sessionType ? CLIENT_RATES[sessionType] : 0
-  const base = duration ? +(duration * rate).toFixed(2) : 0
-  const total = base // vault-model: no platform fee shown to client
+  const rate  = sessionType ? CLIENT_RATES[sessionType] : 0
+  const base  = duration ? +(duration * rate).toFixed(2) : 0
+  const total = base
 
-  const fromLabel = LANGUAGE_LABELS[fromLang] || fromLang
-  const toLabel   = LANGUAGE_LABELS[toLang]   || toLang
+  // FIX 2: Null-safe label resolution.
+  // LANGUAGE_LABELS[null] → undefined, so || null would render the string "null".
+  // We resolve to a display string only when the value is a non-empty string.
+  const fromLabel = (fromLang && LANGUAGE_LABELS[fromLang]) || fromLang || null
+  const toLabel   = (toLang   && LANGUAGE_LABELS[toLang])   || toLang   || null
 
-  // FIX: vault-model — hold cost preview
+  // FIX 3: Derive the language display string and a flag for whether it's complete.
+  // Cases:
+  //   fromLang set, toLang null  → "English (US) → …"   (one side pending)
+  //   both set                   → "English (US) → Pashto (Eastern)"
+  //   neither set                → pending (show em-dash)
+  const languageValue   = fromLabel && toLabel ? `${fromLabel} → ${toLabel}`
+                        : fromLabel             ? `${fromLabel} → …`
+                        : null
+  const languagePending = !languageValue
+
+  // FIX 4: hold cost preview helper (unchanged, kept here for clarity)
   const holdCostPreview = (holdMinutes) => {
     if (!sessionType) return '0.00'
     const tiers = HOLD_TIERS[sessionType]
     let cost = 0, cursor = 0
     for (const tier of tiers) {
       if (cursor >= holdMinutes) break
-      const tierEnd = Math.min(holdMinutes, tier.upTo)
+      const tierEnd       = Math.min(holdMinutes, tier.upTo)
       const minutesInTier = tierEnd - cursor
       if (minutesInTier > 0) cost += minutesInTier * tier.rate
       cursor = tierEnd
@@ -64,15 +79,41 @@ export default function SessionSummary({
 
       {/* Details */}
       <div className="divide-y divide-lb-border">
-        <Row icon={Globe}    label="Language" value={`${fromLabel} → ${toLabel}`} />
+
+        {/* FIX 5: Pass pending={languagePending} so a missing toLang renders "—" not "null" */}
+        <Row
+          icon={Globe}
+          label="Language"
+          value={languageValue}
+          pending={languagePending}
+        />
+
+        {/* FIX 6: Type row — pending when sessionType not yet chosen */}
         <Row
           icon={sessionType === 'video' ? Video : Headphones}
           label="Type"
-          value={sessionType === 'audio' ? 'Audio Call' : sessionType === 'video' ? 'Video Call' : '—'}
+          value={
+            sessionType === 'audio' ? 'Audio Call' :
+            sessionType === 'video' ? 'Video Call' : null
+          }
+          pending={!sessionType}
         />
-        <Row icon={Clock}    label="Duration"   value={duration ? `${duration} minutes` : '—'} />
-        <Row icon={Calendar} label="Date & Time" value={isOnDemand ? 'On-demand · < 1 min' : 'Today, 10:30 AM'} />
 
+        {/* FIX 7: Duration row — pending when not yet chosen */}
+        <Row
+          icon={Clock}
+          label="Duration"
+          value={duration ? `${duration} minutes` : null}
+          pending={!duration}
+        />
+
+        <Row
+          icon={Calendar}
+          label="Date & Time"
+          value={isOnDemand ? 'On-demand · < 1 min' : 'Today, 10:30 AM'}
+        />
+
+        {/* Category and interpreter only appear once selected — no change needed */}
         {selectedCategory && (
           <Row icon={Tag}  label="Category"    value={selectedCategory}    valuePill />
         )}
@@ -90,10 +131,8 @@ export default function SessionSummary({
               <span className="text-[12px] text-lb-muted">{duration} min × ${rate}/min</span>
               <span className="text-[12px] font-medium text-lb-ink">${base.toFixed(2)}</span>
             </div>
-            {/* FIX: vault-model — removed platform fee line (spread is internal) */}
           </div>
 
-          {/* Total */}
           <div className="flex items-baseline justify-between mt-2 pt-2 border-t border-lb-border">
             <span className="text-[11px] text-lb-muted">Total</span>
             <span className="text-[20px] font-medium text-[#26215C]">${total.toFixed(2)}</span>
@@ -101,7 +140,7 @@ export default function SessionSummary({
         </div>
       )}
 
-      {/* FIX: vault-model — hold cost preview (shown when type selected) */}
+      {/* Hold cost preview — shown when session type is selected */}
       {sessionType && (
         <div className="mt-2 pt-2 border-t border-lb-border">
           <div className="flex items-center gap-1.5 mb-1.5">

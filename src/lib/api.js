@@ -62,3 +62,11 @@ export async function createCheckout(planId) {
 }
 
 export { API_URL };
+// axios-style api object for components that import { api }
+export const api = {
+  get: (endpoint, config = {}) => apiCall(endpoint, { method: 'GET', ...config }),
+  post: (endpoint, data, config = {}) => apiCall(endpoint, { method: 'POST', body: JSON.stringify(data), ...config }),
+  put: (endpoint, data, config = {}) => apiCall(endpoint, { method: 'PUT', body: JSON.stringify(data), ...config }),
+  patch: (endpoint, data, config = {}) => apiCall(endpoint, { method: 'PATCH', body: JSON.stringify(data), ...config }),
+  delete: (endpoint, config = {}) => apiCall(endpoint, { method: 'DELETE', ...config }),
+};

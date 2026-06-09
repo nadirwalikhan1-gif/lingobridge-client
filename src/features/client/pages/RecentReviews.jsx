@@ -1,34 +1,41 @@
-import { useState } from 'react'
-import { Star, PenLine, X, Check, ChevronDown, MessageSquarePlus } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import {
+  Star, PenLine, X, Check, ChevronDown, MessageSquarePlus,
+  Loader2, AlertCircle, Filter, ArrowLeft, ThumbsUp, Flag
+} from 'lucide-react'
+import { api } from '@/lib/api'
 
-// FIX 1: Renamed component to MyReviews internally and updated all copy to say
-// "Reviews you wrote" — eliminates ambiguity about who wrote what.
+// ─── API Functions ──────────────────────────────────────────────────────────
+const fetchReviews = async ({ starFilter, interpreterFilter, page = 1, limit = 10 }) => {
+  const { data } = await api.get('/v1/users/me/reviews', {
+    params: { rating: starFilter, interpreter: interpreterFilter, page, limit }
+  })
+  return data
+}
 
-// Sessions the client has attended but NOT yet reviewed — shown as "pending review"
-const UNREVIEWED_SESSIONS = [
-  { id: 'u1', interpreter: 'Khalid Ahmadzai', initials: 'KA', sessionType: 'video', date: 'Jun 8, 2026',  languages: 'English → Pashto (Eastern)' },
-  { id: 'u2', interpreter: 'Noorullah Wardak', initials: 'NW', sessionType: 'audio', date: 'Jun 7, 2026', languages: 'English → Pashto (Eastern)' },
-]
+const fetchPendingReviews = async () => {
+  const { data } = await api.get('/v1/users/me/reviews/pending')
+  return data.sessions
+}
 
-// Reviews the client has already submitted
-const ALL_REVIEWS = [
-  { id: 1, interpreter: 'Maria Gonzalez', initials: 'MG', rating: 5, text: 'Excellent interpretation skills. Very professional and punctual.', date: 'Jan 15, 2024', sessionType: 'video', languages: 'Spanish → English' },
-  { id: 2, interpreter: 'John Doe',       initials: 'JD', rating: 4, text: 'Good session, but had minor audio issues at the start.',          date: 'Jan 12, 2024', sessionType: 'audio', languages: 'English → Spanish' },
-  { id: 3, interpreter: 'Sarah Chen',     initials: 'SC', rating: 5, text: 'Absolutely fantastic! Made the business meeting seamless.',        date: 'Jan 10, 2024', sessionType: 'video', languages: 'Mandarin → English' },
-  { id: 4, interpreter: 'Ahmed Hassan',   initials: 'AH', rating: 3, text: 'Decent but struggled with technical terminology.',                 date: 'Jan 08, 2024', sessionType: 'audio', languages: 'Arabic → English' },
-]
+const submitReview = async ({ sessionId, rating, text }) => {
+  const { data } = await api.post(`/v1/sessions/${sessionId}/reviews`, { rating, text })
+  return data
+}
 
-const STAR_FILTERS = [
-  { value: 'all',    label: 'All Ratings' },
-  { value: '5',      label: '5 Stars'     },
-  { value: '4',      label: '4 Stars'     },
-  { value: '3below', label: '3 & Below'   },
-]
+const markReviewHelpful = async (reviewId) => {
+  await api.post(`/v1/reviews/${reviewId}/helpful`)
+}
 
-// FIX 2: Unique interpreter names for the filter dropdown
-const INTERPRETER_OPTIONS = ['All Interpreters', ...Array.from(new Set(ALL_REVIEWS.map(r => r.interpreter)))]
+const reportReview = async ({ reviewId, reason }) => {
+  await api.post(`/v1/reviews/${reviewId}/report`, { reason })
+}
 
-function StarPicker({ value, onChange }) {
+// ─── Star Picker Component ──────────────────────────────────────────────────
+function StarPicker({ value, onChange, size = 'w-7 h-7' }) {
   const [hovered, setHovered] = useState(0)
   return (
     <div className="flex items-center gap-1">
@@ -39,30 +46,41 @@ function StarPicker({ value, onChange }) {
           onMouseEnter={() => setHovered(s)}
           onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(s)}
-          className="p-0.5 transition-transform hover:scale-110"
+          className="p-0.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-violet-200 rounded"
         >
-          <Star className={`w-7 h-7 transition-colors ${s <= (hovered || value) ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`} />
+          <Star className={`${size} transition-colors ${s <= (hovered || value) ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`} />
         </button>
       ))}
     </div>
   )
 }
 
-// FIX 3: Write-a-Review modal — clients can now submit reviews for unreviewed sessions
+// ─── Write Review Modal ───────────────────────────────────────────────────────
 function WriteReviewModal({ session, onClose, onSubmit }) {
   const [rating, setRating] = useState(0)
-  const [text, setText]     = useState('')
+  const [text, setText] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [hoveredStar, setHoveredStar] = useState(0)
+
+  const mutation = useMutation({
+    mutationFn: submitReview,
+    onSuccess: () => {
+      setSubmitted(true)
+      setTimeout(() => { onSubmit(); onClose() }, 1500)
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to submit review')
+    }
+  })
 
   const handleSubmit = () => {
     if (rating === 0) return
-    setSubmitted(true)
-    setTimeout(() => { onSubmit({ session, rating, text }); onClose() }, 1200)
+    mutation.mutate({ sessionId: session.id, rating, text: text.trim() })
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
           <X size={16} />
         </button>
@@ -86,13 +104,18 @@ function WriteReviewModal({ session, onClose, onSubmit }) {
               <p className="text-[12px] font-semibold text-slate-600 uppercase tracking-wider mb-2">Your Rating <span className="text-red-400">*</span></p>
               <StarPicker value={rating} onChange={setRating} />
               {rating === 0 && <p className="text-[11px] text-red-400 mt-1">Please select a rating to continue</p>}
+              {rating > 0 && (
+                <p className="text-[12px] text-slate-500 mt-1">
+                  {rating === 5 ? 'Excellent' : rating === 4 ? 'Very Good' : rating === 3 ? 'Good' : rating === 2 ? 'Fair' : 'Poor'}
+                </p>
+              )}
             </div>
 
             <div className="mb-6">
               <p className="text-[12px] font-semibold text-slate-600 uppercase tracking-wider mb-2">Your Comments <span className="text-slate-300">(optional)</span></p>
               <textarea
                 value={text}
-                onChange={e => setText(e.target.value)}
+                onChange={e => setText(e.target.value.slice(0, 500))}
                 placeholder="How was the interpretation quality, professionalism, and accuracy?"
                 rows={4}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-violet-400 resize-none leading-relaxed"
@@ -106,10 +129,11 @@ function WriteReviewModal({ session, onClose, onSubmit }) {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={rating === 0}
-                className="flex-1 py-2.5 rounded-xl bg-violet-600 text-[13px] font-semibold text-white hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                disabled={rating === 0 || mutation.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-violet-600 text-[13px] font-semibold text-white hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
-                Submit Review
+                {mutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <PenLine size={14} />}
+                {mutation.isPending ? 'Submitting...' : 'Submit Review'}
               </button>
             </div>
           </>
@@ -119,47 +143,138 @@ function WriteReviewModal({ session, onClose, onSubmit }) {
   )
 }
 
+// ─── Review Card ──────────────────────────────────────────────────────────────
+function ReviewCard({ review, onHelpful, onReport }) {
+  const [showReport, setShowReport] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+
+  return (
+    <div className="p-4 rounded-xl bg-slate-50 hover:bg-violet-50 transition-colors group">
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center text-[12px] font-semibold text-violet-600 shrink-0">
+          {review.initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <div>
+              <p className="text-[13px] font-semibold text-slate-900">{review.interpreter}</p>
+              <p className="text-[10px] text-slate-400">{review.languages} · {review.date}</p>
+            </div>
+            <div className="flex items-center gap-1">
+              {[1,2,3,4,5].map(s => (
+                <Star key={s} className={`w-3 h-3 ${s <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`} />
+              ))}
+            </div>
+          </div>
+
+          {review.text ? (
+            <p className="text-[12px] text-slate-600 leading-relaxed mb-2">{review.text}</p>
+          ) : (
+            <p className="text-[12px] text-slate-300 italic mb-2">No written comment</p>
+          )}
+
+          <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button 
+              onClick={() => onHelpful(review.id)}
+              className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-violet-600 transition-colors"
+            >
+              <ThumbsUp size={12} /> Helpful ({review.helpfulCount ?? 0})
+            </button>
+            <button 
+              onClick={() => setShowReport(!showReport)}
+              className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-red-500 transition-colors"
+            >
+              <Flag size={12} /> Report
+            </button>
+          </div>
+
+          {showReport && (
+            <div className="mt-2 flex items-center gap-2">
+              <select 
+                value={reportReason} 
+                onChange={e => setReportReason(e.target.value)}
+                className="text-[11px] bg-white border border-slate-200 rounded-lg px-2 py-1"
+              >
+                <option value="">Select reason...</option>
+                <option value="inappropriate">Inappropriate content</option>
+                <option value="fake">Fake review</option>
+                <option value="offensive">Offensive language</option>
+                <option value="other">Other</option>
+              </select>
+              <button 
+                onClick={() => { onReport({ reviewId: review.id, reason: reportReason }); setShowReport(false); }}
+                disabled={!reportReason}
+                className="text-[11px] px-2 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-30 transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main Component ─────────────────────────────────────────────────────────
 export default function RecentReviews() {
-  const [starFilter, setStarFilter]           = useState('all')
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const [starFilter, setStarFilter] = useState('all')
   const [interpreterFilter, setInterpreterFilter] = useState('All Interpreters')
-  const [reviews, setReviews]                 = useState(ALL_REVIEWS)
-  const [unreviewed, setUnreviewed]           = useState(UNREVIEWED_SESSIONS)
-  const [modalSession, setModalSession]       = useState(null)
+  const [page, setPage] = useState(1)
+  const [modalSession, setModalSession] = useState(null)
 
-  const averageRating = reviews.length
-    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-    : '—'
-
-  const distribution = [5, 4, 3, 2, 1].map(star => ({
-    star,
-    count: reviews.filter(r => r.rating === star).length,
-    percentage: reviews.length ? Math.round((reviews.filter(r => r.rating === star).length / reviews.length) * 100) : 0,
-  }))
-
-  // FIX 4: Filter by both star rating AND interpreter name
-  const filtered = reviews.filter(r => {
-    const starOk =
-      starFilter === 'all'    ? true :
-      starFilter === '5'      ? r.rating === 5 :
-      starFilter === '4'      ? r.rating === 4 :
-      starFilter === '3below' ? r.rating <= 3  : true
-    const interpOk = interpreterFilter === 'All Interpreters' || r.interpreter === interpreterFilter
-    return starOk && interpOk
+  const { data: reviewsData, isLoading: reviewsLoading } = useQuery({
+    queryKey: ['reviews', starFilter, interpreterFilter, page],
+    queryFn: () => fetchReviews({ starFilter, interpreterFilter, page }),
+    staleTime: 60000,
   })
 
-  const handleReviewSubmitted = ({ session, rating, text }) => {
-    const newReview = {
-      id: Date.now(),
-      interpreter: session.interpreter,
-      initials: session.initials,
-      rating,
-      text: text || '',
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      sessionType: session.sessionType,
-      languages: session.languages,
+  const { data: pendingData, isLoading: pendingLoading } = useQuery({
+    queryKey: ['reviews-pending'],
+    queryFn: fetchPendingReviews,
+    staleTime: 30000,
+  })
+
+  const submitMutation = useMutation({
+    mutationFn: submitReview,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['reviews-pending'] })
+      toast.success('Review submitted successfully')
     }
-    setReviews(prev => [newReview, ...prev])
-    setUnreviewed(prev => prev.filter(s => s.id !== session.id))
+  })
+
+  const helpfulMutation = useMutation({
+    mutationFn: markReviewHelpful,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] })
+  })
+
+  const reportMutation = useMutation({
+    mutationFn: reportReview,
+    onSuccess: () => toast.success('Review reported')
+  })
+
+  const reviews = reviewsData?.reviews ?? []
+  const pendingSessions = pendingData?.sessions ?? []
+  const averageRating = reviewsData?.averageRating ?? '—'
+  const distribution = reviewsData?.distribution ?? []
+  const interpreterOptions = reviewsData?.interpreters ?? ['All Interpreters']
+  const totalPages = reviewsData?.totalPages ?? 1
+
+  const handleReviewSubmitted = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['reviews'] })
+    queryClient.invalidateQueries({ queryKey: ['reviews-pending'] })
+  }, [queryClient])
+
+  if (reviewsLoading && !reviews.length) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 size={32} className="text-violet-600 animate-spin" />
+      </div>
+    )
   }
 
   return (
@@ -174,23 +289,26 @@ export default function RecentReviews() {
 
       <div className="flex-1 flex flex-col items-center justify-start overflow-y-auto py-8 px-3">
         <div className="w-full max-w-lg space-y-4">
-
-          {/* FIX 5: Header copy updated — explicitly says "you wrote" to remove ambiguity */}
           <div className="text-center mb-2">
             <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">My Reviews</h1>
             <p className="text-[14px] text-slate-500 mt-1">Reviews you've written about your interpreters</p>
           </div>
 
-          {/* FIX 6: "Awaiting your review" section — surfaces unreviewed sessions prominently */}
-          {unreviewed.length > 0 && (
+          {/* Pending Reviews Section */}
+          {pendingLoading ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 animate-pulse">
+              <div className="h-4 bg-amber-200 rounded w-1/2 mb-3" />
+              <div className="h-12 bg-amber-100 rounded" />
+            </div>
+          ) : pendingSessions.length > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <MessageSquarePlus size={15} className="text-amber-600" />
                 <p className="text-[13px] font-semibold text-amber-800">
-                  {unreviewed.length} session{unreviewed.length > 1 ? 's' : ''} awaiting your review
+                  {pendingSessions.length} session{pendingSessions.length > 1 ? 's' : ''} awaiting your review
                 </p>
               </div>
-              {unreviewed.map(session => (
+              {pendingSessions.map(session => (
                 <div key={session.id} className="flex items-center gap-3 bg-white rounded-xl p-3 border border-amber-100">
                   <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-[11px] font-semibold text-violet-600 shrink-0">
                     {session.initials}
@@ -210,7 +328,7 @@ export default function RecentReviews() {
             </div>
           )}
 
-          {/* Rating summary */}
+          {/* Rating Summary */}
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <div className="flex items-center gap-8">
               <div className="text-center shrink-0">
@@ -237,13 +355,18 @@ export default function RecentReviews() {
             </div>
           </div>
 
-          {/* FIX 7: Filters — star rating chips + interpreter dropdown side by side */}
+          {/* Filters */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
             <div className="flex items-center gap-2 flex-wrap">
-              {STAR_FILTERS.map(opt => (
+              {[
+                { value: 'all', label: 'All Ratings' },
+                { value: '5', label: '5 Stars' },
+                { value: '4', label: '4 Stars' },
+                { value: '3below', label: '3 & Below' }
+              ].map(opt => (
                 <button
                   key={opt.value}
-                  onClick={() => setStarFilter(opt.value)}
+                  onClick={() => { setStarFilter(opt.value); setPage(1); }}
                   className={`text-[12px] font-medium px-3 py-1.5 rounded-xl border transition-all ${
                     starFilter === opt.value
                       ? 'bg-violet-600 text-white border-violet-600 shadow-sm'
@@ -257,63 +380,76 @@ export default function RecentReviews() {
             <div className="relative ml-auto">
               <select
                 value={interpreterFilter}
-                onChange={e => setInterpreterFilter(e.target.value)}
+                onChange={e => { setInterpreterFilter(e.target.value); setPage(1); }}
                 className="appearance-none bg-white border border-slate-200 text-[12px] text-slate-700 rounded-xl pl-3 pr-8 py-1.5 focus:outline-none focus:border-violet-400 cursor-pointer hover:border-slate-300 transition-colors"
               >
-                {INTERPRETER_OPTIONS.map(name => (
-                  <option key={name}>{name}</option>
+                {interpreterOptions.map(name => (
+                  <option key={name} value={name}>{name}</option>
                 ))}
               </select>
               <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
           </div>
 
-          {/* Reviews list */}
+          {/* Reviews List */}
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-3">
-            {filtered.length === 0 ? (
+            {reviewsLoading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="h-20 bg-slate-100 rounded-xl animate-pulse" />
+              ))
+            ) : reviews.length === 0 ? (
               <div className="flex flex-col items-center py-10 gap-2">
                 <Star size={28} className="text-slate-200" />
                 <p className="text-[14px] text-slate-400">No reviews match your filters</p>
                 <button
-                  onClick={() => { setStarFilter('all'); setInterpreterFilter('All Interpreters') }}
+                  onClick={() => { setStarFilter('all'); setInterpreterFilter('All Interpreters'); setPage(1); }}
                   className="text-[12px] text-violet-600 hover:text-violet-700 transition-colors mt-1"
                 >
                   Clear filters
                 </button>
               </div>
             ) : (
-              filtered.map(review => (
-                <div key={review.id} className="p-4 rounded-xl bg-slate-50 hover:bg-violet-50 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center text-[12px] font-semibold text-violet-600 shrink-0">
-                      {review.initials}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div>
-                          <p className="text-[13px] font-semibold text-slate-900">{review.interpreter}</p>
-                          {/* FIX 8: Show language pair on each review card for context */}
-                          <p className="text-[10px] text-slate-400">{review.languages}</p>
-                        </div>
-                        <span className="text-[10px] text-slate-400 shrink-0 ml-2">{review.date}</span>
-                      </div>
-                      <div className="flex items-center gap-0.5 mb-2">
-                        {[1,2,3,4,5].map(s => (
-                          <Star key={s} className={`w-3 h-3 ${s <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`} />
-                        ))}
-                      </div>
-                      {/* FIX 9: Empty review text handled gracefully */}
-                      {review.text
-                        ? <p className="text-[12px] text-slate-600 leading-relaxed">{review.text}</p>
-                        : <p className="text-[12px] text-slate-300 italic">No written comment</p>
-                      }
-                    </div>
-                  </div>
-                </div>
+              reviews.map(review => (
+                <ReviewCard 
+                  key={review.id} 
+                  review={review} 
+                  onHelpful={helpfulMutation.mutate}
+                  onReport={reportMutation.mutate}
+                />
               ))
             )}
           </div>
 
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30 transition-colors"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map(p => (
+                <button 
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-8 h-8 rounded-lg text-[13px] font-medium transition-colors ${
+                    page === p ? 'bg-violet-600 text-white' : 'text-slate-400 hover:bg-slate-100'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30 transition-colors"
+              >
+                <ArrowLeft size={16} className="rotate-180" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

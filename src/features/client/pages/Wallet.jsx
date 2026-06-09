@@ -511,7 +511,7 @@ export default function Wallet() {
           <div className="flex-1 min-w-0">
             <p className="text-[14px] font-medium text-slate-900">Save 20% — Monthly Plan</p>
             <p className="text-[12px] text-slate-400 mt-0.5">
-              Unlimited sessions for $99/month. Currently paying ~${stats.monthDebits > 0 ? stats.monthDebits.toFixed(0) : "—"}/mo at pay-per-session rates.
+              Unlimited sessions for $99/month. Currently paying ~${stats?.monthDebits > 0 ? `$${stats.monthDebits.toFixed(0)}` : '$0'}/mo at pay-per-session rates.
             </p>
           </div>
           <button 
@@ -725,4 +725,5 @@ export default function Wallet() {
     </div>
   );
 }
+
 

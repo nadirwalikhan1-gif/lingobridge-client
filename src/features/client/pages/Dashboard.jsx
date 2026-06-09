@@ -204,7 +204,7 @@ function RecentSessionsList({ sessions, isLoading, error, navigate }) {
   if (error) return (
     <div className="lb-card p-6 text-center">
       <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-      <p className="text-[13px] text-slate-600">Failed to load sessions</p>
+      <p className="text-[13px] text-slate-600">No sessions yet</p>
       <button 
         onClick={() => window.location.reload()}
         className="text-[12px] text-violet-600 hover:text-violet-700 mt-2"
@@ -545,7 +545,7 @@ export default function ClientDashboard() {
     <div className="space-y-4">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Welcome back, {user?.displayName ?? user?.name ?? 'Client'}</p>
+          <p className="text-xs text-lb-muted">Welcome back, {user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'there'}</p>
           <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Client workspace</h1>
         </div>
         <button 
@@ -617,3 +617,5 @@ export default function ClientDashboard() {
     </div>
   )
 }
+
+

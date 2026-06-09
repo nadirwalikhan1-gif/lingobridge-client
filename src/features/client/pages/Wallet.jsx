@@ -6,7 +6,7 @@ import {
   ArrowUpRight, ArrowDownLeft, CreditCard, Zap, Search,
   Download, FileText, Calendar, ChevronLeft, ChevronRight, Check,
   AlertCircle, Receipt, Plus, TrendingDown, TrendingUp, Clock,
-  Loader2, AlertTriangle, Wallet, ArrowRight, X, Filter
+  Loader2, AlertTriangle, WalletIcon, ArrowRight, X, Filter
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -725,3 +725,4 @@ export default function Wallet() {
     </div>
   );
 }
+

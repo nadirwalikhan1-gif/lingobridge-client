@@ -418,7 +418,7 @@ export default function Wallet() {
         <div className={`lg:col-span-1 rounded-2xl shadow-sm border p-6 ${isNegative ? "bg-red-700 border-red-600" : "bg-[#1C1A2E] border-slate-200"}`}>
           <div className="flex items-center justify-between mb-2">
             <p className="text-[11px] text-white/40 uppercase tracking-wider">Available Balance</p>
-            <Wallet size={16} className="text-white/20" />
+            <WalletIcon size={16} className="text-white/20" />
           </div>
           <p className={`text-[36px] font-bold tracking-tight ${isNegative ? "text-white" : "text-white"}`}>
             {isNegative ? `-$${Math.abs(balance).toFixed(2)}` : `$${balance.toFixed(2)}`}

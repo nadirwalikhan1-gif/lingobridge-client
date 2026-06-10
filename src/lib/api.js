@@ -14,9 +14,11 @@ async function apiCall(endpoint, options = {}) {
     throw new Error('Not authenticated');
   }
 
-  const url = `${API_URL}${endpoint}`;
+  const { params, ...fetchOptions } = options;
+  const queryString = params ? "?" + new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([,v]) => v != null))).toString() : "";
+  const url = `${API_URL}${endpoint}${queryString}`;
   const response = await fetch(url, {
-    ...options,
+    ...fetchOptions,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${session.access_token}`,
@@ -74,4 +76,6 @@ export const api = {
   patch: (endpoint, data, config = {}) => apiCall(endpoint, { method: 'PATCH', body: JSON.stringify(data), ...config }),
   delete: (endpoint, config = {}) => apiCall(endpoint, { method: 'DELETE', ...config }),
 };
+
+
 

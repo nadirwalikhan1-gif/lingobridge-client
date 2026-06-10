@@ -1,8 +1,8 @@
 // EarningsChart.jsx — real earnings data via socket, graceful empty state
 
 import { useState, useEffect, useRef } from 'react'
-import { useAuth } from '../../providers/AuthProvider'
-import { getSocket } from '../../lib/socket'
+import { useAuth } from '../../../../providers/AuthProvider'
+import { getSocket } from '../../../../lib/socket'
 
 // ── Date range label helpers ────────────────────────────────────────────────
 function getCurrentWeekRange() {

@@ -1,8 +1,8 @@
 import { supabase } from './supabase';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+// Normalize: remove ALL trailing slashes
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:10000').replace(/\/+$/, '');
 
-// In-memory cache
 let cachedToken = null;
 
 function getTokenFromStorage() {
@@ -21,17 +21,14 @@ function getTokenFromStorage() {
 }
 
 async function getToken() {
-  // 1. Memory cache (instant)
   if (cachedToken) return cachedToken;
-
-  // 2. localStorage (instant — no async)
+  
   const storageToken = getTokenFromStorage();
   if (storageToken) {
     cachedToken = storageToken;
     return cachedToken;
   }
 
-  // 3. Supabase fallback (slow — only if localStorage empty)
   const { data } = await supabase?.auth?.getSession();
   if (data?.session?.access_token) {
     cachedToken = data.session.access_token;
@@ -57,7 +54,11 @@ async function apiCall(endpoint, options = {}) {
     ? "?" + new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([,v]) => v != null))).toString() 
     : "";
   
-  const url = `${API_URL}${endpoint}${queryString}`;
+  // Bulletproof URL construction
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${API_URL}${cleanEndpoint}${queryString}`;
+  
+  console.log('📡 API URL:', url); // DEBUG: verify in console
   
   const response = await fetch(url, {
     ...fetchOptions,

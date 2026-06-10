@@ -202,20 +202,42 @@ function RequestCard({ req, onAccept, onDecline }) {
   )
 }
 
-function NextSessionBanner() {
+// Renders only when real next-session data is available from the schedule
+function NextSessionBanner({ nextSession }) {
+  if (!nextSession) return null
+
+  const fromLang     = nextSession.fromLang     ?? nextSession.from         ?? null
+  const toLang       = nextSession.toLang       ?? nextSession.to           ?? null
+  const sessionType  = nextSession.sessionType  ?? nextSession.type         ?? null
+  const duration     = nextSession.duration     ?? nextSession.expectedDuration ?? null
+  const minutesUntil = nextSession.minutesUntil ?? nextSession.startsIn     ?? null
+  const earnings     = nextSession.earnings     ?? nextSession.estimatedEarnings ?? null
+
+  // Need at minimum a time and language pair to show anything useful
+  if (!minutesUntil || !fromLang || !toLang) return null
+
+  const details = [fromLang, toLang].filter(Boolean).join(' → ')
+  const meta    = [sessionType, duration].filter(Boolean).join(' · ')
+
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-lb-surface border border-lb-border mt-3">
       <div className="w-1.5 h-8 rounded-full bg-[#7F77DD] shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-medium text-lb-ink">Next session in 47 min</p>
-        <p className="text-[10px] text-lb-muted mt-0.5">English (US) → Pashto Eastern · Video · 60 min</p>
+        <p className="text-[11px] font-medium text-lb-ink">Next session in {minutesUntil} min</p>
+        {(details || meta) && (
+          <p className="text-[10px] text-lb-muted mt-0.5">
+            {[details, meta].filter(Boolean).join(' · ')}
+          </p>
+        )}
       </div>
-      <span className="text-[11px] font-medium text-[#534AB7]">$24.00</span>
+      {earnings && (
+        <span className="text-[11px] font-medium text-[#534AB7] shrink-0">{earnings}</span>
+      )}
     </div>
   )
 }
 
-export default function IncomingRequests({ onRequestsChange }) {
+export default function IncomingRequests({ onRequestsChange, nextSession }) {
   const [requests, setRequests] = useState([])
   const navigate = useNavigate()
   const acceptedRequestRef = useRef(null)
@@ -323,7 +345,7 @@ export default function IncomingRequests({ onRequestsChange }) {
               <span className="w-1.5 h-1.5 rounded-full bg-lb-border" />
               <p className="text-[11px] text-lb-muted">No incoming requests — you&apos;re set to Online</p>
             </div>
-            <NextSessionBanner />
+            <NextSessionBanner nextSession={nextSession} />
           </>
         ) : (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">

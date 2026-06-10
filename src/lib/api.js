@@ -2,51 +2,45 @@ import { supabase } from './supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 
-// In-memory token cache
+// In-memory cache
 let cachedToken = null;
-let tokenPromise = null;
 
-async function getToken() {
-  // Return cached token immediately if available
-  if (cachedToken) return cachedToken;
-
-  // If another call is already fetching, wait for it
-  if (tokenPromise) return tokenPromise;
-
-  // Start fetching (and lock so parallel calls share it)
-  tokenPromise = (async () => {
-    try {
-      // 1. Try Supabase session
-      const { data } = await supabase?.auth?.getSession();
-      if (data?.session?.access_token) {
-        cachedToken = data.session.access_token;
-        return cachedToken;
+function getTokenFromStorage() {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        const parsed = JSON.parse(localStorage.getItem(key));
+        return parsed?.access_token || parsed?.currentSession?.access_token || null;
       }
-
-      // 2. Fallback: localStorage
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
-          const parsed = JSON.parse(localStorage.getItem(key));
-          const token = parsed?.access_token || parsed?.currentSession?.access_token;
-          if (token) {
-            cachedToken = token;
-            return cachedToken;
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Token fetch error:', e);
-    } finally {
-      tokenPromise = null; // release lock
     }
-    return null;
-  })();
-
-  return tokenPromise;
+  } catch (e) {
+    console.error('localStorage read error:', e);
+  }
+  return null;
 }
 
-// Clear cache on 401 so next call refreshes
+async function getToken() {
+  // 1. Memory cache (instant)
+  if (cachedToken) return cachedToken;
+
+  // 2. localStorage (instant — no async)
+  const storageToken = getTokenFromStorage();
+  if (storageToken) {
+    cachedToken = storageToken;
+    return cachedToken;
+  }
+
+  // 3. Supabase fallback (slow — only if localStorage empty)
+  const { data } = await supabase?.auth?.getSession();
+  if (data?.session?.access_token) {
+    cachedToken = data.session.access_token;
+    return cachedToken;
+  }
+
+  return null;
+}
+
 function clearTokenCache() {
   cachedToken = null;
 }
@@ -75,7 +69,7 @@ async function apiCall(endpoint, options = {}) {
   });
 
   if (response.status === 401) {
-    clearTokenCache(); // Token expired, clear cache for next retry
+    clearTokenCache();
   }
 
   if (!response.ok) {

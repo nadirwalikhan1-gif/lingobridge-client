@@ -3,9 +3,13 @@ import { supabase } from './supabase';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 
 async function apiCall(endpoint, options = {}) {
-  const result = await supabase?.auth.getSession();
-  const session = result?.data?.session;
-
+  let session = null;
+  for (let i = 0; i < 10; i++) {
+    const result = await supabase?.auth.getSession();
+    session = result?.data?.session;
+    if (session) break;
+    await new Promise(r => setTimeout(r, 300));
+  }
   if (!session) {
     throw new Error('Not authenticated');
   }
@@ -70,3 +74,4 @@ export const api = {
   patch: (endpoint, data, config = {}) => apiCall(endpoint, { method: 'PATCH', body: JSON.stringify(data), ...config }),
   delete: (endpoint, config = {}) => apiCall(endpoint, { method: 'DELETE', ...config }),
 };
+

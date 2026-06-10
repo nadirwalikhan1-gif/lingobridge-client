@@ -1,8 +1,8 @@
 // RecentReviews.jsx — single featured review card, real data
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../providers/AuthProvider'
-import { getSocket } from '../../lib/socket'
+import { useAuth } from '../../../../providers/AuthProvider'
+import { getSocket } from '../../../../lib/socket'
 
 function getInitials(name = '') {
   return name

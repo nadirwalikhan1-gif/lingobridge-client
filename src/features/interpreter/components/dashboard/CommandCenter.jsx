@@ -1,23 +1,32 @@
-// CommandCenter.jsx — 10/10: Consistent card styling + sparkline trends + earnings card aligned
+// CommandCenter.jsx — no hardcoded defaults for real metrics; safe '—' fallbacks
 
 import { useState } from 'react'
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+function display(v, suffix = '') {
+  return v != null ? `${v}${suffix}` : '—'
+}
+
+// ── CommandCenter ──────────────────────────────────────────────────────────
 export default function CommandCenter({
-  status = 'online',
-  callsReceived = 18,
-  callsAccepted = 17,
-  callsMissed = 1,
-  acceptanceRate = '94%',
-  acceptanceTrend = '+3%',
-  sessionsToday = 12,
-  sessionsTrend = '+2',
-  todayEarnings = '$124.50',
-  earningsTrend = '+12.5%',
-  avgRating = '4.8',
-  ratingTrend = '+0.2',
-  hoursToday = '3h 20m',
-  hoursTrend = '+45m',
-  callsWaiting = 0,
+  // Status is always safe to default
+  status           = 'online',
+  // Real metrics — no fake defaults
+  callsReceived    = null,
+  callsAccepted    = null,
+  callsMissed      = null,
+  acceptanceRate   = null,
+  acceptanceTrend  = null,
+  sessionsToday    = null,
+  sessionsTrend    = null,
+  todayEarnings    = null,
+  earningsTrend    = null,
+  avgRating        = null,
+  ratingTrend      = null,
+  hoursToday       = null,
+  hoursTrend       = null,
+  // Waiting calls badge — safe to default 0
+  callsWaiting     = 0,
   onWaitingClick,
 }) {
   const statusMeta = {
@@ -29,13 +38,16 @@ export default function CommandCenter({
 
   return (
     <div className="lb-card !p-0 overflow-hidden">
-      {/* Top row: Status + Call queue + Acceptance + Rating — all white, consistent */}
+      {/* Top row: Status + Call queue + Acceptance + Rating */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-lb-border">
 
         {/* Status */}
         <div className="bg-white p-4 flex flex-col justify-between">
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: meta.dot }} />
+            <span
+              className="w-2.5 h-2.5 rounded-full animate-pulse"
+              style={{ backgroundColor: meta.dot }}
+            />
             <span className="text-[11px] font-semibold uppercase tracking-widest text-lb-muted">Status</span>
           </div>
           <p className="text-[22px] font-semibold text-lb-ink leading-none">{meta.label}</p>
@@ -51,13 +63,22 @@ export default function CommandCenter({
             <span className="text-[11px] font-semibold uppercase tracking-widest text-lb-muted">Call queue</span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <p className="text-[22px] font-semibold text-lb-ink leading-none">{callsReceived}</p>
+            <p className="text-[22px] font-semibold text-lb-ink leading-none">{display(callsReceived)}</p>
             <span className="text-[11px] text-lb-subtle">received</span>
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="text-[11px] text-[#0F6E56] font-medium">{callsAccepted} accepted</span>
-            <span className="text-[11px] text-lb-subtle">·</span>
-            <span className="text-[11px] text-[#A32D2D] font-medium">{callsMissed} missed</span>
+            {callsAccepted != null && (
+              <span className="text-[11px] text-[#0F6E56] font-medium">{callsAccepted} accepted</span>
+            )}
+            {callsAccepted != null && callsMissed != null && (
+              <span className="text-[11px] text-lb-subtle">·</span>
+            )}
+            {callsMissed != null && (
+              <span className="text-[11px] text-[#A32D2D] font-medium">{callsMissed} missed</span>
+            )}
+            {callsAccepted == null && callsMissed == null && (
+              <span className="text-[11px] text-lb-subtle">—</span>
+            )}
           </div>
         </div>
 
@@ -70,7 +91,9 @@ export default function CommandCenter({
             <span className="text-[11px] font-semibold uppercase tracking-widest text-lb-muted">Acceptance</span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <p className="text-[22px] font-semibold text-[#0F6E56] leading-none">{acceptanceRate}</p>
+            <p className={`text-[22px] font-semibold leading-none ${acceptanceRate != null ? 'text-[#0F6E56]' : 'text-lb-muted'}`}>
+              {display(acceptanceRate)}
+            </p>
             {acceptanceTrend && (
               <span className="text-[11px] text-[#0F6E56] font-medium">↑ {acceptanceTrend}</span>
             )}
@@ -87,40 +110,54 @@ export default function CommandCenter({
             <span className="text-[11px] font-semibold uppercase tracking-widest text-lb-muted">Avg rating</span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <p className="text-[22px] font-semibold text-[#BA7517] leading-none">{avgRating}</p>
+            <p className={`text-[22px] font-semibold leading-none ${avgRating != null ? 'text-[#BA7517]' : 'text-lb-muted'}`}>
+              {display(avgRating)}
+            </p>
             {ratingTrend && (
               <span className="text-[11px] text-[#0F6E56] font-medium">↑ {ratingTrend}</span>
             )}
           </div>
-          <p className="text-[11px] text-lb-subtle mt-1">Based on 128 reviews</p>
+          <p className="text-[11px] text-lb-subtle mt-1">Based on recent reviews</p>
         </div>
       </div>
 
       {/* Bottom row: Earnings (dark) + Sessions + Hours + Waiting */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-lb-border border-t border-lb-border">
 
-        {/* 🔴 FIX: Earnings card keeps dark treatment but matches row height and structure of peers */}
+        {/* Earnings — dark treatment */}
         <div className="bg-[#1a1635] p-4 flex flex-col justify-between">
           <span className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Today's earnings</span>
           <div>
-            <p className="text-[24px] font-semibold text-white leading-none mt-1">{todayEarnings}</p>
-            {earningsTrend && <p className="text-[11px] text-[#4ade80] mt-1">↑ {earningsTrend} vs yesterday</p>}
+            <p className="text-[24px] font-semibold text-white leading-none mt-1">
+              {display(todayEarnings)}
+            </p>
+            {earningsTrend && (
+              <p className="text-[11px] text-[#4ade80] mt-1">↑ {earningsTrend} vs yesterday</p>
+            )}
           </div>
         </div>
 
         <div className="bg-white p-4 flex flex-col justify-between">
           <span className="text-[11px] font-semibold text-lb-muted uppercase tracking-widest">Sessions today</span>
           <div>
-            <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">{sessionsToday}</p>
-            {sessionsTrend && <p className="text-[11px] text-[#0F6E56] mt-1">+{sessionsTrend} from yesterday</p>}
+            <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">
+              {display(sessionsToday)}
+            </p>
+            {sessionsTrend && (
+              <p className="text-[11px] text-[#0F6E56] mt-1">+{String(sessionsTrend).replace('+', '')} from yesterday</p>
+            )}
           </div>
         </div>
 
         <div className="bg-white p-4 flex flex-col justify-between">
           <span className="text-[11px] font-semibold text-lb-muted uppercase tracking-widest">Hours today</span>
           <div>
-            <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">{hoursToday}</p>
-            {hoursTrend && <p className="text-[11px] text-[#0F6E56] mt-1">+{hoursTrend.replace('+','')} vs yesterday</p>}
+            <p className="text-[24px] font-semibold text-lb-ink leading-none mt-1">
+              {display(hoursToday)}
+            </p>
+            {hoursTrend && (
+              <p className="text-[11px] text-[#0F6E56] mt-1">+{String(hoursTrend).replace('+', '')} vs yesterday</p>
+            )}
           </div>
         </div>
 
@@ -158,23 +195,25 @@ export default function CommandCenter({
   )
 }
 
-// ─── PerformanceTrendPanel — right sidebar career metrics ───
+// ─── PerformanceTrendPanel — right sidebar career metrics ──────────────────
 export function PerformanceTrendPanel({
-  acceptanceRate = '94%',
-  acceptanceTrend = '+3%',
-  avgResponseTime = '8s',
-  responseTrend = 'faster',
-  completedSessions = 89,
-  sessionsTrend = '+12',
-  onTimeRate = '97%',
-  onTimeTrend = '+2%',
+  acceptanceRate     = null,
+  acceptanceTrend    = null,
+  avgResponseTime    = null,
+  responseTrend      = null,
+  completedSessions  = null,
+  sessionsTrend      = null,
+  onTimeRate         = null,
+  onTimeTrend        = null,
 }) {
   const rows = [
-    { label: 'Acceptance Rate',    value: acceptanceRate,    trend: acceptanceTrend, isUp: true },
-    { label: 'Avg Response Time',  value: avgResponseTime,   trend: responseTrend,   isUp: true, isTime: true },
-    { label: 'Completed Sessions', value: completedSessions, trend: sessionsTrend,   isUp: true },
-    { label: 'On-Time Start Rate', value: onTimeRate,        trend: onTimeTrend,     isUp: true },
+    { label: 'Acceptance Rate',    value: acceptanceRate,    trend: acceptanceTrend,   isUp: true },
+    { label: 'Avg Response Time',  value: avgResponseTime,   trend: responseTrend,     isUp: true, isTime: true },
+    { label: 'Completed Sessions', value: completedSessions, trend: sessionsTrend,     isUp: true },
+    { label: 'On-Time Start Rate', value: onTimeRate,        trend: onTimeTrend,       isUp: true },
   ]
+
+  const hasAnyData = rows.some((r) => r.value != null)
 
   return (
     <div className="lb-card">
@@ -191,10 +230,14 @@ export function PerformanceTrendPanel({
           <div key={r.label} className="flex items-center justify-between">
             <span className="text-[12px] text-lb-muted">{r.label}</span>
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-lb-ink">{r.value}</span>
-              <span className={`text-[10px] font-medium ${r.isUp ? 'text-[#0F6E56]' : 'text-[#A32D2D]'}`}>
-                ↑ {r.trend}
+              <span className="text-[13px] font-semibold text-lb-ink">
+                {r.value != null ? r.value : '—'}
               </span>
+              {r.trend && (
+                <span className={`text-[10px] font-medium ${r.isUp ? 'text-[#0F6E56]' : 'text-[#A32D2D]'}`}>
+                  ↑ {r.trend}
+                </span>
+              )}
             </div>
           </div>
         ))}
@@ -202,7 +245,7 @@ export function PerformanceTrendPanel({
 
       <div className="mt-3 pt-3 border-t border-lb-border">
         <p className="text-[10px] text-lb-subtle text-center">
-          Trending up across all metrics
+          {hasAnyData ? 'Compared to last month' : 'Data loading…'}
         </p>
       </div>
     </div>

@@ -1,17 +1,21 @@
-// WalletSummary.jsx — focused on financials only, rating removed
+// WalletSummary.jsx — real props only; null-safe rendering throughout
 
 export default function WalletSummary({
-  balance = '$124.75',
-  today = '$124.50',
-  week = '$1,045',
-  month = '$1,245',
+  balance   = null,
+  today     = null,
+  week      = null,
+  month     = null,
   onWithdraw,
 }) {
+  const display = (v) => (v != null ? v : '—')
+
   const rows = [
     { label: 'Today',      value: today, Icon: CalIcon },
     { label: 'This week',  value: week,  Icon: BarIcon },
     { label: 'This month', value: month, Icon: MonthIcon },
   ]
+
+  const canWithdraw = balance != null
 
   return (
     <div className="lb-card">
@@ -24,7 +28,9 @@ export default function WalletSummary({
               <r.Icon />
               {r.label}
             </span>
-            <span className="text-[12px] font-medium text-lb-ink">{r.value}</span>
+            <span className={`text-[12px] font-medium ${r.value != null ? 'text-lb-ink' : 'text-lb-muted'}`}>
+              {display(r.value)}
+            </span>
           </div>
         ))}
       </div>
@@ -32,12 +38,19 @@ export default function WalletSummary({
       <div className="mt-3 pt-3 border-t border-lb-border">
         <div className="flex items-baseline justify-between mb-0.5">
           <span className="text-[11px] text-lb-muted">Wallet balance</span>
-          <span className="text-[20px] font-semibold text-[#26215C]">{balance}</span>
+          <span className={`text-[20px] font-semibold ${balance != null ? 'text-[#26215C]' : 'text-lb-muted'}`}>
+            {display(balance)}
+          </span>
         </div>
         <p className="text-[10px] text-lb-subtle text-right mb-3">Available for withdrawal</p>
         <button
           onClick={onWithdraw}
-          className="w-full bg-[#1a1635] hover:bg-[#26215C] text-white text-[13px] font-medium rounded-lg py-2.5 transition-colors"
+          disabled={!canWithdraw}
+          className={`w-full text-white text-[13px] font-medium rounded-lg py-2.5 transition-colors ${
+            canWithdraw
+              ? 'bg-[#1a1635] hover:bg-[#26215C]'
+              : 'bg-lb-border text-lb-muted cursor-not-allowed'
+          }`}
         >
           ↑ Withdraw funds
         </button>

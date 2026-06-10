@@ -1,19 +1,41 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../../providers/AuthProvider'
+import { getSocket } from '../../lib/socket'
 import AvailabilitySchedule from '../components/dashboard/AvailabilitySchedule'
 
-const DEFAULT_SCHEDULE = [
-  { day: 'Mon', start: '9:00 AM', end: '5:00 PM', available: true },
-  { day: 'Tue', start: '9:00 AM', end: '5:00 PM', available: true },
-  { day: 'Wed', start: '9:00 AM', end: '5:00 PM', available: true },
-  { day: 'Thu', start: '9:00 AM', end: '5:00 PM', available: true },
-  { day: 'Fri', start: '9:00 AM', end: '5:00 PM', available: true },
-  { day: 'Sat', available: false },
-  { day: 'Sun', available: false },
-]
-
 export default function Availability() {
-  const [isOnline, setIsOnline] = useState(false)
-  const [schedule] = useState(DEFAULT_SCHEDULE)
+  const { user }  = useAuth()
+  const [isOnline,  setIsOnline]  = useState(false)
+  const [schedule,  setSchedule]  = useState([])
+  const [loading,   setLoading]   = useState(true)
+
+  // ── Fetch real schedule from API ────────────────────────────────────────
+  useEffect(() => {
+    fetch('/api/interpreter/schedule')
+      .then(r => r.json())
+      .then(({ schedule = [], isOnline: online = false }) => {
+        setSchedule(schedule)
+        setIsOnline(online)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  // ── Persist online toggle via socket ───────────────────────────────────
+  const handleToggleOnline = () => {
+    const next = !isOnline
+    setIsOnline(next)
+    const socket = getSocket()
+    if (socket) {
+      socket.emit(next ? 'register' : 'go-offline', { role: 'interpreter' })
+    }
+    // Also persist to API
+    fetch('/api/interpreter/schedule/online', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isOnline: next }),
+    }).catch(() => {})
+  }
 
   return (
     <div className="max-w-2xl space-y-3">
@@ -31,14 +53,18 @@ export default function Availability() {
           </div>
         </div>
         <button
-          onClick={() => setIsOnline(o => !o)}
+          onClick={handleToggleOnline}
           className={`relative w-10 h-6 rounded-full transition-colors ${isOnline ? 'bg-[#7F77DD]' : 'bg-lb-border'}`}
         >
           <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${isOnline ? 'left-[18px]' : 'left-0.5'}`} />
         </button>
       </div>
 
-      <AvailabilitySchedule schedule={schedule} onEdit={() => {}} />
+      {loading ? (
+        <div className="lb-card h-32 animate-pulse" />
+      ) : (
+        <AvailabilitySchedule schedule={schedule} onEdit={() => {}} />
+      )}
 
       <div className="lb-card text-center py-6">
         <p className="text-[13px] text-lb-muted">Full schedule editor coming soon</p>

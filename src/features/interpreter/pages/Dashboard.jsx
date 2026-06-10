@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
 import CommandCenter, { PerformanceTrendPanel } from '../components/dashboard/CommandCenter'
@@ -22,7 +22,9 @@ const STATUS_META = {
   [STATUS.OFFLINE]: { label: 'Offline', color: '#9CA3AF', bg: '#F3F4F6', text: '#4B5563', socket: 'go-offline' },
 }
 
-// 🔴 FIX: Motivational greeting based on time of day
+const SESSION_GOAL    = 15
+const EARNINGS_GOAL   = 150
+
 function getGreeting() {
   const hour = new Date().getHours()
   if (hour < 12) return 'Good morning'
@@ -30,12 +32,21 @@ function getGreeting() {
   return 'Good evening'
 }
 
-// 🔴 FIX: Daily goal progress banner
-function DailyGoalBanner({ sessionsToday = 12, earningsToday = 124.50 }) {
-  const sessionGoal = 15
-  const earningsGoal = 150
-  const sessionPct = Math.min(100, Math.round((sessionsToday / sessionGoal) * 100))
-  const earningsPct = Math.min(100, Math.round((earningsToday / earningsGoal) * 100))
+function fmt(dollars) {
+  if (dollars == null) return '—'
+  return `$${Number(dollars).toFixed(2)}`
+}
+
+function fmtMinutes(mins) {
+  if (!mins) return '0m'
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
+function DailyGoalBanner({ sessionsToday = 0, earningsToday = 0 }) {
+  const sessionPct  = Math.min(100, Math.round((sessionsToday  / SESSION_GOAL)  * 100))
+  const earningsPct = Math.min(100, Math.round((earningsToday  / EARNINGS_GOAL) * 100))
 
   return (
     <div className="lb-card !py-3 !px-4">
@@ -47,9 +58,8 @@ function DailyGoalBanner({ sessionsToday = 12, earningsToday = 124.50 }) {
           <span className="text-[11px] font-semibold text-lb-ink">Today's goals</span>
         </div>
         <div className="flex-1 flex items-center gap-6 flex-wrap">
-          {/* Sessions goal */}
           <div className="flex items-center gap-2 min-w-[160px]">
-            <span className="text-[11px] text-lb-muted whitespace-nowrap">Sessions {sessionsToday}/{sessionGoal}</span>
+            <span className="text-[11px] text-lb-muted whitespace-nowrap">Sessions {sessionsToday}/{SESSION_GOAL}</span>
             <div className="flex-1 h-1.5 bg-lb-border rounded-full overflow-hidden min-w-[80px]">
               <div
                 className="h-full rounded-full transition-all"
@@ -58,9 +68,8 @@ function DailyGoalBanner({ sessionsToday = 12, earningsToday = 124.50 }) {
             </div>
             <span className="text-[10px] font-semibold text-[#534AB7]">{sessionPct}%</span>
           </div>
-          {/* Earnings goal */}
           <div className="flex items-center gap-2 min-w-[160px]">
-            <span className="text-[11px] text-lb-muted whitespace-nowrap">Earnings ${earningsToday}/${earningsGoal}</span>
+            <span className="text-[11px] text-lb-muted whitespace-nowrap">Earnings ${earningsToday}/${EARNINGS_GOAL}</span>
             <div className="flex-1 h-1.5 bg-lb-border rounded-full overflow-hidden min-w-[80px]">
               <div
                 className="h-full rounded-full transition-all"
@@ -77,35 +86,74 @@ function DailyGoalBanner({ sessionsToday = 12, earningsToday = 124.50 }) {
 
 export default function InterpreterDashboard() {
   const { user } = useAuth()
-  const [isLoading, setIsLoading]           = useState(true)
-  const [availability, setAvailability]     = useState(STATUS.ONLINE)
-  const [hasIncomingRequests, setHasIncomingRequests] = useState(false)
-  const [activeRequest, setActiveRequest]   = useState(null)
+
+  const [isLoading,            setIsLoading]            = useState(true)
+  const [availability,         setAvailability]         = useState(STATUS.ONLINE)
+  const [hasIncomingRequests,  setHasIncomingRequests]  = useState(false)
+  const [dashStats,            setDashStats]            = useState(null)   // from 'dashboard-stats' socket event
+  const [performanceStats,     setPerformanceStats]     = useState(null)   // from 'performance-stats' socket event
+  const [walletData,           setWalletData]           = useState(null)   // from 'balance-update'
+  const [ratingData,           setRatingData]           = useState(null)   // from 'rating-update'
+
   const incomingRef = useRef(null)
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600)
-    return () => clearTimeout(timer)
-  }, [])
-
+  // ── Socket listeners ────────────────────────────────────────────────────────
   useEffect(() => {
     const socket = getSocket()
-    if (!socket) return
-    const onNew       = () => setHasIncomingRequests(true)
-    const onCancelled = () => {
-      setHasIncomingRequests(false)
-      setActiveRequest(null)
-    }
-    socket.on('new-request',       onNew)
-    socket.on('request-cancelled', onCancelled)
-    socket.on('call-accepted',     onCancelled)
-    return () => {
-      socket.off('new-request',       onNew)
-      socket.off('request-cancelled', onCancelled)
-      socket.off('call-accepted',     onCancelled)
-    }
-  }, [])
+    if (!socket || !user?.id) return
 
+    // Request all dashboard data in one shot
+    socket.emit('get-dashboard-stats',   { userId: user.id })
+    socket.emit('get-performance-stats', { userId: user.id })
+    socket.emit('get-balance',           { userId: user.id, vaultType: 'interpreter' })
+    socket.emit('get-rating-summary',    { userId: user.id })
+
+    const onDashStats = (data) => {
+      if (data.userId === user.id || !data.userId) setDashStats(data)
+    }
+
+    const onPerfStats = (data) => {
+      if (data.userId === user.id || !data.userId) setPerformanceStats(data)
+    }
+
+    const onBalance = (data) => {
+      if (data.userId === user.id || !data.userId) setWalletData(data)
+    }
+
+    const onRating = (data) => {
+      if (data.userId === user.id || !data.userId) setRatingData(data)
+    }
+
+    const onNewRequest    = () => setHasIncomingRequests(true)
+    const onRequestGone   = () => setHasIncomingRequests(false)
+
+    socket.on('dashboard-stats',   onDashStats)
+    socket.on('performance-stats', onPerfStats)
+    socket.on('balance-update',    onBalance)
+    socket.on('rating-update',     onRating)
+    socket.on('new-request',       onNewRequest)
+    socket.on('request-cancelled', onRequestGone)
+    socket.on('call-accepted',     onRequestGone)
+
+    return () => {
+      socket.off('dashboard-stats',   onDashStats)
+      socket.off('performance-stats', onPerfStats)
+      socket.off('balance-update',    onBalance)
+      socket.off('rating-update',     onRating)
+      socket.off('new-request',       onNewRequest)
+      socket.off('request-cancelled', onRequestGone)
+      socket.off('call-accepted',     onRequestGone)
+    }
+  }, [user?.id])
+
+  // Stop skeleton once we have at least dashStats (or after 3s timeout)
+  useEffect(() => {
+    if (dashStats) { setIsLoading(false); return }
+    const timer = setTimeout(() => setIsLoading(false), 3000)
+    return () => clearTimeout(timer)
+  }, [dashStats])
+
+  // ── Availability socket emit ────────────────────────────────────────────────
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
@@ -117,6 +165,7 @@ export default function InterpreterDashboard() {
     }
   }, [availability])
 
+  // Re-register on reconnect
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
@@ -128,29 +177,57 @@ export default function InterpreterDashboard() {
     return () => socket.off('connect', onReconnect)
   }, [availability])
 
-  const handleWaitingClick = () => {
-    if (incomingRef.current) {
-      incomingRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
+  const handleWaitingClick = useCallback(() => {
+    incomingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
 
-  const handleRequestsChange = (hasRequests, requests) => {
+  const handleRequestsChange = useCallback((hasRequests) => {
     setHasIncomingRequests(hasRequests)
-    if (hasRequests && requests?.length > 0) {
-      setActiveRequest(requests[0])
-    } else {
-      setActiveRequest(null)
-    }
-  }
+  }, [])
 
   if (isLoading) return <DashboardSkeleton />
 
   const displayName = user?.displayName ?? user?.name ?? user?.user_metadata?.name ?? 'Interpreter'
 
+  // ── Derive display values from real data ────────────────────────────────────
+  const sessionsToday  = dashStats?.sessionsToday  ?? 0
+  const earningsToday  = dashStats?.earningsToday  ?? 0
+  const callsReceived  = dashStats?.callsReceived  ?? 0
+  const callsAccepted  = dashStats?.callsAccepted  ?? 0
+  const callsMissed    = dashStats?.callsMissed    ?? 0
+  const sessionsTrend  = dashStats?.sessionsTrend  ?? null
+  const earningsTrend  = dashStats?.earningsTrend  ?? null
+  const minutesToday   = dashStats?.minutesToday   ?? 0
+  const hoursTrend     = dashStats?.hoursTrend     ?? null
+
+  const acceptanceRate = callsReceived > 0
+    ? `${Math.round((callsAccepted / callsReceived) * 100)}%`
+    : '—'
+  const acceptanceTrend = dashStats?.acceptanceTrend ?? null
+
+  const avgRating   = ratingData?.average    ?? null
+  const prevRating  = ratingData?.previous   ?? null
+  const reviewCount = ratingData?.count      ?? 0
+  const ratingTrend = ratingData?.trend      ?? null
+
+  const walletBalance = walletData?.balance ?? null
+  const walletToday   = walletData?.today   ?? null
+  const walletWeek    = walletData?.week    ?? null
+  const walletMonth   = walletData?.month   ?? null
+
+  const perfAcceptance    = performanceStats?.acceptanceRate    ?? null
+  const perfAccTrend      = performanceStats?.acceptanceTrend   ?? null
+  const perfResponseTime  = performanceStats?.avgResponseTime   ?? null
+  const perfRespTrend     = performanceStats?.responseTrend     ?? null
+  const perfCompleted     = performanceStats?.completedSessions ?? null
+  const perfSessionsTrend = performanceStats?.sessionsTrend     ?? null
+  const perfOnTime        = performanceStats?.onTimeRate        ?? null
+  const perfOnTimeTrend   = performanceStats?.onTimeTrend       ?? null
+
   return (
     <div className="space-y-4 relative">
 
-      {/* Header — 🔴 FIX: Time-aware greeting + language pair sub-hint */}
+      {/* Header */}
       <div className="flex items-center justify-between pb-1">
         <div>
           <p className="text-xs text-lb-muted">{getGreeting()}, {displayName}</p>
@@ -158,11 +235,11 @@ export default function InterpreterDashboard() {
           <p className="text-[11px] text-lb-subtle mt-0.5">English → Pashto · Punjabi</p>
         </div>
 
-        {/* 3-state toggle */}
+        {/* 3-state availability toggle */}
         <div className="flex flex-col items-end gap-1.5">
           <div className="flex items-center gap-1 p-1 rounded-xl bg-lb-surface border border-lb-border shadow-sm">
             {Object.values(STATUS).map((statusKey) => {
-              const meta = STATUS_META[statusKey]
+              const meta     = STATUS_META[statusKey]
               const isActive = availability === statusKey
               return (
                 <button
@@ -190,35 +267,35 @@ export default function InterpreterDashboard() {
         </div>
       </div>
 
-      {/* 🔴 FIX: Daily goal progress banner */}
-      <DailyGoalBanner sessionsToday={12} earningsToday={124.50} />
+      {/* Daily goal banner — real data */}
+      <DailyGoalBanner sessionsToday={sessionsToday} earningsToday={earningsToday} />
 
-      {/* COMMAND CENTER */}
+      {/* Command center — real data */}
       <CommandCenter
         status={availability}
-        callsReceived={18}
-        callsAccepted={17}
-        callsMissed={1}
-        acceptanceRate="94%"
-        acceptanceTrend="+3%"
-        sessionsToday={12}
-        sessionsTrend="2"
-        todayEarnings="$124.50"
-        earningsTrend="+12.5%"
-        avgRating="4.8"
-        ratingTrend="+0.2"
-        hoursToday="3h 20m"
-        hoursTrend="+45m"
+        callsReceived={callsReceived}
+        callsAccepted={callsAccepted}
+        callsMissed={callsMissed}
+        acceptanceRate={acceptanceRate}
+        acceptanceTrend={acceptanceTrend}
+        sessionsToday={sessionsToday}
+        sessionsTrend={sessionsTrend}
+        todayEarnings={fmt(earningsToday)}
+        earningsTrend={earningsTrend}
+        avgRating={avgRating ?? '—'}
+        ratingTrend={ratingTrend}
+        hoursToday={fmtMinutes(minutesToday)}
+        hoursTrend={hoursTrend}
         callsWaiting={hasIncomingRequests ? 1 : 0}
         onWaitingClick={handleWaitingClick}
       />
 
-      {/* INCOMING REQUESTS */}
+      {/* Incoming requests — already socket-driven */}
       <div ref={incomingRef}>
         <IncomingRequests onRequestsChange={handleRequestsChange} />
       </div>
 
-      {/* REST OF DASHBOARD */}
+      {/* Rest of dashboard — blurred when request is active */}
       <div className={`space-y-4 transition-opacity duration-500 ${
         hasIncomingRequests ? 'opacity-30 pointer-events-none select-none blur-[1px]' : 'opacity-100'
       }`}>
@@ -230,17 +307,26 @@ export default function InterpreterDashboard() {
           </div>
           <div className="space-y-4">
             <PerformanceTrendPanel
-              acceptanceRate="94%"
-              acceptanceTrend="+3%"
-              avgResponseTime="8s"
-              responseTrend="faster"
-              completedSessions={89}
-              sessionsTrend="+12"
-              onTimeRate="97%"
-              onTimeTrend="+2%"
+              acceptanceRate={perfAcceptance}
+              acceptanceTrend={perfAccTrend}
+              avgResponseTime={perfResponseTime}
+              responseTrend={perfRespTrend}
+              completedSessions={perfCompleted}
+              sessionsTrend={perfSessionsTrend}
+              onTimeRate={perfOnTime}
+              onTimeTrend={perfOnTimeTrend}
             />
-            <RatingCard rating="4.8" previousRating="4.6" reviewCount={128} />
-            <WalletSummary />
+            <RatingCard
+              rating={avgRating}
+              previousRating={prevRating}
+              reviewCount={reviewCount}
+            />
+            <WalletSummary
+              balance={walletBalance != null ? fmt(walletBalance) : null}
+              today={walletToday   != null ? fmt(walletToday)   : null}
+              week={walletWeek     != null ? fmt(walletWeek)    : null}
+              month={walletMonth   != null ? fmt(walletMonth)   : null}
+            />
             <RecentReviews />
           </div>
         </div>

@@ -2,34 +2,59 @@ import { supabase } from './supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 
+// In-memory token cache
+let cachedToken = null;
+let tokenPromise = null;
+
 async function getToken() {
-  // 1. Try Supabase session first (single attempt)
-  const { data } = await supabase?.auth?.getSession();
-  if (data?.session?.access_token) {
-    return data.session.access_token;
-  }
+  // Return cached token immediately if available
+  if (cachedToken) return cachedToken;
 
-  // 2. Fallback: read from localStorage directly
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
-        const parsed = JSON.parse(localStorage.getItem(key));
-        return parsed?.access_token || parsed?.currentSession?.access_token;
+  // If another call is already fetching, wait for it
+  if (tokenPromise) return tokenPromise;
+
+  // Start fetching (and lock so parallel calls share it)
+  tokenPromise = (async () => {
+    try {
+      // 1. Try Supabase session
+      const { data } = await supabase?.auth?.getSession();
+      if (data?.session?.access_token) {
+        cachedToken = data.session.access_token;
+        return cachedToken;
       }
-    }
-  } catch (e) {
-    console.error('localStorage read error:', e);
-  }
 
-  return null;
+      // 2. Fallback: localStorage
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          const parsed = JSON.parse(localStorage.getItem(key));
+          const token = parsed?.access_token || parsed?.currentSession?.access_token;
+          if (token) {
+            cachedToken = token;
+            return cachedToken;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Token fetch error:', e);
+    } finally {
+      tokenPromise = null; // release lock
+    }
+    return null;
+  })();
+
+  return tokenPromise;
+}
+
+// Clear cache on 401 so next call refreshes
+function clearTokenCache() {
+  cachedToken = null;
 }
 
 async function apiCall(endpoint, options = {}) {
   const token = await getToken();
   
   if (!token) {
-    console.error('No auth token found.');
     throw new Error('Not authenticated');
   }
 
@@ -49,6 +74,10 @@ async function apiCall(endpoint, options = {}) {
     },
   });
 
+  if (response.status === 401) {
+    clearTokenCache(); // Token expired, clear cache for next retry
+  }
+
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     throw new Error(body.message || `API error: ${response.status} ${response.statusText}`);
@@ -57,7 +86,7 @@ async function apiCall(endpoint, options = {}) {
   return response.json();
 }
 
-// Keep your existing exports below
+// Keep your existing exports
 export async function checkHealth() {
   return apiCall('/health');
 }

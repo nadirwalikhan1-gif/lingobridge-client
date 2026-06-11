@@ -5,8 +5,7 @@ import { useState, useMemo } from 'react'
 import { useAdminApi } from '../../hooks/useAdminApi'
 import { useAdminSocket } from '../../hooks/useAdminSocket'
 import * as api from '../../api/admin'
-import ErrorState from '../components/ErrorState'
-
+import ErrorState from '../../../components/ui/ErrorState'
 const STATUS_FILTERS = ['All', 'Pending', 'Approved', 'Rejected']
 
 function parseAmount(amount) {

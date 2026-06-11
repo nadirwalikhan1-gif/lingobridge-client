@@ -4,8 +4,7 @@
 import { useState, useMemo } from 'react'
 import { useAdminData } from '../../context/AdminDataContext'
 import { useAdminSocket } from '../../hooks/useAdminSocket'
-import ErrorState from '../components/ErrorState'
-
+import ErrorState from '../../../components/ui/ErrorState'
 function VideoIcon() {
   return (
     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

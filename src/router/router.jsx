@@ -1,6 +1,4 @@
-// router.jsx — Admin routes with auth guards
-import { adminRoutes } from '../features/admin/router'
-import { Route } from 'react-router-dom'
+import { Route, Navigate } from 'react-router-dom'
 import AdminRoute from './components/AdminRoute'
 import AdminLayout from './components/AdminLayout'
 import Dashboard from './pages/Dashboard'
@@ -24,6 +22,7 @@ export const adminRoutes = (
       </AdminRoute>
     }
   >
+    <Route index element={<Navigate to="dashboard" replace />} />
     <Route path="dashboard" element={<Dashboard />} />
     <Route path="users" element={<Users />} />
     <Route path="interpreters" element={<Interpreters />} />

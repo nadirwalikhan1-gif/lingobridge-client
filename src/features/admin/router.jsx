@@ -1,6 +1,7 @@
 import { Route, Navigate } from 'react-router-dom'
 import AdminRoute from './components/AdminRoute'
 import AdminLayout from './components/AdminLayout'
+import { AdminDataProvider } from './context/AdminDataContext'
 import Dashboard from './pages/Dashboard'
 import Users from './pages/Users'
 import Interpreters from './pages/Interpreters'
@@ -18,7 +19,9 @@ export const adminRoutes = (
     path="/admin"
     element={
       <AdminRoute>
-        <AdminLayout />
+        <AdminDataProvider>
+          <AdminLayout />
+        </AdminDataProvider>
       </AdminRoute>
     }
   >

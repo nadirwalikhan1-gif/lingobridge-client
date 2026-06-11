@@ -3,7 +3,7 @@
 // No mock data. All child components receive ext props.
 
 import { useAdminData } from '../context/AdminDataContext'
-import { getSocket } from '../../lib/socket'
+import { getSocket } from '../../../lib/socket'
 import LiveSessions from '../components/dashboard/LiveSessions'
 import RequestQueue from '../components/dashboard/RequestQueue'
 import InterpreterPresence from '../components/dashboard/InterpreterPresence'
@@ -12,7 +12,7 @@ import PayoutQueue from '../components/dashboard/PayoutQueue'
 import OperationalAlerts from '../components/dashboard/OperationalAlerts'
 import SystemHealth from '../components/dashboard/SystemHealth'
 import OperationalSnapshot from '../components/dashboard/OperationalSnapshot'
-import ErrorState from '../../components/ui/ErrorState'
+import ErrorState from '../../../components/ui/ErrorState'
 
 // ─── Platform Stats Strip ──────────────────────────────────────────────────────
 function PlatformStats({ stats }) {

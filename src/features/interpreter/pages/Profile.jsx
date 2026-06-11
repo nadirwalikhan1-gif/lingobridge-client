@@ -2,8 +2,8 @@
 // Socket + REST driven, no mock data, skeleton → empty state
 
 import { useState, useEffect, useRef } from 'react'
-import { useAuth } from '../../../../providers/AuthProvider'
-import { getSocket } from '../../../../lib/socket'
+import { useAuth } from '../../../providers/AuthProvider'
+import { getSocket } from '../../../lib/socket'
 import {
   User, Camera, Globe, Phone, Mail, MapPin, Star,
   BookOpen, Languages, Clock, CheckCircle2, AlertCircle,

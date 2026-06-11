@@ -2,8 +2,8 @@
 // Socket-driven, no mock data, skeleton → real state
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../../../providers/AuthProvider'
-import { getSocket } from '../../../../lib/socket'
+import { useAuth } from '../../../providers/AuthProvider'
+import { getSocket } from '../../../lib/socket'
 import {
   Bell, Shield, Smartphone, Moon, Globe,
   CheckCircle2, AlertCircle, ChevronRight, LogOut

@@ -2,8 +2,8 @@
 // Manages working hours, quick status, vacation mode, and availability insights
 
 import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../../../../providers/AuthProvider'
-import { getSocket } from '../../../../lib/socket'
+import { useAuth } from '../../../providers/AuthProvider'
+import { getSocket } from '../../../lib/socket'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 

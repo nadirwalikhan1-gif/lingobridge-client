@@ -2,8 +2,8 @@
 // No live data needed — static content + contact form via socket
 
 import { useState } from 'react'
-import { useAuth } from '../../../../providers/AuthProvider'
-import { getSocket } from '../../../../lib/socket'
+import { useAuth } from '../../../providers/AuthProvider'
+import { getSocket } from '../../../lib/socket'
 import {
   HelpCircle, MessageSquare, BookOpen, ChevronDown,
   ChevronUp, CheckCircle2, AlertCircle, ExternalLink, Mail

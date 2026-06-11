@@ -4,8 +4,8 @@
 // All data socket-driven, no mock data
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../../../providers/AuthProvider'
-import { getSocket } from '../../../../lib/socket'
+import { useAuth } from '../../../providers/AuthProvider'
+import { getSocket } from '../../../lib/socket'
 
 function fmt(n) {
   if (n == null) return '—'

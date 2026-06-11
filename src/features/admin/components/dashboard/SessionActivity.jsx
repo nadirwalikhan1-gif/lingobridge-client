@@ -1,13 +1,5 @@
 import { Activity, CheckCircle, XCircle, Clock } from 'lucide-react'
 
-const activities = [
-  { id: 1, text: 'Session completed', detail: 'John Doe + Maria Garcia', time: '2m ago', type: 'success' },
-  { id: 2, text: 'New dispute opened', detail: 'Client #4821', time: '15m ago', type: 'danger' },
-  { id: 3, text: 'Interpreter approved', detail: 'Carlos Ruiz', time: '32m ago', type: 'success' },
-  { id: 4, text: 'Payment pending', detail: 'Transaction #9921', time: '1h ago', type: 'warning' },
-  { id: 5, text: 'Session started', detail: 'Sarah Smith + Aisha Khan', time: '1h ago', type: 'info' },
-]
-
 const typeIcon = {
   success: <CheckCircle className="w-3 h-3 text-emerald-600" />,
   danger: <XCircle className="w-3 h-3 text-red-600" />,
@@ -15,14 +7,26 @@ const typeIcon = {
   info: <Activity className="w-3 h-3 text-blue-600" />,
 }
 
-export default function SessionActivity() {
+export default function SessionActivity({ activities = [] }) {
+  if (activities.length === 0) {
+    return (
+      <div className="card p-3">
+        <div className="flex items-center justify-between mb-2.5">
+          <h3 className="text-xs font-semibold text-slate-900">Activity</h3>
+          <button className="text-[10px] font-medium text-blue-600 hover:text-blue-700">View All</button>
+        </div>
+        <p className="text-xs text-slate-500 text-center py-4">No recent activity</p>
+      </div>
+    )
+  }
+
   return (
     <div className="card p-3">
       <div className="flex items-center justify-between mb-2.5">
         <h3 className="text-xs font-semibold text-slate-900">Activity</h3>
         <button className="text-[10px] font-medium text-blue-600 hover:text-blue-700">View All</button>
       </div>
-      
+
       <div className="space-y-2">
         {activities.map((a) => (
           <div key={a.id} className="flex items-start gap-2">

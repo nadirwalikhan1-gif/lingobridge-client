@@ -1,38 +1,5 @@
-// ActiveDisputes.jsx — Admin dispute monitoring panel
-// Design: compact card rows, severity badges, same lb-* tokens
-
-const MOCK_DISPUTES = [
-  {
-    id: 1,
-    title: 'Session quality',
-    ref: '#4821',
-    client: 'Layla M.',
-    interpreter: 'Ali K.',
-    timeAgo: '2h ago',
-    status: 'escalated',
-    amount: null,
-  },
-  {
-    id: 2,
-    title: 'Charge dispute',
-    ref: '#4793',
-    client: 'Pierre D.',
-    interpreter: null,
-    timeAgo: 'Yesterday',
-    status: 'review',
-    amount: '$45.00',
-  },
-  {
-    id: 3,
-    title: 'No-show claim',
-    ref: '#4780',
-    client: 'Omar S.',
-    interpreter: null,
-    timeAgo: '2 days ago',
-    status: 'review',
-    amount: null,
-  },
-]
+// src/features/admin/components/dashboard/ActiveDisputes.jsx
+// Wired to parent via onResolve/onEscalate props. Added action buttons.
 
 function AlertIcon({ className }) {
   return (
@@ -71,9 +38,7 @@ const statusConfig = {
   },
 }
 
-export default function ActiveDisputes({ disputes: ext }) {
-  const disputes = ext ?? MOCK_DISPUTES
-
+export default function ActiveDisputes({ ext: disputes = [], onResolve, onEscalate }) {
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
@@ -90,12 +55,9 @@ export default function ActiveDisputes({ disputes: ext }) {
             const { Icon } = cfg
             return (
               <div key={d.id} className="flex items-start gap-2.5 py-2">
-                {/* Icon */}
                 <div className={`w-7 h-7 rounded-lg ${cfg.iconBg} flex items-center justify-center shrink-0`}>
                   <Icon className={cfg.iconClass} />
                 </div>
-
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-medium text-lb-ink">
                     {d.title} <span className="text-lb-muted font-normal">{d.ref}</span>
@@ -104,9 +66,27 @@ export default function ActiveDisputes({ disputes: ext }) {
                   <p className="text-[10px] text-lb-muted mt-0.5">
                     {d.client}{d.interpreter ? ` · ${d.interpreter}` : ''} · {d.timeAgo}
                   </p>
+                  {(onResolve || onEscalate) && (
+                    <div className="flex gap-2 mt-2">
+                      {onResolve && (
+                        <button
+                          onClick={() => onResolve(d.id)}
+                          className="text-[10px] px-2 py-1 rounded bg-[#E1F5EE] text-[#0F6E56] font-medium hover:bg-[#c8ede2] transition-colors"
+                        >
+                          Resolve
+                        </button>
+                      )}
+                      {onEscalate && d.status !== 'escalated' && (
+                        <button
+                          onClick={() => onEscalate(d.id)}
+                          className="text-[10px] px-2 py-1 rounded border border-lb-border bg-white text-lb-muted hover:bg-lb-surface transition-colors"
+                        >
+                          Escalate
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
-
-                {/* Badge */}
                 <span className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.badge}`}>
                   {cfg.label}
                 </span>

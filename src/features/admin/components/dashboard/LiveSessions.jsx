@@ -1,63 +1,7 @@
 // LiveSessions.jsx — Admin real-time session monitor
 // Motion: staggered slide-in on mount, pulse dots on live/escalated, ticking elapsed timers
-// Fix #8: aligned to platform language pairs (Pashto/Punjabi) with South Asian names
 
-import { useState, useEffect, useRef } from 'react'
-
-const MOCK_SESSIONS = [
-  {
-    id: 1,
-    interpreterInitials: 'KA',
-    interpreterName: 'Khalid Ahmadzai',
-    fromLang: 'English (Canada)',
-    toLang: 'Pashto (Eastern)',
-    category: 'Medical',
-    type: 'video',
-    client: 'Nasrin A.',
-    note: 'Toronto General · Room 302',
-    startedSecsAgo: 18 * 60 + 42,
-    status: 'live',
-  },
-  {
-    id: 2,
-    interpreterInitials: 'RS',
-    interpreterName: 'Rajinder Singh',
-    fromLang: 'English (US)',
-    toLang: 'Punjabi (Gurmukhi)',
-    category: 'Legal',
-    type: 'audio',
-    client: 'Gurjeet K.',
-    note: 'Immigration hearing #7821',
-    startedSecsAgo: 34 * 60 + 9,
-    status: 'live',
-  },
-  {
-    id: 3,
-    interpreterInitials: 'SB',
-    interpreterName: 'Sadia Butt',
-    fromLang: 'English (UK)',
-    toLang: 'Punjabi (Shahmukhi)',
-    category: 'Emergency',
-    type: 'video',
-    client: 'ICU Team',
-    note: 'Patient unresponsive · Ward 4',
-    startedSecsAgo: 2 * 60 + 14,
-    status: 'escalated',
-  },
-  {
-    id: 4,
-    interpreterInitials: 'NW',
-    interpreterName: 'Noorullah Wardak',
-    fromLang: 'English (US)',
-    toLang: 'Pashto (Western)',
-    category: 'Immigration',
-    type: 'audio',
-    client: 'Tariq W.',
-    note: '',
-    startedSecsAgo: 7 * 60 + 55,
-    status: 'hold',
-  },
-]
+import { useState, useEffect } from 'react'
 
 function fmt(secs) {
   const m = Math.floor(secs / 60)
@@ -82,16 +26,15 @@ function AudioIcon() {
 }
 
 function SessionRow({ session, index }) {
-  const [elapsed, setElapsed] = useState(session.startedSecsAgo)
+  const initialSecs = typeof session.startedSecsAgo === 'number' ? session.startedSecsAgo : 0
+  const [elapsed, setElapsed] = useState(initialSecs)
   const [visible, setVisible] = useState(false)
 
-  // Tick elapsed timer every second
   useEffect(() => {
     const id = setInterval(() => setElapsed((s) => s + 1), 1000)
     return () => clearInterval(id)
   }, [])
 
-  // Staggered slide-in on mount — each row delays by 60ms × index
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), index * 60)
     return () => clearTimeout(t)
@@ -138,15 +81,10 @@ function SessionRow({ session, index }) {
         isEscalated ? 'bg-[#FCEBEB]/5 -mx-3 px-3 rounded' : ''
       }`}
     >
-      {/* Status dot — pulses on live + escalated */}
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
-
-      {/* Avatar */}
       <div className={`w-[26px] h-[26px] rounded-full ${cfg.avatarBg} flex items-center justify-center text-[10px] font-semibold ${cfg.avatarText} shrink-0`}>
         {session.interpreterInitials}
       </div>
-
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
           <span className="text-[12px] font-semibold text-lb-ink">{session.interpreterName}</span>
@@ -162,13 +100,9 @@ function SessionRow({ session, index }) {
           </span>
         </div>
       </div>
-
-      {/* Status pill */}
       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.pill}`}>
         {cfg.pillLabel}
       </span>
-
-      {/* Elapsed timer — ticking every second, mono */}
       <span className={`text-[12px] font-semibold shrink-0 font-mono tabular-nums ${cfg.timerColor}`}>
         {fmt(elapsed)}
       </span>
@@ -176,20 +110,7 @@ function SessionRow({ session, index }) {
   )
 }
 
-export default function LiveSessions({ sessions: ext }) {
-  const [sessions, setSessions] = useState(ext ?? MOCK_SESSIONS)
-  const prevIdsRef = useRef(new Set(sessions.map((s) => s.id)))
-
-  // Detect newly pushed sessions and slide them in
-  useEffect(() => {
-    if (!ext) return
-    const hasNew = ext.some((s) => !prevIdsRef.current.has(s.id))
-    if (hasNew) {
-      prevIdsRef.current = new Set(ext.map((s) => s.id))
-      setSessions(ext)
-    }
-  }, [ext])
-
+export default function LiveSessions({ sessions = [] }) {
   const liveCount = sessions.filter((s) => s.status === 'live' || s.status === 'escalated').length
 
   return (

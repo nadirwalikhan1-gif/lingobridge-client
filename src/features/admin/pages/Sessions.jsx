@@ -1,17 +1,10 @@
-// Sessions.jsx — Admin full live sessions page
-// Refactored to match LingoBridge design language
-// Operational view: session state, interpreter, client, category, duration
+// src/features/admin/pages/Sessions.jsx
+// Wired to real API. Uses React Query with 30s staleTime.
 
-import { useState, useEffect } from 'react'
-
-const MOCK_ALL_SESSIONS = [
-  { id: 1, ref: '#5021', interpreterInitials: 'KA', interpreter: 'Khalid Ahmadzai',   client: 'Nasrin A.',    fromLang: 'English (Canada)', toLang: 'Pashto (Eastern)',  category: 'Medical',     type: 'video', startedAt: '10:14 AM', elapsedMins: 18, status: 'live' },
-  { id: 2, ref: '#5019', interpreterInitials: 'RS', interpreter: 'Rajinder Singh',    client: 'Gurjeet K.',   fromLang: 'English (US)',     toLang: 'Punjabi (Gurmukhi)', category: 'Legal',       type: 'audio', startedAt: '09:52 AM', elapsedMins: 34, status: 'live' },
-  { id: 3, ref: '#5017', interpreterInitials: 'SB', interpreter: 'Sadia Butt',        client: 'ICU Team',     fromLang: 'English (UK)',     toLang: 'Punjabi (Shahmukhi)', category: 'Emergency',   type: 'video', startedAt: '10:29 AM', elapsedMins: 2,  status: 'escalated' },
-  { id: 4, ref: '#5015', interpreterInitials: 'NW', interpreter: 'Noorullah Wardak',  client: 'Tariq W.',     fromLang: 'English (US)',     toLang: 'Pashto (Western)',   category: 'Immigration', type: 'audio', startedAt: '10:24 AM', elapsedMins: 7,  status: 'hold' },
-  { id: 5, ref: '#5010', interpreterInitials: 'AK', interpreter: 'Amrit Kaur',        client: 'Parveen M.',   fromLang: 'English (Canada)', toLang: 'Punjabi (Gurmukhi)', category: 'Medical',     type: 'video', startedAt: '10:00 AM', elapsedMins: 31, status: 'completed' },
-  { id: 6, ref: '#5008', interpreterInitials: 'ZS', interpreter: 'Zarghona Shinwari', client: 'Ahmad K.',     fromLang: 'English (UK)',     toLang: 'Pashto (Eastern)',   category: 'General',     type: 'audio', startedAt: '09:30 AM', elapsedMins: 15, status: 'completed' },
-]
+import { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import api from '../../lib/api'
+import ErrorState from '../../components/ui/ErrorState'
 
 const statusConfig = {
   live:      { pill: 'bg-[#E1F5EE] text-[#0F6E56]', label: 'Live',      dot: 'bg-[#1D9E75] animate-pulse' },
@@ -43,13 +36,32 @@ function StatusFilter({ value, onChange }) {
 
 export default function AdminSessions() {
   const [filter, setFilter] = useState('all')
-  const sessions = MOCK_ALL_SESSIONS.filter((s) => filter === 'all' || s.status === filter)
-  const liveCount = MOCK_ALL_SESSIONS.filter((s) => s.status === 'live' || s.status === 'escalated').length
+
+  const { data: sessions, isLoading, error, refetch } = useQuery({
+    queryKey: ['admin', 'sessions'],
+    queryFn: () => api.get('/v1/admin/sessions'),
+    staleTime: 30000,
+  })
+
+  const filtered = useMemo(() => sessions?.filter((s) => filter === 'all' || s.status === filter) ?? [], [sessions, filter])
+  const liveCount = useMemo(() => sessions?.filter((s) => s.status === 'live' || s.status === 'escalated').length ?? 0, [sessions])
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <div className="h-8 bg-lb-border rounded w-32 animate-pulse" />
+        <div className="h-8 bg-lb-border rounded w-64 animate-pulse" />
+        <div className="h-96 bg-lb-border rounded-xl animate-pulse" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return <ErrorState message={error.message} onRetry={refetch} />
+  }
 
   return (
     <div className="space-y-3">
-
-      {/* Header */}
       <div className="flex items-center justify-between pb-1">
         <div>
           <p className="text-xs text-lb-muted">Real-time monitoring</p>
@@ -61,54 +73,50 @@ export default function AdminSessions() {
         </div>
       </div>
 
-      {/* Filter */}
       <StatusFilter value={filter} onChange={setFilter} />
 
-      {/* Sessions table card */}
       <div className="lb-card">
-        <div className="divide-y divide-lb-border">
-          {sessions.map((s) => {
-            const cfg = statusConfig[s.status]
-            return (
-              <div key={s.id} className="flex items-center gap-3 py-2.5">
-                {/* Dot */}
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
-
-                {/* Avatar */}
-                <div className="w-7 h-7 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[10px] font-medium text-[#534AB7] shrink-0">
-                  {s.interpreterInitials}
-                </div>
-
-                {/* Primary info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12.5px] font-medium text-lb-ink">
-                      {s.fromLang} → {s.toLang}
-                    </span>
-                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">
-                      {s.category}
-                    </span>
+        {sessions?.length === 0 ? (
+          <p className="text-[12px] text-lb-muted text-center py-8">No sessions recorded</p>
+        ) : (
+          <div className="divide-y divide-lb-border">
+            {filtered.map((s) => {
+              const cfg = statusConfig[s.status]
+              return (
+                <div key={s.id} className="flex items-center gap-3 py-2.5">
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
+                  <div className="w-7 h-7 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[10px] font-medium text-[#534AB7] shrink-0">
+                    {s.interpreterInitials}
                   </div>
-                  <p className="text-[10.5px] text-lb-muted mt-0.5">
-                    {s.interpreter} · {s.client} · {s.ref}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12.5px] font-medium text-lb-ink">
+                        {s.fromLang} → {s.toLang}
+                      </span>
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">
+                        {s.category}
+                      </span>
+                    </div>
+                    <p className="text-[10.5px] text-lb-muted mt-0.5">
+                      {s.interpreter} · {s.client} · {s.ref}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[11px] text-lb-muted">{s.startedAt} · {s.elapsedMins}m</p>
+                  </div>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.pill}`}>
+                    {cfg.label}
+                  </span>
                 </div>
+              )
+            })}
+          </div>
+        )}
 
-                {/* Meta */}
-                <div className="text-right shrink-0">
-                  <p className="text-[11px] text-lb-muted">{s.startedAt} · {s.elapsedMins}m</p>
-                </div>
-
-                {/* Status */}
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.pill}`}>
-                  {cfg.label}
-                </span>
-              </div>
-            )
-          })}
-        </div>
+        {filtered.length === 0 && sessions?.length > 0 && (
+          <p className="text-[12px] text-lb-muted text-center py-8">No sessions match this filter</p>
+        )}
       </div>
-
     </div>
   )
 }

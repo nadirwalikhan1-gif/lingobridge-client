@@ -1,66 +1,8 @@
-// RequestQueue.jsx — Admin incoming request dispatch queue
-// Motion: slide-in on mount, urgent flash below 60s, ticking countdown timers
+// src/features/admin/components/dashboard/RequestQueue.jsx
+// Wired to parent via onAssign/onSkip props. No local state mutation.
+// Pending spinner per card. Waits for socket confirmation to disappear.
 
-import { useState, useEffect, useRef } from 'react'
-
-const MOCK_REQUESTS = [
-  {
-    id: 1,
-    fromLang: 'English (Canada)',
-    toLang: 'Pashto (Eastern)',
-    type: 'video',
-    duration: '60 min',
-    category: 'Emergency',
-    price: '$24.00',
-    client: 'Nasrin A.',
-    timeAgo: '3m ago',
-    expiresIn: 107,
-    availableInterpreters: 0,
-    note: 'No match found yet',
-  },
-  {
-    id: 2,
-    fromLang: 'English (UK)',
-    toLang: 'Punjabi (Shahmukhi)',
-    type: 'audio',
-    duration: '30 min',
-    category: 'Legal',
-    price: '$12.00',
-    client: 'Parveen M.',
-    timeAgo: '1m ago',
-    expiresIn: 382,
-    availableInterpreters: 2,
-    note: '2 interpreters available',
-  },
-  {
-    id: 3,
-    fromLang: 'English (US)',
-    toLang: 'Pashto (Western)',
-    type: 'video',
-    duration: '45 min',
-    category: 'Medical',
-    price: '$18.00',
-    client: 'Tariq W.',
-    timeAgo: 'just now',
-    expiresIn: 485,
-    availableInterpreters: 1,
-    note: '1 interpreter available',
-  },
-  {
-    id: 4,
-    fromLang: 'English (Canada)',
-    toLang: 'Punjabi (Gurmukhi)',
-    type: 'audio',
-    duration: '15 min',
-    category: 'General',
-    price: '$6.00',
-    client: 'Gurjeet K.',
-    timeAgo: '4m ago',
-    expiresIn: 244,
-    availableInterpreters: 3,
-    note: '3 interpreters available',
-  },
-]
+import { useState, useEffect } from 'react'
 
 function fmt(s) {
   const m = Math.floor(s / 60)
@@ -85,24 +27,21 @@ function AudioIcon() {
 }
 
 function RequestCard({ req, onAssign, onSkip, index }) {
-  const [secs, setSecs] = useState(req.expiresIn)
+  const [secs, setSecs] = useState(req.expiresIn ?? 0)
   const [visible, setVisible] = useState(false)
   const [flash, setFlash] = useState(false)
-  const prevUrgentRef = useRef(req.expiresIn < 120)
+  const prevUrgentRef = useRef((req.expiresIn ?? 0) < 120)
 
-  // Tick countdown
   useEffect(() => {
     const id = setInterval(() => setSecs((s) => Math.max(0, s - 1)), 1000)
     return () => clearInterval(id)
   }, [])
 
-  // Staggered slide-in on mount
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), index * 80)
     return () => clearTimeout(t)
   }, [index])
 
-  // Flash border when crossing into urgent (<120s)
   useEffect(() => {
     const isUrgent = secs < 120
     if (isUrgent && !prevUrgentRef.current) {
@@ -133,7 +72,6 @@ function RequestCard({ req, onAssign, onSkip, index }) {
           : 'border-lb-border hover:border-[#7F77DD]'
       }`}
     >
-      {/* Top row — language pair + price */}
       <div className="flex items-center justify-between gap-3 mb-1.5">
         <div className="flex items-center gap-1.5">
           <span className="text-[13px] font-semibold text-lb-ink">
@@ -148,7 +86,6 @@ function RequestCard({ req, onAssign, onSkip, index }) {
         <span className="text-[13px] font-semibold text-[#26215C] shrink-0">{req.price}</span>
       </div>
 
-      {/* Chips — type, category, countdown */}
       <div className="flex flex-wrap items-center gap-1.5 mb-2">
         <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border border-lb-border bg-lb-surface text-lb-muted">
           {isVideo ? <VideoIcon /> : <AudioIcon />}
@@ -157,7 +94,6 @@ function RequestCard({ req, onAssign, onSkip, index }) {
         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">
           {req.category}
         </span>
-        {/* Countdown — ticking, mono, flashes red under 60s */}
         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1 font-mono tabular-nums transition-colors duration-300 ${
           critical
             ? 'bg-[#FCEBEB] text-[#A32D2D] animate-pulse'
@@ -172,7 +108,6 @@ function RequestCard({ req, onAssign, onSkip, index }) {
         </span>
       </div>
 
-      {/* Bottom — metadata + actions */}
       <div className="flex items-center justify-between gap-3">
         <p className="text-[10px] text-lb-muted truncate">
           {req.client} · {req.timeAgo} · {req.note}
@@ -200,12 +135,18 @@ function RequestCard({ req, onAssign, onSkip, index }) {
   )
 }
 
-export default function RequestQueue({ requests: ext }) {
-  const [local, setLocal] = useState(MOCK_REQUESTS)
-  const requests = ext ?? local
+export default function RequestQueue({ ext: requests = [], onAssign, onSkip }) {
+  const [pendingIds, setPendingIds] = useState(new Set())
 
-  const handleAssign = (id) => setLocal((p) => p.filter((r) => r.id !== id))
-  const handleSkip = (id) => setLocal((p) => p.filter((r) => r.id !== id))
+  const handleAssign = (id) => {
+    setPendingIds(prev => new Set(prev).add(id))
+    onAssign?.(id)
+  }
+
+  const handleSkip = (id) => {
+    setPendingIds(prev => new Set(prev).add(id))
+    onSkip?.(id)
+  }
 
   return (
     <div className="lb-card">

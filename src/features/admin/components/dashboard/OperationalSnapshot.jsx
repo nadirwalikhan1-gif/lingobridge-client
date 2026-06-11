@@ -1,20 +1,9 @@
-import { Activity, Clock, Users, AlertTriangle } from "lucide-react";
+// OperationalSnapshot.jsx — Admin operational metrics card
 
-const stats = [
-  { label: "Active",      value: "12", accent: true  },
-  { label: "Waiting",     value: "7",  accent: true  },
-  { label: "Online",      value: "34", accent: false },
-  { label: "Escalations", value: "3",  accent: false },
-];
-
-const rows = [
-  { label: "Avg. Wait Time",         value: "1m 42s", icon: Clock,         color: "text-[#7F77DD]",   mono: true  },
-  { label: "Match Success Rate",     value: "97.2%",  icon: Activity,      color: "text-emerald-500", mono: false },
-  { label: "Interpreters Available", value: "21",     icon: Users,         color: "text-emerald-500", mono: false },
-  { label: "SLA Breaches Today",     value: "1",      icon: AlertTriangle, color: "text-red-400",     mono: false },
-];
-
-export default function OperationalSnapshot() {
+export default function OperationalSnapshot({ 
+  stats = [],
+  rows = [],
+}) {
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
@@ -23,7 +12,6 @@ export default function OperationalSnapshot() {
 
   return (
     <div className="lb-card flex flex-col h-full">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-lb-border shrink-0">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -32,7 +20,6 @@ export default function OperationalSnapshot() {
         <span className="text-[10px] text-lb-muted">{today}</span>
       </div>
 
-      {/* Stats Strip */}
       <div className="grid grid-cols-4 divide-x divide-lb-border border-b border-lb-border shrink-0">
         {stats.map((stat) => (
           <div
@@ -55,7 +42,6 @@ export default function OperationalSnapshot() {
         ))}
       </div>
 
-      {/* Rows — flex-1 so they fill remaining card height, justify-between spreads evenly */}
       <div className="flex flex-col flex-1 divide-y divide-lb-border">
         {rows.map(({ label, value, icon: Icon, color, mono }) => (
           <div key={label} className={`flex items-center justify-between px-4 flex-1 ${label === 'SLA Breaches Today' && value !== '0' ? 'bg-[#FCEBEB]/30' : ''}`}>

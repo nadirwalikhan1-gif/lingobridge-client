@@ -3,9 +3,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../../../providers/AuthProvider'
-import { getSocket } from '../../../../lib/socket'
-import { INTERPRETER_EARN_RATES } from '../../../../config/constants'
+import { useAuth } from '../../../providers/AuthProvider'
+import { getSocket } from '../../../lib/socket'
+import { INTERPRETER_EARN_RATES } from '../../../config/constants'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 

@@ -29,6 +29,19 @@ import InterpreterProfile   from './features/interpreter/pages/Profile';
 import InterpreterSettings  from './features/interpreter/pages/Settings';
 import Help                 from './features/interpreter/pages/Help';
 
+// ── Admin pages ─────────────────────────────────────────────
+import AdminLayout          from './features/admin/components/AdminLayout';
+import Users                from './features/admin/pages/Users';
+import Interpreters         from './features/admin/pages/Interpreters';
+import Sessions             from './features/admin/pages/Sessions';
+import Transactions         from './features/admin/pages/Transactions';
+import Reviews              from './features/admin/pages/Reviews';
+import Disputes             from './features/admin/pages/Disputes';
+import AdminRequests        from './features/admin/pages/Requests';
+import AdminPayouts         from './features/admin/pages/Payouts';
+import Comms                from './features/admin/pages/Comms';
+import AdminSettings        from './features/admin/pages/Settings';
+
 // ─── Route Guards ─────────────────────────────────────────────
 
 function ProtectedRoute({ children, allowedRoles }) {
@@ -69,21 +82,22 @@ function Placeholder({ title }) {
 
 function AdminRoutes() {
   return (
-    <DashboardLayout role="admin">
+    <AdminLayout>
       <Routes>
-        <Route path="dashboard"    element={<AdminDashboard />} />
-        <Route path="users"        element={<Placeholder title="Users" />} />
-        <Route path="interpreters" element={<Placeholder title="Interpreters" />} />
-        <Route path="sessions"     element={<Placeholder title="Sessions" />} />
-        <Route path="transactions" element={<Placeholder title="Transactions" />} />
-        <Route path="reports"      element={<Placeholder title="Reports" />} />
-        <Route path="disputes"     element={<Placeholder title="Disputes" />} />
-        <Route path="reviews"      element={<Placeholder title="Reviews" />} />
-        <Route path="coupons"      element={<Placeholder title="Coupons" />} />
-        <Route path="settings"     element={<Placeholder title="Settings" />} />
-        <Route path="*"            element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard"      element={<AdminDashboard />} />
+        <Route path="users"          element={<Users />} />
+        <Route path="interpreters"   element={<Interpreters />} />
+        <Route path="sessions"       element={<Sessions />} />
+        <Route path="requests"       element={<AdminRequests />} />
+        <Route path="transactions"   element={<Transactions />} />
+        <Route path="reviews"        element={<Reviews />} />
+        <Route path="disputes"       element={<Disputes />} />
+        <Route path="payouts"        element={<AdminPayouts />} />
+        <Route path="communications" element={<Comms />} />
+        <Route path="settings"       element={<AdminSettings />} />
+        <Route path="*"              element={<Navigate to="dashboard" replace />} />
       </Routes>
-    </DashboardLayout>
+    </AdminLayout>
   );
 }
 

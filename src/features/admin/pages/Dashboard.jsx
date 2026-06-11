@@ -1,4 +1,4 @@
-// src/features/admin/pages/Dashboard.jsx
+﻿// src/features/admin/pages/Dashboard.jsx
 // Admin Mission Control — wired to AdminDataContext + Socket.IO singleton.
 // No mock data. All child components receive ext props.
 

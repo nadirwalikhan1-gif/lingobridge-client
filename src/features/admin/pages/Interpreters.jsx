@@ -1,10 +1,10 @@
-// src/features/admin/pages/Interpreters.jsx
+﻿// src/features/admin/pages/Interpreters.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import api from '../../lib/api'
-import ErrorState from '../../components/ui/ErrorState'
+import { api } from '../../../lib/api'
+import ErrorState from '../../../components/ui/ErrorState'
 
 const STATUS_CFG = {
   busy:    { dot: 'bg-[#BA7517]',  pill: 'bg-[#FFF8E6] text-[#BA7517]',  label: 'In session' },

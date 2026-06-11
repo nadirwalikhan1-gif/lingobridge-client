@@ -1,10 +1,10 @@
-// src/features/admin/pages/Transactions.jsx
+﻿// src/features/admin/pages/Transactions.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import api from '../../lib/api'
-import ErrorState from '../../components/ui/ErrorState'
+import { api } from '../../../lib/api'
+import ErrorState from '../../../components/ui/ErrorState'
 
 const STATUS_CFG = {
   completed: { cls: 'bg-[#E1F5EE] text-[#0F6E56]',  label: 'Completed' },

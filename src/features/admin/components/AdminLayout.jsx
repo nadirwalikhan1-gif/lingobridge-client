@@ -3,7 +3,7 @@
 
 import { Outlet } from 'react-router-dom'
 import { AdminDataProvider, useAdminData } from '../context/AdminDataContext'
-import AdminSidebar from '../../components/layout/AdminSidebar'
+import AdminSidebar from '../../../components/layout/AdminSidebar'
 
 function AdminLayoutInner() {
   const { liveSessions, requestQueue, activeDisputes, isSocketReady } = useAdminData()

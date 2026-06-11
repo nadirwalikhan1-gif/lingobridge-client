@@ -1,10 +1,10 @@
-// src/features/admin/pages/Reviews.jsx
+﻿// src/features/admin/pages/Reviews.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import api from '../../lib/api'
-import ErrorState from '../../components/ui/ErrorState'
+import { api } from '../../../lib/api'
+import ErrorState from '../../../components/ui/ErrorState'
 
 const FILTERS = ['All', 'Flagged', '5 Stars', '4 Stars', '3 Stars & below']
 

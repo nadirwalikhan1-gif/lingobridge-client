@@ -1,10 +1,10 @@
-// Comms.jsx — Admin communications and support inbox
+﻿// Comms.jsx — Admin communications and support inbox
 // Messages between clients, interpreters, and platform support.
 
 import { useState, useMemo } from 'react'
-import { useAdminApi } from '../../hooks/useAdminApi'
-import * as api from '../../api/admin'
-import ErrorState from '../components/ErrorState'
+import { useQuery } from '@tanstack/react-query'
+import { api } from "../../../lib/api";
+import ErrorState from '../../../components/ui/ErrorState'
 
 const FILTERS = ['All', 'Unread', 'Support', 'Disputes', 'System']
 
@@ -15,7 +15,11 @@ export default function Comms() {
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
 
-  const { data: threads, isLoading, error, refetch } = useAdminApi(() => api.fetch('/v1/admin/communications'), [])
+  const { data: threads, isLoading, error, refetch } = useQuery({
+    queryKey: ['admin', 'communications'],
+    queryFn: () => api.get('/v1/admin/communications'),
+    staleTime: 30000,
+  })
 
   const filtered = useMemo(() => {
     if (!threads) return []
@@ -37,9 +41,8 @@ export default function Comms() {
     if (!replyText.trim() || !selectedThread) return
     setSendingReply(true)
     try {
-      await api.adminFetch(`/communications/${selectedThread}/reply`, {
-        method: 'POST',
-        body: JSON.stringify({ text: replyText }),
+      await api.post(`/v1/admin/communications/${selectedThread}/reply`, {
+        text: replyText,
       })
       setReplyText('')
       refetch()

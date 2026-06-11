@@ -1,11 +1,12 @@
-// Payouts.jsx — Admin payout management
+﻿// Payouts.jsx — Admin payout management
 // Real-time via socket. Filters, bulk approve, export.
 
 import { useState, useMemo } from 'react'
-import { useAdminApi } from '../../hooks/useAdminApi'
-import { useAdminSocket } from '../../hooks/useAdminSocket'
-import * as api from '../../api/admin'
+import { useAdminApi } from '../hooks/useAdminApi'
+import { useAdminSocket } from '../hooks/useAdminSocket'
+import { api } from '../../../lib/api'
 import ErrorState from '../../../components/ui/ErrorState'
+
 const STATUS_FILTERS = ['All', 'Pending', 'Approved', 'Rejected']
 
 function parseAmount(amount) {
@@ -23,8 +24,12 @@ export default function Payouts() {
   const [pendingIds, setPendingIds] = useState(new Set())
   const [selectedIds, setSelectedIds] = useState(new Set())
 
-  const { data: payouts, isLoading, error, refetch } = useAdminApi(() => api.fetchPayouts(), [])
-  const { emit } = useAdminSocket()
+  const { data: payouts, isLoading, error, refetch } = useQuery({
+    queryKey: ['admin', 'payouts'],
+    queryFn: () => api.get('/v1/admin/payouts'),
+    staleTime: 30000,
+  })
+  const socket = getSocket()
 
   const filtered = useMemo(() => {
     if (!payouts) return []
@@ -46,7 +51,7 @@ export default function Payouts() {
 
   const handleApprove = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
-    emit('admin-approve-payout', { payoutId: id })
+    socket?.emit('admin-approve-payout', { payoutId: id })
   }
 
   const handleBulkApprove = () => {

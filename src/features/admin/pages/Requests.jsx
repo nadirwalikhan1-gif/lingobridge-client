@@ -1,10 +1,11 @@
-// Requests.jsx — Admin full request queue management
+﻿// Requests.jsx — Admin full request queue management
 // Real-time via socket. Filters, search, bulk actions, session history.
 
 import { useState, useMemo } from 'react'
-import { useAdminData } from '../../context/AdminDataContext'
-import { useAdminSocket } from '../../hooks/useAdminSocket'
+import { useAdminData } from '../context/AdminDataContext'
+import { useAdminSocket } from '../hooks/useAdminSocket'
 import ErrorState from '../../../components/ui/ErrorState'
+
 function VideoIcon() {
   return (
     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -31,7 +32,7 @@ const FILTERS = ['All', 'Pending', 'Assigned', 'Expired', 'Cancelled']
 
 export default function Requests() {
   const { requestQueue, isSocketReady } = useAdminData()
-  const { emit } = useAdminSocket()
+  const socket = getSocket()
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [pendingIds, setPendingIds] = useState(new Set())
@@ -53,12 +54,12 @@ export default function Requests() {
 
   const handleAssign = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
-    emit('admin-assign-interpreter', { requestId: id })
+    socket?.emit('admin-assign-interpreter', { requestId: id })
   }
 
   const handleSkip = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
-    emit('admin-skip-request', { requestId: id })
+    socket?.emit('admin-skip-request', { requestId: id })
   }
 
   const handleBulkSkip = () => {

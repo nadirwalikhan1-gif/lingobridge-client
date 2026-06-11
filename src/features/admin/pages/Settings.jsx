@@ -1,16 +1,21 @@
-// Settings.jsx — Admin platform configuration
+﻿// Settings.jsx — Admin platform configuration
 // Commission rates, session timeouts, feature flags, notification preferences.
 
 import { useState } from 'react'
-import { useAdminApi } from '../../hooks/useAdminApi'
-import * as api from '../../api/admin'
-import ErrorState from '../components/ErrorState'
+import { useQuery } from '@tanstack/react-query'
+import { useAdminApi } from '../hooks/useAdminApi'
+import { api } from '../../../lib/api'
+import ErrorState from '../../../components/ui/ErrorState'
 
 export default function Settings() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  const { data: settings, isLoading, error, refetch } = useAdminApi(() => api.fetch('/v1/admin/settings'), [])
+  const { data: settings, isLoading, error, refetch } = useQuery({
+    queryKey: ['admin', 'settings'],
+    queryFn: () => api.get('/v1/admin/settings'),
+    staleTime: 30000,
+  })
 
   const [form, setForm] = useState({
     commissionRate: 10,
@@ -33,10 +38,7 @@ export default function Settings() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await api.adminFetch('/settings', {
-        method: 'PUT',
-        body: JSON.stringify(form),
-      })
+      await api.put('/v1/admin/settings', form)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
       refetch()

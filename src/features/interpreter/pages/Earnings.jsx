@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
-import { INTERPRETER_EARN_RATES } from '../../../../config/constants'
+import { INTERPRETER_EARN_RATES } from '../../../config/constants'
 import EarningsChart from '../components/dashboard/EarningsChart'
 
 // ── Constants ────────────────────────────────────────────────────────────────

@@ -8,15 +8,26 @@ import BookingPage from './features/booking/pages/BookingPage';
 import LoginPage from './pages/LoginPage';
 
 // ── Client pages ──────────────────────────────────────────────
-import ClientDashboard from './features/client/pages/Dashboard';
-import SessionHistory from './features/client/pages/SessionHistory';
-import Wallet from './features/client/pages/Wallet';
-import Messages from './features/client/pages/Messages';
-import Favourites from './features/client/pages/Favourites';
-import RecentReviews from './features/client/pages/RecentReviews';
-import Profile from './features/client/pages/Profile';
-import Settings from './features/client/pages/Settings';
-import Teams from './features/booking/pages/Teams';
+import ClientDashboard  from './features/client/pages/Dashboard';
+import SessionHistory   from './features/client/pages/SessionHistory';
+import Wallet           from './features/client/pages/Wallet';
+import Messages         from './features/client/pages/Messages';
+import Favourites       from './features/client/pages/Favourites';
+import RecentReviews    from './features/client/pages/RecentReviews';
+import Profile          from './features/client/pages/Profile';
+import Settings         from './features/client/pages/Settings';
+import Teams            from './features/booking/pages/Teams';
+
+// ── Interpreter pages ─────────────────────────────────────────
+import Availability         from './features/interpreter/pages/Availability';
+import Requests             from './features/interpreter/pages/Requests';
+import MySessions           from './features/interpreter/pages/MySessions';
+import Earnings             from './features/interpreter/pages/Earnings';
+import Payouts              from './features/interpreter/pages/Payouts';
+import InterpreterReviews   from './features/interpreter/pages/Reviews';
+import InterpreterProfile   from './features/interpreter/pages/Profile';
+import InterpreterSettings  from './features/interpreter/pages/Settings';
+import Help                 from './features/interpreter/pages/Help';
 
 // ─── Route Guards ─────────────────────────────────────────────
 
@@ -38,7 +49,7 @@ function ProtectedRoute({ children, allowedRoles }) {
 }
 
 function roleHome(role) {
-  if (role === 'admin') return '/admin/dashboard';
+  if (role === 'admin')       return '/admin/dashboard';
   if (role === 'interpreter') return '/interpreter/dashboard';
   return '/client/dashboard';
 }
@@ -60,17 +71,17 @@ function AdminRoutes() {
   return (
     <DashboardLayout role="admin">
       <Routes>
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="users" element={<Placeholder title="Users" />} />
+        <Route path="dashboard"    element={<AdminDashboard />} />
+        <Route path="users"        element={<Placeholder title="Users" />} />
         <Route path="interpreters" element={<Placeholder title="Interpreters" />} />
-        <Route path="sessions" element={<Placeholder title="Sessions" />} />
+        <Route path="sessions"     element={<Placeholder title="Sessions" />} />
         <Route path="transactions" element={<Placeholder title="Transactions" />} />
-        <Route path="reports" element={<Placeholder title="Reports" />} />
-        <Route path="disputes" element={<Placeholder title="Disputes" />} />
-        <Route path="reviews" element={<Placeholder title="Reviews" />} />
-        <Route path="coupons" element={<Placeholder title="Coupons" />} />
-        <Route path="settings" element={<Placeholder title="Settings" />} />
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
+        <Route path="reports"      element={<Placeholder title="Reports" />} />
+        <Route path="disputes"     element={<Placeholder title="Disputes" />} />
+        <Route path="reviews"      element={<Placeholder title="Reviews" />} />
+        <Route path="coupons"      element={<Placeholder title="Coupons" />} />
+        <Route path="settings"     element={<Placeholder title="Settings" />} />
+        <Route path="*"            element={<Navigate to="dashboard" replace />} />
       </Routes>
     </DashboardLayout>
   );
@@ -80,17 +91,17 @@ function InterpreterRoutes() {
   return (
     <DashboardLayout role="interpreter">
       <Routes>
-        <Route path="dashboard" element={<InterpreterDashboard />} />
-        <Route path="requests" element={<Placeholder title="Requests" />} />
-        <Route path="sessions" element={<Placeholder title="My Sessions" />} />
-        <Route path="earnings" element={<Placeholder title="Earnings" />} />
-        <Route path="payouts" element={<Placeholder title="Payouts" />} />
-        <Route path="availability" element={<Placeholder title="Availability" />} />
-        <Route path="reviews" element={<Placeholder title="Reviews" />} />
-        <Route path="profile" element={<Placeholder title="Profile" />} />
-        <Route path="settings" element={<Placeholder title="Settings" />} />
-        <Route path="help" element={<Placeholder title="Help & Support" />} />
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard"    element={<InterpreterDashboard />} />
+        <Route path="availability" element={<Availability />} />
+        <Route path="requests"     element={<Requests />} />
+        <Route path="sessions"     element={<MySessions />} />
+        <Route path="earnings"     element={<Earnings />} />
+        <Route path="payouts"      element={<Payouts />} />
+        <Route path="reviews"      element={<InterpreterReviews />} />
+        <Route path="profile"      element={<InterpreterProfile />} />
+        <Route path="settings"     element={<InterpreterSettings />} />
+        <Route path="help"         element={<Help />} />
+        <Route path="*"            element={<Navigate to="dashboard" replace />} />
       </Routes>
     </DashboardLayout>
   );
@@ -100,18 +111,18 @@ function ClientRoutes() {
   return (
     <DashboardLayout role="client">
       <Routes>
-        <Route path="dashboard" element={<ClientDashboard />} />
-        <Route path="booking" element={<BookingPage />} />
-        <Route path="history" element={<SessionHistory />} />
-        <Route path="wallet" element={<Wallet />} />
-        <Route path="messages" element={<Messages />} />
+        <Route path="dashboard"  element={<ClientDashboard />} />
+        <Route path="booking"    element={<BookingPage />} />
+        <Route path="history"    element={<SessionHistory />} />
+        <Route path="wallet"     element={<Wallet />} />
+        <Route path="messages"   element={<Messages />} />
         <Route path="favourites" element={<Favourites />} />
-        <Route path="reviews" element={<RecentReviews />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="teams" element={<Teams />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="help" element={<Placeholder title="Help & Support" />} />
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
+        <Route path="reviews"    element={<RecentReviews />} />
+        <Route path="profile"    element={<Profile />} />
+        <Route path="teams"      element={<Teams />} />
+        <Route path="settings"   element={<Settings />} />
+        <Route path="help"       element={<Placeholder title="Help & Support" />} />
+        <Route path="*"          element={<Navigate to="dashboard" replace />} />
       </Routes>
     </DashboardLayout>
   );
@@ -128,7 +139,7 @@ export default function App() {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*"      element={<Navigate to="/login" replace />} />
       </Routes>
     );
   }

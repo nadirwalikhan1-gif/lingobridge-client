@@ -5,11 +5,6 @@ import { useQuery } from '@tanstack/react-query'
 import { getSocket } from '../../../lib/socket'
 import { api } from '../../../lib/api'
 import ErrorState from '../../../components/ui/ErrorState'
-import { useState, useMemo } from 'react'
-import { useAdminApi } from '../hooks/useAdminApi'
-import { useAdminSocket } from '../hooks/useAdminSocket'
-import { api } from '../../../lib/api'
-import ErrorState from '../../../components/ui/ErrorState'
 
 const STATUS_FILTERS = ['All', 'Pending', 'Approved', 'Rejected']
 

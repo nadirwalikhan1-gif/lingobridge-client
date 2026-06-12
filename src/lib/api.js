@@ -23,10 +23,13 @@ function getTokenFromStorage() {
 async function getToken() {
   // Always try Supabase session first (works even when localStorage is blocked)
   try {
-    const { data } = await supabase?.auth?.getSession();
-    if (data?.session?.access_token) {
-      cachedToken = data.session.access_token;
-      return cachedToken;
+    if (supabase?.auth?.getSession) {
+      const result = await supabase.auth.getSession();
+      const token = result?.data?.session?.access_token;
+      if (token) {
+        cachedToken = token;
+        return cachedToken;
+      }
     }
   } catch (e) {
     console.error('Supabase getSession error:', e);
@@ -49,22 +52,22 @@ function clearTokenCache() {
 
 async function apiCall(endpoint, options = {}) {
   const token = await getToken();
-  
+
   if (!token) {
     throw new Error('Not authenticated');
   }
 
   const { params, ...fetchOptions } = options;
-  const queryString = params 
-    ? "?" + new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([,v]) => v != null))).toString() 
+  const queryString = params
+    ? "?" + new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([,v]) => v != null))).toString()
     : "";
-  
+
   // Bulletproof URL construction
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${API_URL}${cleanEndpoint}${queryString}`;
-  
+
   console.log('📡 API URL:', url); // DEBUG: verify in console
-  
+
   const response = await fetch(url, {
     ...fetchOptions,
     headers: {

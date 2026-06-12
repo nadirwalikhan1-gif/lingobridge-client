@@ -13,7 +13,9 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
       persistSession: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      lock: () => Promise.resolve(),  // disable navigator lock — fixes white screen on some browsers
+      // Correct no-op lock: must invoke and return the wrapped fn,
+      // otherwise getSession()/getUser()/refresh all resolve to undefined.
+      lock: (name, acquireTimeout, fn) => fn(),
     }
   });
 } else {

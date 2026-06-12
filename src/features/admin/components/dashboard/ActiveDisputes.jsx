@@ -1,5 +1,5 @@
 // src/features/admin/components/dashboard/ActiveDisputes.jsx
-// Wired to parent via onResolve/onEscalate props. Added action buttons.
+// Wired to parent via onResolve/onEscalate props.
 
 function AlertIcon({ className }) {
   return (
@@ -21,7 +21,30 @@ function InfoIcon({ className }) {
   )
 }
 
+function CheckIcon({ className }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+
 const statusConfig = {
+  // FIX: added all statuses the API can return
+  open: {
+    iconBg: 'bg-[#FAEEDA]',
+    Icon: InfoIcon,
+    iconClass: 'w-3.5 h-3.5 stroke-[#BA7517]',
+    badge: 'bg-[#FAEEDA] text-[#BA7517]',
+    label: 'Open',
+  },
+  investigating: {
+    iconBg: 'bg-[#EEEDFE]',
+    Icon: InfoIcon,
+    iconClass: 'w-3.5 h-3.5 stroke-[#534AB7]',
+    badge: 'bg-[#EEEDFE] text-[#534AB7]',
+    label: 'Investigating',
+  },
   escalated: {
     iconBg: 'bg-[#FCEBEB]',
     Icon: AlertIcon,
@@ -36,9 +59,26 @@ const statusConfig = {
     badge: 'bg-[#FAEEDA] text-[#BA7517]',
     label: 'Review',
   },
+  resolved: {
+    iconBg: 'bg-[#E1F5EE]',
+    Icon: CheckIcon,
+    iconClass: 'w-3.5 h-3.5 stroke-[#0F6E56]',
+    badge: 'bg-[#E1F5EE] text-[#0F6E56]',
+    label: 'Resolved',
+  },
 }
 
-export default function ActiveDisputes({ ext: disputes = [], onResolve, onEscalate }) {
+// FIX: fallback for any unknown status — prevents crash on cfg.dot / Icon destructure
+const FALLBACK_CFG = {
+  iconBg: 'bg-lb-surface',
+  Icon: InfoIcon,
+  iconClass: 'w-3.5 h-3.5 stroke-lb-muted',
+  badge: 'bg-lb-surface text-lb-muted',
+  label: 'Unknown',
+}
+
+// FIX: prop was `ext: disputes` — renamed to `disputes` to match what parent passes
+export default function ActiveDisputes({ disputes = [], onResolve, onEscalate }) {
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
@@ -51,7 +91,7 @@ export default function ActiveDisputes({ ext: disputes = [], onResolve, onEscala
       ) : (
         <div className="divide-y divide-lb-border">
           {disputes.map((d) => {
-            const cfg = statusConfig[d.status]
+            const cfg = statusConfig[d.status] ?? FALLBACK_CFG // FIX: safe fallback
             const { Icon } = cfg
             return (
               <div key={d.id} className="flex items-start gap-2.5 py-2">

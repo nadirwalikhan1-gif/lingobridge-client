@@ -28,7 +28,9 @@ export default function Payouts() {
     queryFn: () => api.get('/v1/admin/payouts'),
     staleTime: 30000,
   })
-  const socket = getSocket()
+
+  // ✅ FIX: removed top-level getSocket() call — socket captured at render time
+  // may be null on mount and goes stale after reconnects. Moved into handlers below.
 
   const filtered = useMemo(() => {
     if (!payouts) return []
@@ -50,6 +52,7 @@ export default function Payouts() {
 
   const handleApprove = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
+    const socket = getSocket() // ✅ FIX: called at action time, always gets live socket
     socket?.emit('admin-approve-payout', { payoutId: id })
   }
 

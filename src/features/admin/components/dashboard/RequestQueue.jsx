@@ -2,7 +2,7 @@
 // Wired to parent via onAssign/onSkip props. No local state mutation.
 // Pending spinner per card. Waits for socket confirmation to disappear.
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function fmt(s) {
   const m = Math.floor(s / 60)
@@ -26,7 +26,7 @@ function AudioIcon() {
   )
 }
 
-function RequestCard({ req, onAssign, onSkip, index }) {
+function RequestCard({ req, onAssign, onSkip, index, isPending }) {
   const [secs, setSecs] = useState(req.expiresIn ?? 0)
   const [visible, setVisible] = useState(false)
   const [flash, setFlash] = useState(false)
@@ -115,19 +115,21 @@ function RequestCard({ req, onAssign, onSkip, index }) {
         <div className="flex gap-1.5 shrink-0">
           <button
             onClick={() => onSkip?.(req.id)}
-            className="text-[10.5px] px-3 py-1 rounded border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors font-medium"
+            disabled={isPending}
+            className="text-[10.5px] px-3 py-1 rounded border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors font-medium disabled:opacity-50"
           >
             Skip
           </button>
           <button
             onClick={() => onAssign?.(req.id)}
-            className={`text-[10.5px] px-3 py-1 rounded text-white font-semibold transition-colors ${
+            disabled={isPending}
+            className={`text-[10.5px] px-3 py-1 rounded text-white font-semibold transition-colors disabled:opacity-50 ${
               noMatch
                 ? 'bg-[#A32D2D] hover:bg-[#791F1F]'
                 : 'bg-[#7F77DD] hover:bg-[#534AB7]'
             }`}
           >
-            {noMatch ? 'Force assign' : 'Assign'}
+            {isPending ? '…' : noMatch ? 'Force assign' : 'Assign'}
           </button>
         </div>
       </div>
@@ -135,7 +137,8 @@ function RequestCard({ req, onAssign, onSkip, index }) {
   )
 }
 
-export default function RequestQueue({ ext: requests = [], onAssign, onSkip }) {
+// FIX: prop was `ext: requests` — renamed to `requests` to match what parent passes
+export default function RequestQueue({ requests = [], onAssign, onSkip }) {
   const [pendingIds, setPendingIds] = useState(new Set())
 
   const handleAssign = (id) => {
@@ -172,7 +175,14 @@ export default function RequestQueue({ ext: requests = [], onAssign, onSkip }) {
       ) : (
         <div className="px-4 py-3">
           {requests.map((r, i) => (
-            <RequestCard key={r.id} req={r} onAssign={handleAssign} onSkip={handleSkip} index={i} />
+            <RequestCard
+              key={r.id}
+              req={r}
+              onAssign={handleAssign}
+              onSkip={handleSkip}
+              index={i}
+              isPending={pendingIds.has(r.id)}  // FIX: pass per-card pending state
+            />
           ))}
         </div>
       )}

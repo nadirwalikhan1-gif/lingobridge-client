@@ -1,9 +1,9 @@
-﻿// Requests.jsx — Admin full request queue management
+﻿// src/features/admin/pages/Requests.jsx
 // Real-time via socket. Filters, search, bulk actions, session history.
 
 import { useState, useMemo } from 'react'
 import { useAdminData } from '../context/AdminDataContext'
-import { useAdminSocket } from '../hooks/useAdminSocket'
+import { getSocket } from '../../../lib/socket' // FIX: added missing import
 import ErrorState from '../../../components/ui/ErrorState'
 
 function VideoIcon() {
@@ -32,7 +32,7 @@ const FILTERS = ['All', 'Pending', 'Assigned', 'Expired', 'Cancelled']
 
 export default function Requests() {
   const { requestQueue, isSocketReady } = useAdminData()
-  const socket = getSocket()
+  // FIX: removed top-level getSocket() call — was missing import + stale socket on reconnect
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [pendingIds, setPendingIds] = useState(new Set())
@@ -41,10 +41,10 @@ export default function Requests() {
   const filtered = useMemo(() => {
     return requestQueue.filter(r => {
       const matchStatus = filter === 'All'
-        || (filter === 'Pending'    && r.status === 'pending')
-        || (filter === 'Assigned'   && r.status === 'assigned')
-        || (filter === 'Expired'    && r.status === 'expired')
-        || (filter === 'Cancelled'  && r.status === 'cancelled')
+        || (filter === 'Pending'   && r.status === 'pending')
+        || (filter === 'Assigned'  && r.status === 'assigned')
+        || (filter === 'Expired'   && r.status === 'expired')
+        || (filter === 'Cancelled' && r.status === 'cancelled')
       const matchSearch = r.client?.toLowerCase().includes(search.toLowerCase())
         || r.fromLang?.toLowerCase().includes(search.toLowerCase())
         || r.toLang?.toLowerCase().includes(search.toLowerCase())
@@ -52,14 +52,15 @@ export default function Requests() {
     })
   }, [requestQueue, filter, search])
 
+  // FIX: getSocket() called at action time — always gets the live socket
   const handleAssign = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
-    socket?.emit('admin-assign-interpreter', { requestId: id })
+    getSocket()?.emit('admin-assign-interpreter', { requestId: id })
   }
 
   const handleSkip = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
-    socket?.emit('admin-skip-request', { requestId: id })
+    getSocket()?.emit('admin-skip-request', { requestId: id })
   }
 
   const handleBulkSkip = () => {

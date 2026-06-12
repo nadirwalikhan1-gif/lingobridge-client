@@ -1,9 +1,11 @@
 // src/features/admin/components/dashboard/PayoutQueue.jsx
 // Wired to parent via onApprove prop. Added per-row Approve button.
 
+// ✅ FIX: added 'rejected' status + safe fallback so unknown statuses don't crash
 const payoutStatus = {
-  pending: { bg: 'bg-[#FAEEDA]', text: 'text-[#BA7517]', label: 'Pending' },
+  pending:  { bg: 'bg-[#FAEEDA]', text: 'text-[#BA7517]', label: 'Pending' },
   approved: { bg: 'bg-[#E1F5EE]', text: 'text-[#0F6E56]', label: 'Approved' },
+  rejected: { bg: 'bg-lb-surface', text: 'text-lb-muted',  label: 'Rejected' },
 }
 
 function parseAmount(amount) {
@@ -33,7 +35,7 @@ export default function PayoutQueue({ ext: payouts = [], onApprove }) {
         <>
           <div className="divide-y divide-lb-border">
             {payouts.map((p) => {
-              const cfg = payoutStatus[p.status]
+              const cfg = payoutStatus[p.status] || payoutStatus.rejected // ✅ FIX: fallback
               return (
                 <div key={p.id} className="flex items-center gap-2.5 py-2">
                   <div className="w-[26px] h-[26px] rounded-full bg-[#E1F5EE] flex items-center justify-center text-[9px] font-medium text-[#0F6E56] shrink-0">

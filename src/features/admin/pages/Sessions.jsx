@@ -13,6 +13,8 @@ const statusConfig = {
   completed: { pill: 'bg-lb-surface text-lb-muted',  label: 'Done',      dot: 'bg-lb-muted' },
 }
 
+const FALLBACK_CFG = { pill: 'bg-lb-surface text-lb-muted', label: 'Unknown', dot: 'bg-lb-muted' }
+
 function StatusFilter({ value, onChange }) {
   const filters = ['all', 'live', 'escalated', 'hold', 'completed']
   return (
@@ -81,7 +83,7 @@ export default function AdminSessions() {
         ) : (
           <div className="divide-y divide-lb-border">
             {filtered.map((s) => {
-              const cfg = statusConfig[s.status]
+              const cfg = statusConfig[s.status] ?? FALLBACK_CFG
               return (
                 <div key={s.id} className="flex items-center gap-3 py-2.5">
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />

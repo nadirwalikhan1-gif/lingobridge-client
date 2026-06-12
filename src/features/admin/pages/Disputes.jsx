@@ -1,152 +1,190 @@
-﻿// src/features/admin/pages/Disputes.jsx
-// Wired to real API + socket actions. Uses React Query with 30s staleTime.
+﻿// src/features/admin/components/dashboard/RequestQueue.jsx
+// Wired to parent via onAssign/onSkip props. No local state mutation.
+// Pending spinner per card. Waits for socket confirmation to disappear.
 
-import { useState, useMemo } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getSocket } from '../../../lib/socket'
-import { api } from '../../../lib/api'
-import ErrorState from '../../../components/ui/ErrorState'
+import { useState, useEffect, useRef } from 'react'
 
-const STATUS_FILTERS = ['All', 'Open', 'Escalated', 'Resolved']
+function fmt(s) {
+  const m = Math.floor(s / 60)
+  const ss = s % 60
+  return `${m}:${ss < 10 ? '0' : ''}${ss}`
+}
 
-export default function Disputes() {
-  const [filter, setFilter] = useState('All')
-  const queryClient = useQueryClient()
+function VideoIcon() {
+  return (
+    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path d="M15 10l4.553-2.069A1 1 0 0121 8.829v6.342a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+    </svg>
+  )
+}
 
-  const { data: disputes, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin', 'disputes'],
-    queryFn: () => api.get('/v1/admin/disputes'),
-    staleTime: 30000,
-  })
+function AudioIcon() {
+  return (
+    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+    </svg>
+  )
+}
 
-  const resolveMutation = useMutation({
-    mutationFn: ({ id, action }) => api.post(`/v1/admin/disputes/${id}/resolve`, { action }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'disputes'] }),
-  })
+function RequestCard({ req, onAssign, onSkip, index, isPending }) {
+  const [secs, setSecs] = useState(req.expiresIn ?? 0)
+  const [visible, setVisible] = useState(false)
+  const [flash, setFlash] = useState(false)
+  const prevUrgentRef = useRef((req.expiresIn ?? 0) < 120)
 
-  const filtered = useMemo(() => {
-    if (!disputes) return []
-    return disputes.filter(d => {
-      if (filter === 'All') return true
-      if (filter === 'Open') return d.status === 'open'
-      if (filter === 'Escalated') return d.status === 'escalated'
-      if (filter === 'Resolved') return d.status === 'resolved'
-      return true
-    })
-  }, [disputes, filter])
+  useEffect(() => {
+    const id = setInterval(() => setSecs((s) => Math.max(0, s - 1)), 1000)
+    return () => clearInterval(id)
+  }, [])
 
-  const handleResolve = (id) => {
-    if (!window.confirm('Resolve this dispute?')) return
-    resolveMutation.mutate({ id, action: 'resolve' })
-  }
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), index * 80)
+    return () => clearTimeout(t)
+  }, [index])
 
-  const handleEscalate = (id) => {
-    if (!window.confirm('Escalate this dispute?')) return
-    const socket = getSocket()
-    if (socket) socket.emit('admin-escalate-dispute', { disputeId: id })
-  }
+  useEffect(() => {
+    const isUrgent = secs < 120
+    if (isUrgent && !prevUrgentRef.current) {
+      setFlash(true)
+      const t = setTimeout(() => setFlash(false), 600)
+      prevUrgentRef.current = true
+      return () => clearTimeout(t)
+    }
+  }, [secs])
 
-  const handleRefund = (id) => {
-    if (!window.confirm('Issue refund and resolve?')) return
-    resolveMutation.mutate({ id, action: 'refund' })
-  }
+  const urgent = secs < 120
+  const critical = secs < 60
+  const isVideo = req.type === 'video'
+  const noMatch = req.availableInterpreters === 0
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <div className="h-8 bg-lb-border rounded w-32 animate-pulse" />
-        <div className="h-96 bg-lb-border rounded-xl animate-pulse" />
+  return (
+    <div
+      style={{
+        transition: 'opacity 300ms ease, transform 300ms ease',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(6px)',
+      }}
+      className={`p-3 rounded-lg border mb-2 last:mb-0 transition-colors duration-200 ${
+        flash
+          ? 'border-[#E24B4A] bg-[#FCEBEB]/40'
+          : urgent || noMatch
+          ? 'border-[#F7C1C1] bg-[#FCEBEB]/20'
+          : 'border-lb-border hover:border-[#7F77DD]'
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3 mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[13px] font-semibold text-lb-ink">
+            {req.fromLang} → {req.toLang}
+          </span>
+          {noMatch && (
+            <span className="text-[9.5px] font-semibold px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">
+              No match
+            </span>
+          )}
+        </div>
+        <span className="text-[13px] font-semibold text-[#26215C] shrink-0">{req.price}</span>
       </div>
-    )
+
+      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+        <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border border-lb-border bg-lb-surface text-lb-muted">
+          {isVideo ? <VideoIcon /> : <AudioIcon />}
+          {isVideo ? 'Video' : 'Audio'} · {req.duration}
+        </span>
+        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">
+          {req.category}
+        </span>
+        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1 font-mono tabular-nums transition-colors duration-300 ${
+          critical
+            ? 'bg-[#FCEBEB] text-[#A32D2D] animate-pulse'
+            : urgent
+            ? 'bg-[#FCEBEB] text-[#A32D2D]'
+            : 'bg-[#EAF3DE] text-[#3B6D11]'
+        }`}>
+          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 6v6l4 2" />
+          </svg>
+          {fmt(secs)}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[10px] text-lb-muted truncate">
+          {req.client} · {req.timeAgo} · {req.note}
+        </p>
+        <div className="flex gap-1.5 shrink-0">
+          <button
+            onClick={() => onSkip?.(req.id)}
+            disabled={isPending}
+            className="text-[10.5px] px-3 py-1 rounded border border-lb-border bg-transparent text-lb-muted hover:bg-lb-surface transition-colors font-medium disabled:opacity-50"
+          >
+            Skip
+          </button>
+          <button
+            onClick={() => onAssign?.(req.id)}
+            disabled={isPending}
+            className={`text-[10.5px] px-3 py-1 rounded text-white font-semibold transition-colors disabled:opacity-50 ${
+              noMatch
+                ? 'bg-[#A32D2D] hover:bg-[#791F1F]'
+                : 'bg-[#7F77DD] hover:bg-[#534AB7]'
+            }`}
+          >
+            {isPending ? '…' : noMatch ? 'Force assign' : 'Assign'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// FIX: prop was `ext: requests` — renamed to `requests` to match what parent passes
+export default function RequestQueue({ requests = [], onAssign, onSkip }) {
+  const [pendingIds, setPendingIds] = useState(new Set())
+
+  const handleAssign = (id) => {
+    setPendingIds(prev => new Set(prev).add(id))
+    onAssign?.(id)
   }
 
-  if (error) {
-    return <ErrorState message={error.message} onRetry={refetch} />
+  const handleSkip = (id) => {
+    setPendingIds(prev => new Set(prev).add(id))
+    onSkip?.(id)
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between pb-1">
+    <div className="lb-card">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-lb-border">
         <div>
-          <p className="text-xs text-lb-muted">Platform operations</p>
-          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Disputes</h1>
+          <div className="flex items-center gap-1.5">
+            <h3 className="text-[13px] font-semibold text-lb-ink">Incoming Requests</h3>
+            {requests.length > 0 && (
+              <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#7F77DD] text-white text-[10px] font-semibold">
+                {requests.length}
+              </span>
+            )}
+          </div>
+          <p className="text-[10.5px] text-lb-muted mt-0.5">
+            Assign to available interpreters before timer expires
+          </p>
         </div>
+        <button className="text-[11.5px] font-medium text-[#7F77DD]">Dispatch view</button>
       </div>
 
-      <div className="flex items-center gap-1">
-        {STATUS_FILTERS.map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-2.5 py-1.5 text-[11px] font-medium rounded border transition-colors ${
-              filter === f
-                ? 'bg-[#7F77DD] text-white border-[#7F77DD]'
-                : 'bg-white text-lb-muted border-lb-border hover:bg-lb-surface'
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      {disputes?.length === 0 ? (
-        <div className="lb-card p-8">
-          <p className="text-[12px] text-lb-muted text-center">No open disputes</p>
-        </div>
+      {requests.length === 0 ? (
+        <p className="text-[12px] text-lb-muted text-center py-6">No requests in queue</p>
       ) : (
-        <div className="lb-card divide-y divide-lb-border">
-          {filtered.map(d => (
-            <div key={d.id} className="p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[13px] font-medium text-lb-ink">{d.title}</p>
-                  <p className="text-[11px] text-lb-muted mt-0.5">
-                    {d.ref} · {d.client}{d.interpreter ? ` · ${d.interpreter}` : ''}
-                    {d.amount && ` · ${d.amount}`}
-                  </p>
-                  <p className="text-[10px] text-lb-subtle mt-1">{d.timeAgo}</p>
-                </div>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                  d.status === 'escalated'
-                    ? 'bg-[#FCEBEB] text-[#A32D2D]'
-                    : d.status === 'resolved'
-                    ? 'bg-[#E1F5EE] text-[#0F6E56]'
-                    : 'bg-[#FAEEDA] text-[#BA7517]'
-                }`}>
-                  {d.status === 'escalated' ? 'Escalated' : d.status === 'resolved' ? 'Resolved' : 'Open'}
-                </span>
-              </div>
-              {d.status !== 'resolved' && (
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => handleResolve(d.id)}
-                    disabled={resolveMutation.isPending}
-                    className="text-[10px] px-2.5 py-1 rounded bg-[#E1F5EE] text-[#0F6E56] font-medium hover:bg-[#c8ede2] transition-colors disabled:opacity-50"
-                  >
-                    {resolveMutation.isPending ? '…' : 'Resolve'}
-                  </button>
-                  <button
-                    onClick={() => handleRefund(d.id)}
-                    disabled={resolveMutation.isPending}
-                    className="text-[10px] px-2.5 py-1 rounded bg-[#FCEBEB] text-[#A32D2D] font-medium hover:bg-[#fad8d8] transition-colors disabled:opacity-50"
-                  >
-                    Refund
-                  </button>
-                  <button
-                    onClick={() => handleEscalate(d.id)}
-                    className="text-[10px] px-2.5 py-1 rounded border border-lb-border bg-white text-lb-muted hover:bg-lb-surface transition-colors"
-                  >
-                    Escalate
-                  </button>
-                </div>
-              )}
-            </div>
+        <div className="px-4 py-3">
+          {requests.map((r, i) => (
+            <RequestCard
+              key={r.id}
+              req={r}
+              onAssign={handleAssign}
+              onSkip={handleSkip}
+              index={i}
+              isPending={pendingIds.has(r.id)}  // FIX: pass per-card pending state
+            />
           ))}
         </div>
-      )}
-
-      {filtered.length === 0 && disputes?.length > 0 && (
-        <p className="text-[12px] text-lb-muted text-center py-8">No disputes match this filter</p>
       )}
     </div>
   )

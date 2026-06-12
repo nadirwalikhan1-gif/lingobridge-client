@@ -80,25 +80,33 @@ function Placeholder({ title }) {
 
 // ─── Role-Specific Route Trees ─────────────────────────────────
 
-function AdminRoutes() {
+// src/features/admin/components/AdminLayout.jsx
+import { AdminDataProvider, useAdminData } from '../context/AdminDataContext'
+import AdminSidebar from '../../../components/layout/AdminSidebar'
+
+function AdminLayoutInner({ children }) {
+  const { liveSessions, requestQueue, activeDisputes, isSocketReady } = useAdminData()
   return (
-    <AdminLayout>
-      <Routes>
-        <Route path="dashboard"      element={<AdminDashboard />} />
-        <Route path="users"          element={<Users />} />
-        <Route path="interpreters"   element={<Interpreters />} />
-        <Route path="sessions"       element={<Sessions />} />
-        <Route path="requests"       element={<AdminRequests />} />
-        <Route path="transactions"   element={<Transactions />} />
-        <Route path="reviews"        element={<Reviews />} />
-        <Route path="disputes"       element={<Disputes />} />
-        <Route path="payouts"        element={<AdminPayouts />} />
-        <Route path="communications" element={<Comms />} />
-        <Route path="settings"       element={<AdminSettings />} />
-        <Route path="*"              element={<Navigate to="dashboard" replace />} />
-      </Routes>
-    </AdminLayout>
-  );
+    <div className="min-h-screen bg-lb-bg flex">
+      <AdminSidebar
+        liveSessionCount={liveSessions.length}
+        pendingRequestCount={requestQueue.length}
+        openDisputeCount={activeDisputes.length}
+        isSocketConnected={isSocketReady}
+      />
+      <main className="flex-1 p-4 lg:p-6 max-w-[1440px] overflow-y-auto">
+        {children}  {/* ✅ was <Outlet /> — nothing rendered because no nested routes fed into it */}
+      </main>
+    </div>
+  )
+}
+
+export default function AdminLayout({ children }) {
+  return (
+    <AdminDataProvider>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </AdminDataProvider>
+  )
 }
 
 function InterpreterRoutes() {

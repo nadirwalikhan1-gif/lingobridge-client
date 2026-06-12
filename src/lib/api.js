@@ -21,17 +21,22 @@ function getTokenFromStorage() {
 }
 
 async function getToken() {
+  // Always try Supabase session first (works even when localStorage is blocked)
+  try {
+    const { data } = await supabase?.auth?.getSession();
+    if (data?.session?.access_token) {
+      cachedToken = data.session.access_token;
+      return cachedToken;
+    }
+  } catch (e) {
+    console.error('Supabase getSession error:', e);
+  }
+
+  // Fallback to localStorage (may be blocked by Edge tracking prevention)
   if (cachedToken) return cachedToken;
-  
   const storageToken = getTokenFromStorage();
   if (storageToken) {
     cachedToken = storageToken;
-    return cachedToken;
-  }
-
-  const { data } = await supabase?.auth?.getSession();
-  if (data?.session?.access_token) {
-    cachedToken = data.session.access_token;
     return cachedToken;
   }
 

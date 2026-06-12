@@ -1,8 +1,5 @@
 // src/features/admin/context/AdminDataContext.jsx
-// Real-time admin state using the existing Socket.IO singleton (getSocket).
-// Emits data requests on mount. Listens for responses via useSocket.
-
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import { getSocket } from "../../../lib/socket";
 import { useSocket } from "../../../hooks/useSocket";
 
@@ -26,23 +23,34 @@ export function AdminDataProvider({ children }) {
   const [snapshot, setSnapshot] = useState(null)
   const [isSocketReady, setIsSocketReady] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const errorTimeoutRef = useRef(null)
 
-  // Emit data requests once socket is connected
+  const emitDataRequests = (socket) => {
+    socket.emit('get-platform-stats')
+    socket.emit('get-live-sessions')
+    socket.emit('get-request-queue')
+    socket.emit('get-interpreter-presence')
+    socket.emit('get-active-disputes')
+    socket.emit('get-payout-queue')
+    socket.emit('get-alerts')
+    socket.emit('get-system-health')
+    socket.emit('get-snapshot')
+  }
+
   useEffect(() => {
     const socket = getSocket()
-    if (!socket) return
+    if (!socket) {
+      setHasError(true)
+      return
+    }
 
     const onConnect = () => {
-      console.log('🔌 Admin socket connected')
-      socket.emit('get-platform-stats')
-      socket.emit('get-live-sessions')
-      socket.emit('get-request-queue')
-      socket.emit('get-interpreter-presence')
-      socket.emit('get-active-disputes')
-      socket.emit('get-payout-queue')
-      socket.emit('get-alerts')
-      socket.emit('get-system-health')
-      socket.emit('get-snapshot')
+      console.log('Admin socket connected')
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current)
+        errorTimeoutRef.current = null
+      }
+      emitDataRequests(socket)
       setIsSocketReady(true)
       setHasError(false)
     }
@@ -51,26 +59,27 @@ export function AdminDataProvider({ children }) {
       setIsSocketReady(false)
     }
 
+    errorTimeoutRef.current = setTimeout(() => {
+      setHasError(true)
+    }, 10000)
+
     if (socket.connected) {
       onConnect()
+    } else {
+      socket.on('connect', onConnect)
     }
 
-    socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
-
-    // 10s timeout: if no data arrives, show error state
-    const timeout = setTimeout(() => {
-      if (!isSocketReady) setHasError(true)
-    }, 10000)
 
     return () => {
       socket.off('connect', onConnect)
       socket.off('disconnect', onDisconnect)
-      clearTimeout(timeout)
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current)
+      }
     }
   }, [])
 
-  // Response listeners
   useSocket('platform-stats', setPlatformStats)
   useSocket('live-sessions', setLiveSessions)
   useSocket('request-queue', setRequestQueue)
@@ -81,7 +90,6 @@ export function AdminDataProvider({ children }) {
   useSocket('system-health', setSystemHealth)
   useSocket('snapshot', setSnapshot)
 
-  // Push events that mutate state
   useSocket('new-request', (req) => {
     setRequestQueue(prev => [req, ...prev])
   })
@@ -116,15 +124,7 @@ export function AdminDataProvider({ children }) {
     const socket = getSocket()
     if (!socket) return
     setHasError(false)
-    socket.emit('get-platform-stats')
-    socket.emit('get-live-sessions')
-    socket.emit('get-request-queue')
-    socket.emit('get-interpreter-presence')
-    socket.emit('get-active-disputes')
-    socket.emit('get-payout-queue')
-    socket.emit('get-alerts')
-    socket.emit('get-system-health')
-    socket.emit('get-snapshot')
+    emitDataRequests(socket)
   }, [])
 
   const value = {

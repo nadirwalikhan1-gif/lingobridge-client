@@ -1,4 +1,4 @@
-﻿import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './providers/AuthProvider';
 import CallRoom from './features/call/pages/CallRoom';
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -6,8 +6,6 @@ import AdminDashboard from './features/admin/pages/Dashboard';
 import InterpreterDashboard from './features/interpreter/pages/Dashboard';
 import BookingPage from './features/booking/pages/BookingPage';
 import LoginPage from './pages/LoginPage';
-
-// ── Client pages ──────────────────────────────────────────────
 import ClientDashboard  from './features/client/pages/Dashboard';
 import SessionHistory   from './features/client/pages/SessionHistory';
 import Wallet           from './features/client/pages/Wallet';
@@ -17,8 +15,6 @@ import RecentReviews    from './features/client/pages/RecentReviews';
 import Profile          from './features/client/pages/Profile';
 import Settings         from './features/client/pages/Settings';
 import Teams            from './features/booking/pages/Teams';
-
-// ── Interpreter pages ─────────────────────────────────────────
 import Availability         from './features/interpreter/pages/Availability';
 import Requests             from './features/interpreter/pages/Requests';
 import MySessions           from './features/interpreter/pages/MySessions';
@@ -28,8 +24,6 @@ import InterpreterReviews   from './features/interpreter/pages/Reviews';
 import InterpreterProfile   from './features/interpreter/pages/Profile';
 import InterpreterSettings  from './features/interpreter/pages/Settings';
 import Help                 from './features/interpreter/pages/Help';
-
-// ── Admin pages ─────────────────────────────────────────────
 import AdminLayout          from './features/admin/components/AdminLayout';
 import Users                from './features/admin/pages/Users';
 import Interpreters         from './features/admin/pages/Interpreters';
@@ -42,22 +36,12 @@ import AdminPayouts         from './features/admin/pages/Payouts';
 import Comms                from './features/admin/pages/Comms';
 import AdminSettings        from './features/admin/pages/Settings';
 
-// ─── Route Guards ─────────────────────────────────────────────
-
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth();
-
   if (loading) return null;
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (!user) return <Navigate to="/login" replace />;
   const role = user.user_metadata?.role;
-  if (allowedRoles && !allowedRoles.includes(role)) {
-    return <Navigate to={roleHome(role)} replace />;
-  }
-
+  if (allowedRoles && !allowedRoles.includes(role)) return <Navigate to={roleHome(role)} replace />;
   return children;
 }
 
@@ -66,8 +50,6 @@ function roleHome(role) {
   if (role === 'interpreter') return '/interpreter/dashboard';
   return '/client/dashboard';
 }
-
-// ─── Placeholder ──────────────────────────────────────────────
 
 function Placeholder({ title }) {
   return (
@@ -78,35 +60,25 @@ function Placeholder({ title }) {
   );
 }
 
-// ─── Role-Specific Route Trees ─────────────────────────────────
-
-// src/features/admin/components/AdminLayout.jsx
-import { AdminDataProvider, useAdminData } from '../context/AdminDataContext'
-import AdminSidebar from '../../../components/layout/AdminSidebar'
-
-function AdminLayoutInner({ children }) {
-  const { liveSessions, requestQueue, activeDisputes, isSocketReady } = useAdminData()
+function AdminRoutes() {
   return (
-    <div className="min-h-screen bg-lb-bg flex">
-      <AdminSidebar
-        liveSessionCount={liveSessions.length}
-        pendingRequestCount={requestQueue.length}
-        openDisputeCount={activeDisputes.length}
-        isSocketConnected={isSocketReady}
-      />
-      <main className="flex-1 p-4 lg:p-6 max-w-[1440px] overflow-y-auto">
-        {children}  {/* ✅ was <Outlet /> — nothing rendered because no nested routes fed into it */}
-      </main>
-    </div>
-  )
-}
-
-export default function AdminLayout({ children }) {
-  return (
-    <AdminDataProvider>
-      <AdminLayoutInner>{children}</AdminLayoutInner>
-    </AdminDataProvider>
-  )
+    <AdminLayout>
+      <Routes>
+        <Route path="dashboard"      element={<AdminDashboard />} />
+        <Route path="users"          element={<Users />} />
+        <Route path="interpreters"   element={<Interpreters />} />
+        <Route path="sessions"       element={<Sessions />} />
+        <Route path="requests"       element={<AdminRequests />} />
+        <Route path="transactions"   element={<Transactions />} />
+        <Route path="reviews"        element={<Reviews />} />
+        <Route path="disputes"       element={<Disputes />} />
+        <Route path="payouts"        element={<AdminPayouts />} />
+        <Route path="communications" element={<Comms />} />
+        <Route path="settings"       element={<AdminSettings />} />
+        <Route path="*"              element={<Navigate to="dashboard" replace />} />
+      </Routes>
+    </AdminLayout>
+  );
 }
 
 function InterpreterRoutes() {
@@ -143,20 +115,16 @@ function ClientRoutes() {
         <Route path="profile"    element={<Profile />} />
         <Route path="teams"      element={<Teams />} />
         <Route path="settings"   element={<Settings />} />
-        <Route path="help"       element={<Placeholder title="Help & Support" />} />
+        <Route path="help"       element={<Placeholder title="Help and Support" />} />
         <Route path="*"          element={<Navigate to="dashboard" replace />} />
       </Routes>
     </DashboardLayout>
   );
 }
 
-// ─── Root Router ───────────────────────────────────────────────
-
 export default function App() {
   const { user, loading } = useAuth();
-
   if (loading) return null;
-
   if (!user) {
     return (
       <Routes>
@@ -165,49 +133,14 @@ export default function App() {
       </Routes>
     );
   }
-
   const role = user.user_metadata?.role;
-
   return (
     <Routes>
       <Route path="/" element={<Navigate to={roleHome(role)} replace />} />
-
-      <Route
-        path="/admin/*"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AdminRoutes />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/interpreter/*"
-        element={
-          <ProtectedRoute allowedRoles={['interpreter']}>
-            <InterpreterRoutes />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/client/*"
-        element={
-          <ProtectedRoute allowedRoles={['client']}>
-            <ClientRoutes />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/call/:channelId"
-        element={
-          <ProtectedRoute allowedRoles={['client', 'interpreter', 'admin']}>
-            <CallRoom />
-          </ProtectedRoute>
-        }
-      />
-
+      <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['admin']}><AdminRoutes /></ProtectedRoute>} />
+      <Route path="/interpreter/*" element={<ProtectedRoute allowedRoles={['interpreter']}><InterpreterRoutes /></ProtectedRoute>} />
+      <Route path="/client/*" element={<ProtectedRoute allowedRoles={['client']}><ClientRoutes /></ProtectedRoute>} />
+      <Route path="/call/:channelId" element={<ProtectedRoute allowedRoles={['client', 'interpreter', 'admin']}><CallRoom /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to={roleHome(role)} replace />} />
     </Routes>
   );

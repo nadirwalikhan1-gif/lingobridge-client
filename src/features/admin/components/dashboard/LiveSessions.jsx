@@ -1,4 +1,4 @@
-// LiveSessions.jsx — Admin real-time session monitor
+﻿// LiveSessions.jsx — Admin real-time session monitor
 // Motion: staggered slide-in on mount, pulse dots on live/escalated, ticking elapsed timers
 
 import { useState, useEffect } from 'react'

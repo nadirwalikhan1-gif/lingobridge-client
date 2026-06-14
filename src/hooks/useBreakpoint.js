@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 
 const breakpoints = [
   { name: 'mobile', query: '(max-width: 767px)' },

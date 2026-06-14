@@ -1,4 +1,4 @@
-// src/features/admin/components/dashboard/PayoutQueue.jsx
+﻿// src/features/admin/components/dashboard/PayoutQueue.jsx
 // Wired to parent via onApprove prop. Added per-row Approve button.
 
 // ✅ FIX: added 'rejected' status + safe fallback so unknown statuses don't crash

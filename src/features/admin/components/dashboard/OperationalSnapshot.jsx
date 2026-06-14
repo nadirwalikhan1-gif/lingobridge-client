@@ -1,4 +1,4 @@
-// OperationalSnapshot.jsx — Admin operational metrics card
+﻿// OperationalSnapshot.jsx — Admin operational metrics card
 
 export default function OperationalSnapshot({ 
   stats = [],

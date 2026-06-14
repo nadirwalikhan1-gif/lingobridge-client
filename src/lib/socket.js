@@ -1,4 +1,4 @@
-import { io } from 'socket.io-client';
+ï»¿import { io } from 'socket.io-client';
 
 // Debug: log all env vars
 console.log('=== SOCKET ENV DEBUG ===');
@@ -42,7 +42,7 @@ export function connectSocket(token, role = 'client') {
   });
 
   socket.on('reconnect', () => {
-    console.log('?? Socket reconnected — re-registering role:', role);
+    console.log('?? Socket reconnected ï¿½ re-registering role:', role);
     socket.emit('register', { role });
   });
 

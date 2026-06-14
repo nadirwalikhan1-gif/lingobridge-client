@@ -1,5 +1,5 @@
-// src/features/admin/pages/Dashboard.jsx
-// Admin Mission Control — wired to AdminDataContext + Socket.IO singleton.
+ï»¿// src/features/admin/pages/Dashboard.jsx
+// Admin Mission Control ï¿½ wired to AdminDataContext + Socket.IO singleton.
 // No mock data. All child components receive ext props.
 
 import { useAdminData } from '../context/AdminDataContext'
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">{today} · Mission Control</p>
+          <p className="text-xs text-lb-muted">{today} ï¿½ Mission Control</p>
           <h1 className="text-lg font-medium text-lb-ink mt-0.5">Platform overview</h1>
         </div>
         <div className="flex items-center gap-2">

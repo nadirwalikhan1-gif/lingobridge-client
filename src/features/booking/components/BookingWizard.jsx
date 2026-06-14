@@ -1,4 +1,4 @@
-export default function BookingWizard({ step, children }) {
+﻿export default function BookingWizard({ step, children }) {
   return (
     <div className="card p-2 border border-slate-100 bg-white rounded-xl relative">
       {/* Tiny step badge only — no text header, no description */}

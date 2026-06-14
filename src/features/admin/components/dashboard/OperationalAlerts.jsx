@@ -1,4 +1,4 @@
-// OperationalAlerts.jsx — Admin alert feed
+﻿// OperationalAlerts.jsx — Admin alert feed
 
 const severityConfig = {
   critical: {

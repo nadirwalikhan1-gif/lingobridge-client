@@ -1,4 +1,4 @@
-// CategoryGrid.jsx — rebuilt with lb-* tokens to match interpreter design language
+﻿// CategoryGrid.jsx — rebuilt with lb-* tokens to match interpreter design language
 import { Heart, Scale, Briefcase, GraduationCap, Plane, MoreHorizontal, Check } from 'lucide-react'
 
 const categories = [

@@ -1,4 +1,4 @@
-// InterpreterSidebar.jsx — fixed to pass all props through to Sidebar
+﻿// InterpreterSidebar.jsx — fixed to pass all props through to Sidebar
 // Previously ignored isCollapsed/onCollapse so collapse never worked
 
 import { LayoutDashboard, Clock, Inbox, Calendar, DollarSign, Wallet, Star, User, Settings, HelpCircle, LogOut } from 'lucide-react'

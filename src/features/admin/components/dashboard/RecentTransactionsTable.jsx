@@ -1,4 +1,4 @@
-import { recentTransactions } from '../../../../data/mocks/transactions'
+﻿import { recentTransactions } from '../../../../data/mocks/transactions'
 import Badge from '../../../../components/ui/Badge'
 
 export default function RecentTransactionsTable() {

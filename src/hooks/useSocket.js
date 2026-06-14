@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import { getSocket } from '../lib/socket';
 
 export function useSocket(event, handler) {

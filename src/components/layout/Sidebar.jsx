@@ -1,4 +1,4 @@
-// Sidebar.jsx — shared sidebar for all roles
+﻿// Sidebar.jsx — shared sidebar for all roles
 // Fixed: name now derives from firstName/lastName/email if name is missing
 
 import React, { useState } from 'react';

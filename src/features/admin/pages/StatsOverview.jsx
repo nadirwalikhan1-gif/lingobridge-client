@@ -1,4 +1,4 @@
-import { Users, Headphones, Calendar, CreditCard } from 'lucide-react'
+﻿import { Users, Headphones, Calendar, CreditCard } from 'lucide-react'
 import StatCard from '../../../../components/ui/StatCard'
 
 export default function StatsOverview() {

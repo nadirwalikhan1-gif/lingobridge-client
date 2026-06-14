@@ -1,4 +1,4 @@
-// RecentReviews.jsx — single featured review card, real data
+﻿// RecentReviews.jsx — single featured review card, real data
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../../providers/AuthProvider'

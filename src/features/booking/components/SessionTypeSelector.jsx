@@ -1,4 +1,4 @@
-// SessionTypeSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
+﻿// SessionTypeSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
 // FIX: vault-model — display client rates ($1.49 audio / $1.79 video)
 
 import { Headphones, Video } from 'lucide-react'

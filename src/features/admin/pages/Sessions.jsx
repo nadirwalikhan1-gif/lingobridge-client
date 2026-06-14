@@ -1,4 +1,4 @@
-// src/features/admin/pages/Sessions.jsx
+ï»¿// src/features/admin/pages/Sessions.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -100,11 +100,11 @@ export default function AdminSessions() {
                       </span>
                     </div>
                     <p className="text-[10.5px] text-lb-muted mt-0.5">
-                      {s.interpreter} · {s.client} · {s.ref}
+                      {s.interpreter} ï¿½ {s.client} ï¿½ {s.ref}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] text-lb-muted">{s.startedAt} · {s.elapsedMins}m</p>
+                    <p className="text-[11px] text-lb-muted">{s.startedAt} ï¿½ {s.elapsedMins}m</p>
                   </div>
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.pill}`}>
                     {cfg.label}

@@ -1,4 +1,4 @@
-// CommandCenter.jsx — no hardcoded defaults for real metrics; safe '—' fallbacks
+﻿// CommandCenter.jsx — no hardcoded defaults for real metrics; safe '—' fallbacks
 
 import { useState } from 'react'
 

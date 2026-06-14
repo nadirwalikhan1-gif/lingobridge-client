@@ -1,4 +1,4 @@
-// ── Roles ──
+﻿// ── Roles ──
 export const ROLES = {
   ADMIN: 'admin',
   INTERPRETER: 'interpreter',

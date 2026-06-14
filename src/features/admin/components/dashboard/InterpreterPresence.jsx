@@ -1,4 +1,4 @@
-// InterpreterPresence.jsx — Admin interpreter online/availability panel
+﻿// InterpreterPresence.jsx — Admin interpreter online/availability panel
 
 const statusConfig = {
   online: { dot: 'bg-[#1D9E75]', label: 'Available', labelColor: 'text-[#0F6E56]' },

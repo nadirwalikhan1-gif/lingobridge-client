@@ -1,4 +1,4 @@
-export default function Stepper({ steps, currentStep }) {
+﻿export default function Stepper({ steps, currentStep }) {
   return (
     <div className="flex items-center gap-2">
       {steps.map((step, index) => {

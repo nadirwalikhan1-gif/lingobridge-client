@@ -1,4 +1,4 @@
-// src/features/admin/pages/Reviews.jsx
+ï»¿// src/features/admin/pages/Reviews.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -199,14 +199,14 @@ export default function Reviews() {
                         disabled={dismissMutation.isPending}
                         className="text-[10px] px-2.5 py-1 rounded border border-lb-border bg-white text-lb-muted hover:bg-lb-surface transition-colors disabled:opacity-50"
                       >
-                        {dismissMutation.isPending ? '…' : 'Dismiss flag'}
+                        {dismissMutation.isPending ? 'ï¿½' : 'Dismiss flag'}
                       </button>
                       <button
                         onClick={() => handleRemoveReview(r.id)}
                         disabled={removeMutation.isPending}
                         className="text-[10px] px-2.5 py-1 rounded bg-[#FCEBEB] text-[#A32D2D] font-medium hover:bg-[#fad8d8] transition-colors disabled:opacity-50"
                       >
-                        {removeMutation.isPending ? '…' : 'Remove review'}
+                        {removeMutation.isPending ? 'ï¿½' : 'Remove review'}
                       </button>
                     </div>
                   )}

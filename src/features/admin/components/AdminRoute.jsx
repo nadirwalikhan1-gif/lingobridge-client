@@ -1,4 +1,4 @@
-// src/features/admin/components/AdminRoute.jsx
+﻿// src/features/admin/components/AdminRoute.jsx
 // Role-based route protection. Redirects non-admin users to home.
 
 import { Navigate } from 'react-router-dom'

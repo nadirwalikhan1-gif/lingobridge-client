@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { ChevronRight, Video, Phone } from 'lucide-react';
 // FIX: vault-model — import client rates for dynamic demo data
 import { CLIENT_RATES } from '@/config/constants';

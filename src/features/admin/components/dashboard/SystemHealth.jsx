@@ -1,4 +1,4 @@
-// SystemHealth.jsx — Interpreter operations health panel
+﻿// SystemHealth.jsx — Interpreter operations health panel
 
 const cfg = {
   ok:   { bar: 'bg-[#1D9E75]', badge: 'bg-[#E1F5EE] text-[#0F6E56]', label: 'Good' },

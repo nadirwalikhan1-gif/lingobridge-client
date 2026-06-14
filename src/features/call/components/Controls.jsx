@@ -1,4 +1,4 @@
-// Call controls bar — mic, cam, end call.
+﻿// Call controls bar — mic, cam, end call.
 // sessionType='audio' hides the camera button entirely.
 
 export default function Controls({ micMuted, camOff, sessionType = 'audio', chatOpen = false, onToggleMic, onToggleCam, onToggleChat, onLeave }) {

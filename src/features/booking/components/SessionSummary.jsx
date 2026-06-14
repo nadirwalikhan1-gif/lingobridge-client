@@ -1,4 +1,4 @@
-// SessionSummary.jsx — rebuilt with lb-* tokens to match interpreter design language
+﻿// SessionSummary.jsx — rebuilt with lb-* tokens to match interpreter design language
 // FIX: vault-model — client rates only, no platform fee display, hold cost preview
 
 import { Globe, Headphones, Video, Clock, Calendar, User, Tag, AlertTriangle, PauseCircle } from 'lucide-react'

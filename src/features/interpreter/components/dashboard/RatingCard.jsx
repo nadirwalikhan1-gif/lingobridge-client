@@ -1,4 +1,4 @@
-// RatingCard.jsx — standalone card, moved out of WalletSummary
+﻿// RatingCard.jsx — standalone card, moved out of WalletSummary
 // FIXES APPLIED: 🟡 Rating trend (up/down vs last month)
 
 export default function RatingCard({ rating = '4.8', previousRating = null, reviewCount = 128 }) {

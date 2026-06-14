@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+﻿import { useContext } from 'react';
 import { WalletContext } from './WalletProvider.jsx';
 
 export function useWallet() {

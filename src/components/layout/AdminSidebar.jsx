@@ -1,4 +1,4 @@
-// src/components/layout/AdminSidebar.jsx
+﻿// src/components/layout/AdminSidebar.jsx
 // Production-ready admin navigation. Live indicators wired to real socket data.
 
 import {

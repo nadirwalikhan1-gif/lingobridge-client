@@ -1,4 +1,4 @@
-// DashboardLayout.jsx — fixed
+﻿// DashboardLayout.jsx — fixed
 // ROOT CAUSE: was swapping to a separate <SidebarCollapsed> component when collapsed,
 // so the updated Sidebar's isCollapsed logic never ran and labels were never shown.
 // FIX: always render <RoleSidebar>, pass isCollapsed prop, let Sidebar handle both states.

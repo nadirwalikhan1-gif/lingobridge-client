@@ -1,4 +1,4 @@
-// AvailabilitySchedule.jsx — used on Availability page (not dashboard)
+﻿// AvailabilitySchedule.jsx — used on Availability page (not dashboard)
 
 const MOCK_SCHEDULE = [
   { day: 'Mon', start: '9:00 AM', end: '5:00 PM', available: true },

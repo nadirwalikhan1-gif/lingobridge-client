@@ -1,4 +1,4 @@
-// Settings.jsx — Interpreter Settings Page
+﻿// Settings.jsx — Interpreter Settings Page
 // Socket-driven, no mock data, skeleton → real state
 
 import { useState, useEffect } from 'react'

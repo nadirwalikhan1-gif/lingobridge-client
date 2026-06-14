@@ -1,4 +1,4 @@
-// DurationSelector.jsx — Fix #9: all options in a single 2×4 grid, no pagination
+﻿// DurationSelector.jsx — Fix #9: all options in a single 2×4 grid, no pagination
 // FIX: vault-model — use CLIENT_RATES instead of old per-type constants
 
 import { CLIENT_RATES } from '../../../config/constants'

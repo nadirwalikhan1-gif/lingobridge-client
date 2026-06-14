@@ -1,4 +1,4 @@
-import React, { useState, createContext } from 'react';
+﻿import React, { useState, createContext } from 'react';
 
 // Export context so WalletContext.js can import it
 export const WalletContext = createContext(null);

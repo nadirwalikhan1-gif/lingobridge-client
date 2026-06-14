@@ -1,4 +1,4 @@
-// src/features/admin/components/dashboard/ActiveDisputes.jsx
+﻿// src/features/admin/components/dashboard/ActiveDisputes.jsx
 // Wired to parent via onResolve/onEscalate props.
 
 function AlertIcon({ className }) {

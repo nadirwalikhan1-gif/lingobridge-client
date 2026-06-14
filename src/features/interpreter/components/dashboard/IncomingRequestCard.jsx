@@ -1,4 +1,4 @@
-// IncomingRequestCard.jsx — standalone card used in Requests page (no timer variant)
+﻿// IncomingRequestCard.jsx — standalone card used in Requests page (no timer variant)
 // For dashboard timer variant see IncomingRequests.jsx
 
 export default function IncomingRequestCard({ req, onAccept, onDecline }) {

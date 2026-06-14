@@ -1,4 +1,4 @@
-export default function Toggle({ checked, onChange, label }) {
+﻿export default function Toggle({ checked, onChange, label }) {
   return (
     <div className="flex items-center gap-3">
       {label && <span className="text-sm font-medium text-slate-700">{label}</span>}

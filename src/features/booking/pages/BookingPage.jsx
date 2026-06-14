@@ -1,4 +1,4 @@
-// BookingPage.jsx — 6-step auto-advance booking flow + step-7 connecting screen
+﻿// BookingPage.jsx — 6-step auto-advance booking flow + step-7 connecting screen
 //
 // Roadmap fixes applied (targeting 9+ score):
 //   #1  On-demand indicator: "< 1 min" note on confirm; sidebar receives isOnDemand=true

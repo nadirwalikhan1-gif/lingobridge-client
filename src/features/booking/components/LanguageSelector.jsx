@@ -1,4 +1,4 @@
-// LanguageSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
+﻿// LanguageSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { FROM_LANGUAGES, TO_LANGUAGES } from '../../../config/constants'

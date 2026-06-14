@@ -1,4 +1,4 @@
-import { Phone } from 'lucide-react'
+﻿import { Phone } from 'lucide-react'
 
 export default function MobileBottomBar({ total, onConnect }) {
   return (

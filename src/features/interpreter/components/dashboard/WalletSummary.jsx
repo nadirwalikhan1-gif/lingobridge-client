@@ -1,4 +1,4 @@
-// WalletSummary.jsx — real props only; null-safe rendering throughout
+﻿// WalletSummary.jsx — real props only; null-safe rendering throughout
 
 export default function WalletSummary({
   balance   = null,

@@ -1,4 +1,4 @@
-// EarningsChart.jsx — real earnings data via socket, graceful empty state
+﻿// EarningsChart.jsx — real earnings data via socket, graceful empty state
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../../../providers/AuthProvider'

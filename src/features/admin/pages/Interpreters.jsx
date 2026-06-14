@@ -1,4 +1,4 @@
-// src/features/admin/pages/Interpreters.jsx
+ï»¿// src/features/admin/pages/Interpreters.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -116,7 +116,7 @@ export default function Interpreters() {
           </div>
           <input
             type="text"
-            placeholder="Search name or language…"
+            placeholder="Search name or languageï¿½"
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="text-[11px] border border-lb-border rounded px-3 py-1.5 bg-white text-lb-ink placeholder:text-lb-subtle focus:outline-none focus:border-[#7F77DD] w-52"
@@ -142,7 +142,7 @@ export default function Interpreters() {
                       <p className="text-[13px] font-medium text-lb-ink">{i.name}</p>
                       <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${sc.pill}`}>{sc.label}</span>
                     </div>
-                    <p className="text-[11px] text-lb-muted mt-0.5">{i.langs?.join(' · ')} · {i.categories?.join(', ')}</p>
+                    <p className="text-[11px] text-lb-muted mt-0.5">{i.langs?.join(' ï¿½ ')} ï¿½ {i.categories?.join(', ')}</p>
                   </div>
                   <div className="hidden sm:flex items-center gap-6 shrink-0 text-right">
                     <div>

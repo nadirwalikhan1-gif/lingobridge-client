@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 
 // Normalize: remove ALL trailing slashes
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:10000').replace(/\/+$/, '');

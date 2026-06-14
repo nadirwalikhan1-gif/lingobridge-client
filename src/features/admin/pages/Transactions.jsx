@@ -1,4 +1,4 @@
-// src/features/admin/pages/Transactions.jsx
+ï»¿// src/features/admin/pages/Transactions.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -151,7 +151,7 @@ export default function Transactions() {
                       <span className="text-lb-muted">{t.type === 'video' ? <VideoIcon /> : <AudioIcon />}</span>
                       <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">{t.category}</span>
                     </div>
-                    <p className="text-[11px] text-lb-muted mt-0.5">{t.client} ? {t.interpreter} · {t.date}</p>
+                    <p className="text-[11px] text-lb-muted mt-0.5">{t.client} ? {t.interpreter} ï¿½ {t.date}</p>
                   </div>
                   <div className="hidden md:flex items-center gap-4 text-right shrink-0">
                     <div>

@@ -1,4 +1,4 @@
-export default function LoginPage() {
+﻿export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="w-full max-w-md p-8 bg-white rounded-card shadow-card">

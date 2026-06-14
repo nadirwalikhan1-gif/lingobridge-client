@@ -1,4 +1,4 @@
-// src/features/admin/components/AdminLayout.jsx
+﻿// src/features/admin/components/AdminLayout.jsx
 import { AdminDataProvider, useAdminData } from '../context/AdminDataContext'
 import AdminSidebar from '../../../components/layout/AdminSidebar'
 

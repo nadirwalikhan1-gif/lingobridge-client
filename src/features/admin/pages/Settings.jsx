@@ -1,4 +1,4 @@
-// Settings.jsx — Admin platform configuration
+ï»¿// Settings.jsx ï¿½ Admin platform configuration
 // Commission rates, session timeouts, feature flags, notification preferences.
 
 import { useState } from 'react'
@@ -121,7 +121,7 @@ export default function Settings() {
             disabled={saving}
             className="px-4 py-1.5 rounded-lg text-[12px] font-medium bg-[#7F77DD] text-white hover:bg-[#534AB7] transition-colors disabled:opacity-50"
           >
-            {saving ? 'Saving…' : 'Save changes'}
+            {saving ? 'Savingï¿½' : 'Save changes'}
           </button>
         </div>
       </div>

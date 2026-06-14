@@ -1,4 +1,4 @@
-ï»¿// Comms.jsx â€” Admin communications and support inbox
+// Comms.jsx — Admin communications and support inbox
 // Messages between clients, interpreters, and platform support.
 
 import { useState, useMemo } from 'react'
@@ -101,7 +101,7 @@ export default function Comms() {
 
           <input
             type="text"
-            placeholder="Search threadsâ€¦"
+            placeholder="Search threads…"
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="text-[11px] border border-lb-border rounded px-3 py-1.5 bg-white text-lb-ink placeholder:text-lb-subtle focus:outline-none focus:border-[#7F77DD]"
@@ -216,7 +216,7 @@ export default function Comms() {
                     value={replyText}
                     onChange={e => setReplyText(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSendReply()}
-                    placeholder="Type a replyâ€¦"
+                    placeholder="Type a reply…"
                     className="flex-1 text-[11px] border border-lb-border rounded px-3 py-2 bg-white text-lb-ink placeholder:text-lb-subtle focus:outline-none focus:border-[#7F77DD]"
                   />
                   <button
@@ -224,7 +224,7 @@ export default function Comms() {
                     disabled={!replyText.trim() || sendingReply}
                     className="px-3 py-2 rounded bg-[#7F77DD] text-white text-[11px] font-medium hover:bg-[#534AB7] transition-colors disabled:opacity-50"
                   >
-                    {sendingReply ? 'â€¦' : 'Send'}
+                    {sendingReply ? '…' : 'Send'}
                   </button>
                 </div>
               </div>

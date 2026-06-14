@@ -92,7 +92,7 @@ export default function AdminSidebar({
   return (
     <Sidebar
       role="admin"
-      logoText="LingoBridge"
+      logoText="Andiraw"
       logoSubtext="Mission Control"
       navItems={navItems}
       footer={<AdminFooterContent />}

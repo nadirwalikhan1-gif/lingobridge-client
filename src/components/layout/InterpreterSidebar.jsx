@@ -22,7 +22,7 @@ export default function InterpreterSidebar(props) {
   return (
     <Sidebar
       role="interpreter"
-      logoText="LingoBridge"
+      logoText="Andiraw"
       logoSubtext="Connect. Communicate. Anywhere."
       navItems={navItems}
       {...props}

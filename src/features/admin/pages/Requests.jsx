@@ -1,4 +1,4 @@
-ï»¿// src/features/admin/pages/Requests.jsx
+// src/features/admin/pages/Requests.jsx
 // Real-time via socket. Filters, search, bulk actions, session history.
 
 import { useState, useMemo } from 'react'
@@ -32,7 +32,7 @@ const FILTERS = ['All', 'Pending', 'Assigned', 'Expired', 'Cancelled']
 
 export default function Requests() {
   const { requestQueue, isSocketReady } = useAdminData()
-  // FIX: removed top-level getSocket() call â€” was missing import + stale socket on reconnect
+  // FIX: removed top-level getSocket() call — was missing import + stale socket on reconnect
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [pendingIds, setPendingIds] = useState(new Set())
@@ -52,7 +52,7 @@ export default function Requests() {
     })
   }, [requestQueue, filter, search])
 
-  // FIX: getSocket() called at action time â€” always gets the live socket
+  // FIX: getSocket() called at action time — always gets the live socket
   const handleAssign = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
     getSocket()?.emit('admin-assign-interpreter', { requestId: id })
@@ -137,7 +137,7 @@ export default function Requests() {
         </div>
         <input
           type="text"
-          placeholder="Search client or languageâ€¦"
+          placeholder="Search client or language…"
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="text-[11px] border border-lb-border rounded px-3 py-1.5 bg-white text-lb-ink placeholder:text-lb-subtle focus:outline-none focus:border-[#7F77DD] w-52"
@@ -190,9 +190,9 @@ export default function Requests() {
                       <td className="px-3 py-2.5">
                         <div>
                           <p className="text-[12px] font-medium text-lb-ink">
-                            {r.fromLang} â†’ {r.toLang}
+                            {r.fromLang} ? {r.toLang}
                           </p>
-                          <p className="text-[10px] text-lb-muted">{r.category} Â· {r.duration}</p>
+                          <p className="text-[10px] text-lb-muted">{r.category} · {r.duration}</p>
                         </div>
                       </td>
                       <td className="px-3 py-2.5">
@@ -242,14 +242,14 @@ export default function Requests() {
                                 : 'bg-[#7F77DD] hover:bg-[#534AB7]'
                             }`}
                           >
-                            {isPending ? 'â€¦' : noMatch ? 'Force' : 'Assign'}
+                            {isPending ? '…' : noMatch ? 'Force' : 'Assign'}
                           </button>
                           <button
                             onClick={() => handleSkip(r.id)}
                             disabled={isPending}
                             className="text-[10px] px-2.5 py-1 rounded border border-lb-border bg-white text-lb-muted hover:bg-lb-surface transition-colors disabled:opacity-50"
                           >
-                            {isPending ? 'â€¦' : 'Skip'}
+                            {isPending ? '…' : 'Skip'}
                           </button>
                         </div>
                       </td>

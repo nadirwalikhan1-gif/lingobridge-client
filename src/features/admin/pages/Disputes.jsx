@@ -1,4 +1,4 @@
-ï»¿// src/features/admin/components/dashboard/RequestQueue.jsx
+// src/features/admin/components/dashboard/RequestQueue.jsx
 // Wired to parent via onAssign/onSkip props. No local state mutation.
 // Pending spinner per card. Waits for socket confirmation to disappear.
 
@@ -75,7 +75,7 @@ function RequestCard({ req, onAssign, onSkip, index, isPending }) {
       <div className="flex items-center justify-between gap-3 mb-1.5">
         <div className="flex items-center gap-1.5">
           <span className="text-[13px] font-semibold text-lb-ink">
-            {req.fromLang} â†’ {req.toLang}
+            {req.fromLang} ? {req.toLang}
           </span>
           {noMatch && (
             <span className="text-[9.5px] font-semibold px-1.5 py-0.5 rounded bg-[#FCEBEB] text-[#A32D2D]">
@@ -89,7 +89,7 @@ function RequestCard({ req, onAssign, onSkip, index, isPending }) {
       <div className="flex flex-wrap items-center gap-1.5 mb-2">
         <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border border-lb-border bg-lb-surface text-lb-muted">
           {isVideo ? <VideoIcon /> : <AudioIcon />}
-          {isVideo ? 'Video' : 'Audio'} Â· {req.duration}
+          {isVideo ? 'Video' : 'Audio'} · {req.duration}
         </span>
         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">
           {req.category}
@@ -110,7 +110,7 @@ function RequestCard({ req, onAssign, onSkip, index, isPending }) {
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-[10px] text-lb-muted truncate">
-          {req.client} Â· {req.timeAgo} Â· {req.note}
+          {req.client} · {req.timeAgo} · {req.note}
         </p>
         <div className="flex gap-1.5 shrink-0">
           <button
@@ -129,7 +129,7 @@ function RequestCard({ req, onAssign, onSkip, index, isPending }) {
                 : 'bg-[#7F77DD] hover:bg-[#534AB7]'
             }`}
           >
-            {isPending ? 'â€¦' : noMatch ? 'Force assign' : 'Assign'}
+            {isPending ? '…' : noMatch ? 'Force assign' : 'Assign'}
           </button>
         </div>
       </div>
@@ -137,7 +137,7 @@ function RequestCard({ req, onAssign, onSkip, index, isPending }) {
   )
 }
 
-// FIX: prop was `ext: requests` â€” renamed to `requests` to match what parent passes
+// FIX: prop was `ext: requests` — renamed to `requests` to match what parent passes
 export default function RequestQueue({ requests = [], onAssign, onSkip }) {
   const [pendingIds, setPendingIds] = useState(new Set())
 

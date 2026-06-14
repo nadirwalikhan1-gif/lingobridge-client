@@ -1,4 +1,4 @@
-﻿// src/features/admin/pages/Transactions.jsx
+// src/features/admin/pages/Transactions.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -105,7 +105,7 @@ export default function Transactions() {
           <div key={c.label} className={`rounded-lg px-4 py-3.5 ${c.accent ? 'bg-[#EEEDFE]' : 'bg-lb-surface'}`}>
             <p className={`text-[11px] mb-1.5 ${c.accent ? 'text-[#534AB7]' : 'text-lb-muted'}`}>{c.label}</p>
             <p className={`text-[22px] font-medium leading-none ${c.accent ? 'text-[#26215C]' : 'text-lb-ink'}`}>{c.value}</p>
-            <p className="text-[11px] mt-1.5 text-[#0F6E56]">↑ {c.delta}</p>
+            <p className="text-[11px] mt-1.5 text-[#0F6E56]">? {c.delta}</p>
           </div>
         ))}
       </div>
@@ -151,7 +151,7 @@ export default function Transactions() {
                       <span className="text-lb-muted">{t.type === 'video' ? <VideoIcon /> : <AudioIcon />}</span>
                       <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">{t.category}</span>
                     </div>
-                    <p className="text-[11px] text-lb-muted mt-0.5">{t.client} ↔ {t.interpreter} · {t.date}</p>
+                    <p className="text-[11px] text-lb-muted mt-0.5">{t.client} ? {t.interpreter} � {t.date}</p>
                   </div>
                   <div className="hidden md:flex items-center gap-4 text-right shrink-0">
                     <div>

@@ -1,4 +1,4 @@
-﻿// src/features/admin/pages/Interpreters.jsx
+// src/features/admin/pages/Interpreters.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -86,13 +86,13 @@ export default function Interpreters() {
         {[
           { label: 'Total interpreters', value: String(interpreters?.length ?? 0),  delta: '+2 this week', accent: true },
           { label: 'Online now',         value: String(online),                       delta: `${busy} in session`, accent: true },
-          { label: 'Avg rating',         value: '4.7',                                delta: '★ top quartile', accent: false },
+          { label: 'Avg rating',         value: '4.7',                                delta: '? top quartile', accent: false },
           { label: 'Sessions today',     value: '24',                                 delta: '+6 vs yesterday', accent: false },
         ].map(c => (
           <div key={c.label} className={`rounded-lg px-4 py-3.5 ${c.accent ? 'bg-[#EEEDFE]' : 'bg-lb-surface'}`}>
             <p className={`text-[11px] mb-1.5 ${c.accent ? 'text-[#534AB7]' : 'text-lb-muted'}`}>{c.label}</p>
             <p className={`text-[22px] font-medium leading-none ${c.accent ? 'text-[#26215C]' : 'text-lb-ink'}`}>{c.value}</p>
-            <p className="text-[11px] mt-1.5 text-[#0F6E56]">↑ {c.delta}</p>
+            <p className="text-[11px] mt-1.5 text-[#0F6E56]">? {c.delta}</p>
           </div>
         ))}
       </div>
@@ -116,7 +116,7 @@ export default function Interpreters() {
           </div>
           <input
             type="text"
-            placeholder="Search name or language…"
+            placeholder="Search name or language�"
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="text-[11px] border border-lb-border rounded px-3 py-1.5 bg-white text-lb-ink placeholder:text-lb-subtle focus:outline-none focus:border-[#7F77DD] w-52"
@@ -142,7 +142,7 @@ export default function Interpreters() {
                       <p className="text-[13px] font-medium text-lb-ink">{i.name}</p>
                       <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${sc.pill}`}>{sc.label}</span>
                     </div>
-                    <p className="text-[11px] text-lb-muted mt-0.5">{i.langs?.join(' · ')} · {i.categories?.join(', ')}</p>
+                    <p className="text-[11px] text-lb-muted mt-0.5">{i.langs?.join(' � ')} � {i.categories?.join(', ')}</p>
                   </div>
                   <div className="hidden sm:flex items-center gap-6 shrink-0 text-right">
                     <div>
@@ -150,7 +150,7 @@ export default function Interpreters() {
                       <p className="text-[10px] text-lb-muted">sessions</p>
                     </div>
                     <div>
-                      <p className="text-[12px] font-medium text-[#BA7517]">★ {i.rating}</p>
+                      <p className="text-[12px] font-medium text-[#BA7517]">? {i.rating}</p>
                       <p className="text-[10px] text-lb-muted">rating</p>
                     </div>
                     <div>

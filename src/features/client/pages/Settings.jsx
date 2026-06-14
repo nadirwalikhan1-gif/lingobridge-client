@@ -230,7 +230,7 @@ function ExportModal({ isOpen, onClose }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `lingobridge-data-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `Andiraw-data-export-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Data export downloaded');
@@ -445,7 +445,7 @@ export default function Settings() {
           </div>
         </Section>
 
-        <Section icon={Monitor} title="Appearance & Accessibility" description="Make LingoBridge work for you">
+        <Section icon={Monitor} title="Appearance & Accessibility" description="Make Andiraw work for you">
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[

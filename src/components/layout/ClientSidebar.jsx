@@ -26,7 +26,7 @@ export default function ClientSidebar(props) {
   return (
     <Sidebar
       role="client"
-      logoText="LingoBridge"
+      logoText="Andiraw"
       logoSubtext="Connect. Communicate."
       navItems={navItems}
       {...props}

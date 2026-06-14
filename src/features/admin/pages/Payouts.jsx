@@ -1,4 +1,4 @@
-ï»¿// Payouts.jsx â€” Admin payout management
+// Payouts.jsx — Admin payout management
 // Real-time via socket. Filters, bulk approve, export.
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -29,7 +29,7 @@ export default function Payouts() {
     staleTime: 30000,
   })
 
-  // âœ… FIX: removed top-level getSocket() call â€” socket captured at render time
+  // ? FIX: removed top-level getSocket() call — socket captured at render time
   // may be null on mount and goes stale after reconnects. Moved into handlers below.
 
   const filtered = useMemo(() => {
@@ -52,7 +52,7 @@ export default function Payouts() {
 
   const handleApprove = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
-    const socket = getSocket() // âœ… FIX: called at action time, always gets live socket
+    const socket = getSocket() // ? FIX: called at action time, always gets live socket
     socket?.emit('admin-approve-payout', { payoutId: id })
   }
 
@@ -145,7 +145,7 @@ export default function Payouts() {
         </div>
         <input
           type="text"
-          placeholder="Search interpreterâ€¦"
+          placeholder="Search interpreter…"
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="text-[11px] border border-lb-border rounded px-3 py-1.5 bg-white text-lb-ink placeholder:text-lb-subtle focus:outline-none focus:border-[#7F77DD] w-52"
@@ -229,7 +229,7 @@ export default function Payouts() {
                             disabled={isPending}
                             className="text-[10px] px-2.5 py-1 rounded bg-[#E1F5EE] text-[#0F6E56] font-medium hover:bg-[#c8ede2] transition-colors disabled:opacity-50"
                           >
-                            {isPending ? 'â€¦' : 'Approve'}
+                            {isPending ? '…' : 'Approve'}
                           </button>
                         )}
                       </td>

@@ -12,7 +12,7 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center h-dvh bg-lb-bg">
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-lb-border-light max-w-md w-full">
-        <h1 className="text-2xl font-bold text-lb-text mb-2 text-center">LingoBridge</h1>
+        <h1 className="text-2xl font-bold text-lb-text mb-2 text-center">Andiraw</h1>
         <p className="text-sm text-lb-text-secondary mb-6 text-center">Sign in to your account</p>
 
         <div className="space-y-4">

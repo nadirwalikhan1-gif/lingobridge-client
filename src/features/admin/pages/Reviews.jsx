@@ -1,4 +1,4 @@
-﻿// src/features/admin/pages/Reviews.jsx
+// src/features/admin/pages/Reviews.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -11,7 +11,7 @@ const FILTERS = ['All', 'Flagged', '5 Stars', '4 Stars', '3 Stars & below']
 function StarRating({ rating }) {
   return (
     <p className="text-[12px] text-[#BA7517] tracking-wide">
-      {'★'.repeat(Math.round(rating))}{'☆'.repeat(5 - Math.round(rating))}
+      {'?'.repeat(Math.round(rating))}{'?'.repeat(5 - Math.round(rating))}
     </p>
   )
 }
@@ -116,7 +116,7 @@ export default function Reviews() {
             {dist.map(d => (
               <div key={d.star} className="flex items-center gap-2">
                 <span className="text-[11px] font-medium text-lb-muted w-3">{d.star}</span>
-                <span className="text-[11px] text-[#BA7517]">★</span>
+                <span className="text-[11px] text-[#BA7517]">?</span>
                 <div className="flex-1 h-1.5 bg-lb-border rounded-full overflow-hidden">
                   <div className="h-full bg-[#BA7517] rounded-full" style={{ width: `${d.pct}%` }} />
                 </div>
@@ -174,7 +174,7 @@ export default function Reviews() {
                   <div className="flex items-center justify-between mb-0.5 flex-wrap gap-1">
                     <div className="flex items-center gap-2">
                       <p className="text-[13px] font-medium text-lb-ink">{r.client}</p>
-                      <span className="text-lb-subtle text-[10px]">→</span>
+                      <span className="text-lb-subtle text-[10px]">?</span>
                       <div className="flex items-center gap-1">
                         <div className="w-5 h-5 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[8px] font-medium text-[#534AB7]">
                           {r.interpInit}
@@ -199,14 +199,14 @@ export default function Reviews() {
                         disabled={dismissMutation.isPending}
                         className="text-[10px] px-2.5 py-1 rounded border border-lb-border bg-white text-lb-muted hover:bg-lb-surface transition-colors disabled:opacity-50"
                       >
-                        {dismissMutation.isPending ? '…' : 'Dismiss flag'}
+                        {dismissMutation.isPending ? '�' : 'Dismiss flag'}
                       </button>
                       <button
                         onClick={() => handleRemoveReview(r.id)}
                         disabled={removeMutation.isPending}
                         className="text-[10px] px-2.5 py-1 rounded bg-[#FCEBEB] text-[#A32D2D] font-medium hover:bg-[#fad8d8] transition-colors disabled:opacity-50"
                       >
-                        {removeMutation.isPending ? '…' : 'Remove review'}
+                        {removeMutation.isPending ? '�' : 'Remove review'}
                       </button>
                     </div>
                   )}

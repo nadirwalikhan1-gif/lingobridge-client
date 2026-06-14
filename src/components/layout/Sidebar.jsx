@@ -79,7 +79,7 @@ export default function Sidebar({
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
               <h1 className="text-[14px] font-semibold text-white truncate leading-tight">
-                {logoText || 'LingoBridge'}
+                {logoText || 'Andiraw'}
               </h1>
               <p className="text-[10px] text-white/40 truncate mt-0.5">
                 {logoSubtext || 'Connect. Communicate.'}

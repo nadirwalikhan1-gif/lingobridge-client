@@ -202,7 +202,7 @@ export default function Help() {
       {/* Quick links */}
       <div className="grid grid-cols-2 gap-2.5 mb-3">
         <a
-          href="mailto:support@lingobridge.com"
+          href="mailto:support@Andiraw.com"
           className="lb-card rounded-lb-card p-3.5 flex items-center gap-3 hover:bg-lb-surface transition-colors"
         >
           <div className="w-8 h-8 rounded-lg bg-[#EEEDFE] flex items-center justify-center shrink-0">
@@ -210,11 +210,11 @@ export default function Help() {
           </div>
           <div>
             <p className="text-[12px] font-semibold text-lb-ink">Email us</p>
-            <p className="text-[11px] text-lb-muted">support@lingobridge.com</p>
+            <p className="text-[11px] text-lb-muted">support@Andiraw.com</p>
           </div>
         </a>
         <a
-          href="https://docs.lingobridge.com"
+          href="https://docs.Andiraw.com"
           target="_blank"
           rel="noopener noreferrer"
           className="lb-card rounded-lb-card p-3.5 flex items-center gap-3 hover:bg-lb-surface transition-colors"

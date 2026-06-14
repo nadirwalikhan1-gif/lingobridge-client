@@ -1,5 +1,5 @@
-﻿// src/features/admin/pages/Dashboard.jsx
-// Admin Mission Control — wired to AdminDataContext + Socket.IO singleton.
+// src/features/admin/pages/Dashboard.jsx
+// Admin Mission Control � wired to AdminDataContext + Socket.IO singleton.
 // No mock data. All child components receive ext props.
 
 import { useAdminData } from '../context/AdminDataContext'
@@ -14,7 +14,7 @@ import SystemHealth from '../components/dashboard/SystemHealth'
 import OperationalSnapshot from '../components/dashboard/OperationalSnapshot'
 import ErrorState from '../../../components/ui/ErrorState'
 
-// ─── Platform Stats Strip ──────────────────────────────────────────────────────
+// --- Platform Stats Strip ------------------------------------------------------
 function PlatformStats({ stats }) {
   if (!stats) {
     return (
@@ -53,7 +53,7 @@ function PlatformStats({ stats }) {
   )
 }
 
-// ─── Skeleton ────────────────────────────────────────────────────────────────
+// --- Skeleton ----------------------------------------------------------------
 function DashboardSkeleton() {
   return (
     <div className="space-y-3 animate-pulse">
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">{today} · Mission Control</p>
+          <p className="text-xs text-lb-muted">{today} � Mission Control</p>
           <h1 className="text-lg font-medium text-lb-ink mt-0.5">Platform overview</h1>
         </div>
         <div className="flex items-center gap-2">

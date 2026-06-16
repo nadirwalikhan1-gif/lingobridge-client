@@ -23,10 +23,10 @@ export function connectSocket(token, role = 'client') {
 
   socket = io(URL, {
     auth: { token, role },
-    transports: ['polling', 'websocket'],
+    transports: ['websocket', 'polling'],
     reconnectionAttempts: 5,
     reconnectionDelay: 1000,
-  });
+  }); 
 
   socket.on('connect', () => {
     console.log('? Socket connected:', socket.id, '| role:', role);

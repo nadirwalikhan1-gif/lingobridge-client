@@ -1,9 +1,6 @@
 ﻿import { io } from 'socket.io-client';
 
 // Debug: log all env vars
-console.log('=== SOCKET ENV DEBUG ===');
-console.log('VITE_WS_URL:', import.meta.env.VITE_WS_URL);
-console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
 
 // Use env var if available, otherwise hardcode Railway URL
 const URL = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL || 'wss://Andiraw-production.up.railway.app';
@@ -23,10 +20,10 @@ export function connectSocket(token, role = 'client') {
 
   socket = io(URL, {
     auth: { token, role },
-    transports: ['websocket', 'polling'],
+    transports: ['websocket', 'polling'], // websocket first — avoids polling round-trip
     reconnectionAttempts: 5,
     reconnectionDelay: 1000,
-  }); 
+  });
 
   socket.on('connect', () => {
     console.log('? Socket connected:', socket.id, '| role:', role);

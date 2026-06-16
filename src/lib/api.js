@@ -66,7 +66,6 @@ async function apiCall(endpoint, options = {}) {
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${API_URL}${cleanEndpoint}${queryString}`;
 
-  console.log('📡 API URL:', url); // DEBUG: verify in console
 
   const response = await fetch(url, {
     ...fetchOptions,

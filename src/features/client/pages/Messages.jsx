@@ -8,7 +8,6 @@ import {
   Plus, X, Loader2, FileText, Image
 } from 'lucide-react';
 import { api } from '@/lib/api';
-import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/providers/AuthProvider';
 
 // ─── API Functions ──────────────────────────────────────────────────────────
@@ -273,19 +272,6 @@ export default function Messages() {
     }
   }, [searchParams, queryClient]);
 
-  // WebSocket for real-time messages
-  const { lastMessage: wsMessage, sendMessage: wsSend } = useWebSocket('/ws/messages');
-
-  useEffect(() => {
-    if (wsMessage?.type === 'new_message' && wsMessage.conversationId === activeId) {
-      queryClient.invalidateQueries({ queryKey: ['messages', activeId] });
-      markAsRead(activeId);
-    }
-    if (wsMessage?.type === 'typing') {
-      setIsTyping(wsMessage.conversationId === activeId);
-      setTimeout(() => setIsTyping(false), 3000);
-    }
-  }, [wsMessage, activeId, queryClient]);
 
   // Fetch conversations
   const { data: conversations, isLoading: convLoading } = useQuery({
@@ -334,9 +320,7 @@ export default function Messages() {
       attachments
     });
 
-    // Send typing indicator via WebSocket
-    wsSend({ type: 'typing', conversationId: activeId });
-  }, [input, attachments, activeId, sendMutation, wsSend]);
+  }, [input, attachments, activeId, sendMutation]);
 
   const ALLOWED_MIME_TYPES = [
     'image/jpeg', 'image/png', 'image/gif', 'image/webp',
@@ -599,7 +583,7 @@ export default function Messages() {
                         handleSend(); 
                       } 
                     }}
-                    onFocus={() => wsSend({ type: 'typing', conversationId: activeId })}
+                    onFocus={() => {}}
                     placeholder="Type a message..." 
                     rows={1} 
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-violet-400 resize-none max-h-32" 

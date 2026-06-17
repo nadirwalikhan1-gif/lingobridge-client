@@ -523,7 +523,7 @@ const sessionsError = dashboardError
         <div className="xl:col-span-2 space-y-4">
           <RecentSessionsList 
             sessions={sessions} 
-            isLoading={sessionsLoading} 
+            isLoading={false}
             error={sessionsError}
             navigate={navigate} 
           />

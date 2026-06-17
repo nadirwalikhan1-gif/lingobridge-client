@@ -10,19 +10,35 @@ import { api } from '@/lib/api'
 
 // ─── API Functions ──────────────────────────────────────────────────────────
 const fetchReviews = async ({ starFilter, interpreterFilter, page = 1, limit = 10 }) => {
-  const { data } = await api.get('/v1/users/me/reviews', {
+  const { data } = await api.get('/v1/reviews', {
     params: { rating: starFilter, interpreter: interpreterFilter, page, limit }
   })
-  return data
+  // Backend returns { data: [] } — transform to shape the component expects
+  const allReviews = data.data || []
+  const avg = allReviews.length
+    ? (allReviews.reduce((sum, r) => sum + (r.interpreter_rating || 0), 0) / allReviews.length).toFixed(1)
+    : '—'
+  const distribution = [5, 4, 3, 2, 1].map(star => ({
+    star,
+    count: allReviews.filter(r => r.interpreter_rating === star).length,
+  }))
+  return {
+    reviews: allReviews,
+    averageRating: avg,
+    distribution,
+    interpreters: ['All Interpreters'],
+    totalPages: 1,
+  }
 }
 
 const fetchPendingReviews = async () => {
-  const { data } = await api.get('/v1/users/me/reviews/pending')
-  return data.sessions
+  // Backend route not yet implemented — return empty to suppress 404
+  return { sessions: [] }
 }
 
 const submitReview = async ({ sessionId, rating, text }) => {
-  const { data } = await api.post(`/v1/sessions/${sessionId}/reviews`, { rating, text })
+  // Backend route is /rate not /reviews
+  const { data } = await api.post(`/v1/sessions/${sessionId}/rate`, { interpreterRating: rating, comment: text })
   return data
 }
 

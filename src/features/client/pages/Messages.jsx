@@ -13,7 +13,7 @@ import { useAuth } from '@/providers/AuthProvider';
 
 // ─── API Functions ──────────────────────────────────────────────────────────
 const fetchConversations = async (search = '') => {
-  const { data } = await api.get('/v1/conversations', { params: { search } });
+  const { data } = await api.get('/v1/messages', { params: { search } });
   return data.conversations;
 };
 

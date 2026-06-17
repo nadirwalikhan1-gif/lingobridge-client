@@ -1,11 +1,14 @@
 ﻿import { io } from 'socket.io-client';
 
-// Debug: log all env vars
+const isDev = import.meta.env.DEV;
 
-// Use env var if available, otherwise hardcode Railway URL
-const URL = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL || 'wss://Andiraw-production.up.railway.app';
+const URL = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL;
 
-console.log('?? FINAL SOCKET URL:', URL);
+if (!URL && isDev) {
+  console.warn('[socket] No VITE_WS_URL or VITE_API_URL set. Socket will fail to connect.');
+}
+
+if (isDev) console.log('[socket] URL:', URL);
 
 let socket = null;
 
@@ -15,31 +18,35 @@ export function getSocket() {
 
 export function connectSocket(token, role = 'client') {
   if (socket?.connected) return socket;
+  if (!URL) {
+    if (isDev) console.error('[socket] Cannot connect: URL is undefined');
+    return null;
+  }
 
-  console.log('?? Connecting socket to:', URL);
+  if (isDev) console.log('[socket] Connecting to:', URL);
 
   socket = io(URL, {
     auth: { token, role },
-    transports: ['websocket', 'polling'], // websocket first — avoids polling round-trip
+    transports: ['websocket', 'polling'],
     reconnectionAttempts: 5,
     reconnectionDelay: 1000,
   });
 
   socket.on('connect', () => {
-    console.log('? Socket connected:', socket.id, '| role:', role);
+    if (isDev) console.log('[socket] Connected:', socket.id, '| role:', role);
     socket.emit('register', { role });
   });
 
   socket.on('disconnect', (reason) => {
-    console.log('? Socket disconnected:', reason);
+    if (isDev) console.log('[socket] Disconnected:', reason);
   });
 
   socket.on('connect_error', (err) => {
-    console.error('Socket connection error:', err.message);
+    if (isDev) console.error('[socket] Connection error:', err.message);
   });
 
   socket.on('reconnect', () => {
-    console.log('?? Socket reconnected � re-registering role:', role);
+    if (isDev) console.log('[socket] Reconnected — re-registering role:', role);
     socket.emit('register', { role });
   });
 

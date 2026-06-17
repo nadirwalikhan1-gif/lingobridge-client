@@ -1,18 +1,21 @@
 ﻿// src/features/admin/pages/Dashboard.jsx
-// Admin Mission Control � wired to AdminDataContext + Socket.IO singleton.
+// Admin Mission Control — wired to AdminDataContext + Socket.IO singleton.
 // No mock data. All child components receive ext props.
 
+import { lazy, Suspense } from 'react'
 import { useAdminData } from '../context/AdminDataContext'
 import { getSocket } from '../../../lib/socket'
 import LiveSessions from '../components/dashboard/LiveSessions'
 import RequestQueue from '../components/dashboard/RequestQueue'
-import InterpreterPresence from '../components/dashboard/InterpreterPresence'
-import ActiveDisputes from '../components/dashboard/ActiveDisputes'
-import PayoutQueue from '../components/dashboard/PayoutQueue'
-import OperationalAlerts from '../components/dashboard/OperationalAlerts'
-import SystemHealth from '../components/dashboard/SystemHealth'
-import OperationalSnapshot from '../components/dashboard/OperationalSnapshot'
 import ErrorState from '../../../components/ui/ErrorState'
+
+// ─── Below-the-fold: lazy loaded ─────────────────────────────────────────────
+const InterpreterPresence   = lazy(() => import('../components/dashboard/InterpreterPresence'))
+const ActiveDisputes        = lazy(() => import('../components/dashboard/ActiveDisputes'))
+const PayoutQueue           = lazy(() => import('../components/dashboard/PayoutQueue'))
+const OperationalAlerts     = lazy(() => import('../components/dashboard/OperationalAlerts'))
+const SystemHealth          = lazy(() => import('../components/dashboard/SystemHealth'))
+const OperationalSnapshot   = lazy(() => import('../components/dashboard/OperationalSnapshot'))
 
 // --- Platform Stats Strip ------------------------------------------------------
 function PlatformStats({ stats }) {
@@ -83,6 +86,11 @@ function DashboardSkeleton() {
   )
 }
 
+/** Reusable lazy-card fallback matching the skeleton aesthetic */
+function CardFallback({ className = '' }) {
+  return <div className={`bg-lb-border rounded-xl animate-pulse ${className}`} />
+}
+
 export default function AdminDashboard() {
   const {
     platformStats,
@@ -147,7 +155,7 @@ export default function AdminDashboard() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">{today} � Mission Control</p>
+          <p className="text-xs text-lb-muted">{today} — Mission Control</p>
           <h1 className="text-lg font-medium text-lb-ink mt-0.5">Platform overview</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -175,20 +183,32 @@ export default function AdminDashboard() {
           />
         </div>
         <div className="space-y-3">
-          <InterpreterPresence ext={interpreterPresence} />
-          <ActiveDisputes
-            ext={activeDisputes}
-            onResolve={handleResolveDispute}
-            onEscalate={handleEscalateDispute}
-          />
-          <PayoutQueue ext={payoutQueue} onApprove={handleApprovePayout} />
+          <Suspense fallback={<CardFallback className="h-52" />}>
+            <InterpreterPresence ext={interpreterPresence} />
+          </Suspense>
+          <Suspense fallback={<CardFallback className="h-44" />}>
+            <ActiveDisputes
+              ext={activeDisputes}
+              onResolve={handleResolveDispute}
+              onEscalate={handleEscalateDispute}
+            />
+          </Suspense>
+          <Suspense fallback={<CardFallback className="h-36" />}>
+            <PayoutQueue ext={payoutQueue} onApprove={handleApprovePayout} />
+          </Suspense>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <OperationalAlerts ext={alerts} />
-        <SystemHealth ext={systemHealth} />
-        <OperationalSnapshot ext={snapshot} />
+        <Suspense fallback={<CardFallback className="h-32" />}>
+          <OperationalAlerts ext={alerts} />
+        </Suspense>
+        <Suspense fallback={<CardFallback className="h-32" />}>
+          <SystemHealth ext={systemHealth} />
+        </Suspense>
+        <Suspense fallback={<CardFallback className="h-32" />}>
+          <OperationalSnapshot ext={snapshot} />
+        </Suspense>
       </div>
     </div>
   )

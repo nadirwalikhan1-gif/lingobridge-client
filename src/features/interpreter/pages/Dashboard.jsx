@@ -1,14 +1,16 @@
-﻿import { useEffect, useState, useRef, useCallback } from 'react'
+﻿import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
 import CommandCenter, { PerformanceTrendPanel } from '../components/dashboard/CommandCenter'
 import IncomingRequests from '../components/dashboard/IncomingRequests'
-import EarningsChart from '../components/dashboard/EarningsChart'
-import TodaysSchedule from '../components/dashboard/TodaysSchedule'
-import RecentSessions from '../components/dashboard/RecentSessions'
-import RecentReviews from '../components/dashboard/RecentReviews'
-import WalletSummary from '../components/dashboard/WalletSummary'
-import RatingCard from '../components/dashboard/RatingCard'
+
+// ─── Below-the-fold: lazy loaded ─────────────────────────────────────────────
+const EarningsChart   = lazy(() => import('../components/dashboard/EarningsChart'))
+const TodaysSchedule  = lazy(() => import('../components/dashboard/TodaysSchedule'))
+const RecentSessions  = lazy(() => import('../components/dashboard/RecentSessions'))
+const RecentReviews   = lazy(() => import('../components/dashboard/RecentReviews'))
+const WalletSummary   = lazy(() => import('../components/dashboard/WalletSummary'))
+const RatingCard      = lazy(() => import('../components/dashboard/RatingCard'))
 
 const STATUS = {
   ONLINE:  'online',
@@ -90,10 +92,10 @@ export default function InterpreterDashboard() {
   const [isLoading,            setIsLoading]            = useState(true)
   const [availability,         setAvailability]         = useState(STATUS.ONLINE)
   const [hasIncomingRequests,  setHasIncomingRequests]  = useState(false)
-  const [dashStats,            setDashStats]            = useState(null)   // from 'dashboard-stats' socket event
-  const [performanceStats,     setPerformanceStats]     = useState(null)   // from 'performance-stats' socket event
-  const [walletData,           setWalletData]           = useState(null)   // from 'balance-update'
-  const [ratingData,           setRatingData]           = useState(null)   // from 'rating-update'
+  const [dashStats,            setDashStats]            = useState(null)
+  const [performanceStats,     setPerformanceStats]     = useState(null)
+  const [walletData,           setWalletData]           = useState(null)
+  const [ratingData,           setRatingData]           = useState(null)
 
   const incomingRef = useRef(null)
 
@@ -102,7 +104,6 @@ export default function InterpreterDashboard() {
     const socket = getSocket()
     if (!socket || !user?.id) return
 
-    // Request all dashboard data in one shot
     socket.emit('get-dashboard-stats',   { userId: user.id })
     socket.emit('get-performance-stats', { userId: user.id })
     socket.emit('get-balance',           { userId: user.id, vaultType: 'interpreter' })
@@ -146,14 +147,12 @@ export default function InterpreterDashboard() {
     }
   }, [user?.id])
 
-  // Stop skeleton once we have at least dashStats (or after 3s timeout)
   useEffect(() => {
     if (dashStats) { setIsLoading(false); return }
     const timer = setTimeout(() => setIsLoading(false), 3000)
     return () => clearTimeout(timer)
   }, [dashStats])
 
-  // ── Availability socket emit ────────────────────────────────────────────────
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
@@ -165,7 +164,6 @@ export default function InterpreterDashboard() {
     }
   }, [availability])
 
-  // Re-register on reconnect
   useEffect(() => {
     const socket = getSocket()
     if (!socket) return
@@ -189,7 +187,6 @@ export default function InterpreterDashboard() {
 
   const displayName = user?.displayName ?? user?.name ?? user?.user_metadata?.name ?? 'Interpreter'
 
-  // ── Derive display values from real data ────────────────────────────────────
   const sessionsToday  = dashStats?.sessionsToday  ?? 0
   const earningsToday  = dashStats?.earningsToday  ?? 0
   const callsReceived  = dashStats?.callsReceived  ?? 0
@@ -235,7 +232,6 @@ export default function InterpreterDashboard() {
           <p className="text-[11px] text-lb-subtle mt-0.5">English → Pashto · Punjabi</p>
         </div>
 
-        {/* 3-state availability toggle */}
         <div className="flex flex-col items-end gap-1.5">
           <div className="flex items-center gap-1 p-1 rounded-xl bg-lb-surface border border-lb-border shadow-sm">
             {Object.values(STATUS).map((statusKey) => {
@@ -267,10 +263,8 @@ export default function InterpreterDashboard() {
         </div>
       </div>
 
-      {/* Daily goal banner — real data */}
       <DailyGoalBanner sessionsToday={sessionsToday} earningsToday={earningsToday} />
 
-      {/* Command center — real data */}
       <CommandCenter
         status={availability}
         callsReceived={callsReceived}
@@ -290,20 +284,24 @@ export default function InterpreterDashboard() {
         onWaitingClick={handleWaitingClick}
       />
 
-      {/* Incoming requests — already socket-driven */}
       <div ref={incomingRef}>
         <IncomingRequests onRequestsChange={handleRequestsChange} />
       </div>
 
-      {/* Rest of dashboard — blurred when request is active */}
       <div className={`space-y-4 transition-opacity duration-500 ${
         hasIncomingRequests ? 'opacity-30 pointer-events-none select-none blur-[1px]' : 'opacity-100'
       }`}>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           <div className="xl:col-span-2 space-y-4">
-            <TodaysSchedule />
-            <RecentSessions />
-            <EarningsChart />
+            <Suspense fallback={<div className="h-48 bg-lb-border rounded-xl animate-pulse" />}>
+              <TodaysSchedule />
+            </Suspense>
+            <Suspense fallback={<div className="h-48 bg-lb-border rounded-xl animate-pulse" />}>
+              <RecentSessions />
+            </Suspense>
+            <Suspense fallback={<div className="h-48 bg-lb-border rounded-xl animate-pulse" />}>
+              <EarningsChart />
+            </Suspense>
           </div>
           <div className="space-y-4">
             <PerformanceTrendPanel
@@ -316,18 +314,24 @@ export default function InterpreterDashboard() {
               onTimeRate={perfOnTime}
               onTimeTrend={perfOnTimeTrend}
             />
-            <RatingCard
-              rating={avgRating}
-              previousRating={prevRating}
-              reviewCount={reviewCount}
-            />
-            <WalletSummary
-              balance={walletBalance != null ? fmt(walletBalance) : null}
-              today={walletToday   != null ? fmt(walletToday)   : null}
-              week={walletWeek     != null ? fmt(walletWeek)    : null}
-              month={walletMonth   != null ? fmt(walletMonth)   : null}
-            />
-            <RecentReviews />
+            <Suspense fallback={<div className="h-32 bg-lb-border rounded-xl animate-pulse" />}>
+              <RatingCard
+                rating={avgRating}
+                previousRating={prevRating}
+                reviewCount={reviewCount}
+              />
+            </Suspense>
+            <Suspense fallback={<div className="h-40 bg-lb-border rounded-xl animate-pulse" />}>
+              <WalletSummary
+                balance={walletBalance != null ? fmt(walletBalance) : null}
+                today={walletToday   != null ? fmt(walletToday)   : null}
+                week={walletWeek     != null ? fmt(walletWeek)    : null}
+                month={walletMonth   != null ? fmt(walletMonth)   : null}
+              />
+            </Suspense>
+            <Suspense fallback={<div className="h-40 bg-lb-border rounded-xl animate-pulse" />}>
+              <RecentReviews />
+            </Suspense>
           </div>
         </div>
       </div>

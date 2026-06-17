@@ -1,12 +1,12 @@
-﻿import { useEffect, useState, useCallback } from 'react'
+﻿import { useEffect, useState, useCallback, useMemo, memo } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   Video, Phone, ChevronRight, Calendar, Plus, Star,
-  Loader2, AlertCircle, Wallet, Clock, TrendingUp,
-  MessageSquare, FileText, ArrowRight
+  AlertCircle, Wallet, TrendingUp,
+  MessageSquare, ArrowRight
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useWebSocket } from '@/hooks/useWebSocket'
@@ -186,7 +186,7 @@ function UpcomingSessionCard({ session, navigate }) {
 }
 
 // ─── Recent Sessions ──────────────────────────────────────────────────────────
-function RecentSessionsList({ sessions, isLoading, error, navigate }) {
+const RecentSessionsList = memo(function RecentSessionsList({ sessions, isLoading, error, navigate }) {
   if (isLoading) return (
     <div className="lb-card p-6 space-y-4">
       {[...Array(3)].map((_, i) => (
@@ -275,10 +275,10 @@ function RecentSessionsList({ sessions, isLoading, error, navigate }) {
       </div>
     </div>
   )
-}
+})
 
 // ─── Recent Activity ──────────────────────────────────────────────────────────
-function RecentActivity({ activities, isLoading, navigate }) {
+const RecentActivity = memo(function RecentActivity({ activities, isLoading, navigate }) {
   if (isLoading) return (
     <div className="lb-card p-6">
       <div className="h-4 bg-slate-200 rounded w-1/3 mb-4 animate-pulse" />
@@ -333,7 +333,7 @@ function RecentActivity({ activities, isLoading, navigate }) {
       )}
     </div>
   )
-}
+})
 
 // ─── Quick Actions ────────────────────────────────────────────────────────────
 function QuickActions({ lastSession, navigate }) {
@@ -524,7 +524,14 @@ export default function ClientDashboard() {
     staleTime: 30000,
   })
 
-  const isLoading = statsLoading || sessionsLoading || upcomingLoading || activityLoading || walletLoading
+  // Memoize: only recompute when any loading state actually changes
+  const isLoading = useMemo(
+    () => statsLoading || sessionsLoading || upcomingLoading || activityLoading || walletLoading,
+    [statsLoading, sessionsLoading, upcomingLoading, activityLoading, walletLoading]
+  )
+
+  // Memoize: prevent QuickActions re-render when parent state changes but sessions don't
+  const lastSession = useMemo(() => sessions?.[0] ?? null, [sessions])
 
   if (isLoading && !stats && !sessions) {
     return (
@@ -574,7 +581,7 @@ export default function ClientDashboard() {
         </div>
 
         <div className="space-y-4">
-          <QuickActions lastSession={sessions?.[0]} navigate={navigate} />
+          <QuickActions lastSession={lastSession} navigate={navigate} />
 
           <div className="lb-card">
             <div className="flex items-baseline justify-between mb-3">
@@ -617,5 +624,3 @@ export default function ClientDashboard() {
     </div>
   )
 }
-
-

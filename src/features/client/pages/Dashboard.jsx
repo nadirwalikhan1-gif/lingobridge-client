@@ -529,7 +529,7 @@ const sessionsError = dashboardError
           />
           <RecentActivity 
             activities={activities} 
-            isLoading={activityLoading}
+            isLoading={isLoading}
             navigate={navigate}
           />
         </div>
@@ -547,7 +547,7 @@ const sessionsError = dashboardError
                 Calendar
               </button>
             </div>
-            {upcomingLoading ? (
+            {isLoading ? (
               <div className="space-y-2">
                 {[...Array(2)].map((_, i) => (
                   <div key={i} className="h-12 bg-slate-100 rounded-lg animate-pulse" />
@@ -572,7 +572,7 @@ const sessionsError = dashboardError
             </div>
           </div>
 
-          <WalletSnapshot balance={wallet} isLoading={walletLoading} navigate={navigate} />
+          <WalletSnapshot balance={wallet} isLoading={isLoading} navigate={navigate} />
         </div>
       </div>
     </div>

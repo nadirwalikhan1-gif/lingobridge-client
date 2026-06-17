@@ -9,7 +9,6 @@ import {
   MessageSquare, FileText, ArrowRight
 } from 'lucide-react'
 import { api } from '@/lib/api'
-import { useWebSocket } from '@/hooks/useWebSocket'
 
 // ─── Language Display Helper ────────────────────────────────────────────────
 const LANGUAGE_NAMES = {
@@ -462,8 +461,6 @@ export default function ClientDashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const queryClient = useQueryClient()
-
-  // Real-time WebSocket for session updates
 
   // Single combined query — 1 round trip instead of 5
   const { data: dashboard, isLoading, error: dashboardError } = useQuery({

@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
+import { useFallbackTimeout } from '../../../hooks/useFallbackTimeout'
 import CommandCenter, { PerformanceTrendPanel } from '../components/dashboard/CommandCenter'
 import IncomingRequests from '../components/dashboard/IncomingRequests'
 
@@ -147,11 +148,7 @@ export default function InterpreterDashboard() {
     }
   }, [user?.id])
 
-  useEffect(() => {
-    if (dashStats) { setIsLoading(false); return }
-    const timer = setTimeout(() => setIsLoading(false), 3000)
-    return () => clearTimeout(timer)
-  }, [dashStats])
+  useFallbackTimeout(dashStats, setIsLoading)
 
   useEffect(() => {
     const socket = getSocket()

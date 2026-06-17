@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
+import { FALLBACK_TIMEOUT_MS } from '../../../hooks/useFallbackTimeout'
 import {
   User, Camera, Globe, Phone, Mail, MapPin, Star,
   BookOpen, Languages, Clock, CheckCircle2, AlertCircle,
@@ -141,7 +142,7 @@ export default function Profile() {
     socket.on('interpreter-profile', onProfile)
     socket.on('profile-saved',       onProfileSaved)
 
-    const t = setTimeout(() => setLoading(false), 5000)
+    const t = setTimeout(() => setLoading(false), FALLBACK_TIMEOUT_MS)
 
     return () => {
       socket.off('interpreter-profile', onProfile)

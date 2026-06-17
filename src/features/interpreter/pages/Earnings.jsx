@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
+import { FALLBACK_TIMEOUT_MS } from '../../../hooks/useFallbackTimeout'
 import { INTERPRETER_EARN_RATES } from '../../../config/constants'
 import EarningsChart from '../components/dashboard/EarningsChart'
 
@@ -609,8 +610,8 @@ export default function Earnings() {
     }
 
     // Fallback timeout so hero doesn't spin forever
-    const heroTimer = setTimeout(() => setHeroLoading(false), 4000)
-    const txTimer   = setTimeout(() => setTxLoading(false), 4000)
+    const heroTimer = setTimeout(() => setHeroLoading(false), FALLBACK_TIMEOUT_MS)
+    const txTimer   = setTimeout(() => setTxLoading(false), FALLBACK_TIMEOUT_MS)
 
     socket.on('balance-update',         onBalance)
     socket.on('earnings-summary',       onSummary)

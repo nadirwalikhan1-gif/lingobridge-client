@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
+import { FALLBACK_TIMEOUT_MS } from '../../../hooks/useFallbackTimeout'
 import {
   Bell, Shield, Smartphone, Moon, Globe,
   CheckCircle2, AlertCircle, ChevronRight, LogOut
@@ -123,7 +124,7 @@ export default function Settings() {
     socket.on('interpreter-settings', onSettings)
     socket.on('settings-saved',       onSettingsSaved)
 
-    const t = setTimeout(() => setLoading(false), 5000)
+    const t = setTimeout(() => setLoading(false), FALLBACK_TIMEOUT_MS)
 
     return () => {
       socket.off('interpreter-settings', onSettings)

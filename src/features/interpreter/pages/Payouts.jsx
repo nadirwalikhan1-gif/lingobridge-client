@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
+import { FALLBACK_TIMEOUT_MS } from '../../../hooks/useFallbackTimeout'
 
 function fmt(n) {
   if (n == null) return '—'
@@ -70,7 +71,7 @@ export default function Payouts() {
     }
 
     // Safety timeout — prevent infinite skeleton
-    const t = setTimeout(() => setLoading(false), 5000)
+    const t = setTimeout(() => setLoading(false), FALLBACK_TIMEOUT_MS)
 
     socket.on('balance-update',  onBalance)
     socket.on('payout-history',  onPayoutHistory)

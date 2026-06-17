@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../../providers/AuthProvider'
 import { getSocket } from '../../../../lib/socket'
+import { FALLBACK_TIMEOUT_MS } from '../../../../hooks/useFallbackTimeout'
 
 function getInitials(name = '') {
   return name
@@ -68,8 +69,8 @@ export default function RecentReviews({ reviews: reviewsProp }) {
     socket.on('reviews-data',  onReviews)
     socket.on('new-review',    onNewReview)
 
-    // 3-second timeout — show empty state rather than spinner forever
-    const timer = setTimeout(() => setLoading(false), 3000)
+    // Fallback timeout — show empty state rather than spinner forever
+    const timer = setTimeout(() => setLoading(false), FALLBACK_TIMEOUT_MS)
 
     return () => {
       socket.off('reviews-data', onReviews)

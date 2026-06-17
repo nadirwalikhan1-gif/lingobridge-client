@@ -287,6 +287,7 @@ function PaymentMethodsModal({ isOpen, onClose }) {
 
   const defaultMutation = useMutation({
     mutationFn: setDefaultPaymentMethod,
+    onError: () => toast.error("Couldn't set default payment method — please try again"),
     onSuccess: () => {
       toast.success('Default payment method updated');
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
@@ -295,6 +296,7 @@ function PaymentMethodsModal({ isOpen, onClose }) {
 
   const removeMutation = useMutation({
     mutationFn: removePaymentMethod,
+    onError: () => toast.error("Couldn't remove payment method — please try again"),
     onSuccess: () => {
       toast.success('Payment method removed');
       queryClient.invalidateQueries({ queryKey: ['payment-methods'] });

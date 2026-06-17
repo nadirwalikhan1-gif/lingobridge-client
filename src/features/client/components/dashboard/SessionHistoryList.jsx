@@ -1,7 +1,5 @@
 ﻿import React from 'react';
 import { ChevronRight, Video, Phone } from 'lucide-react';
-// FIX: vault-model — import client rates for dynamic demo data
-import { CLIENT_RATES } from '@/config/constants';
 
 /**
  * Reusable StarRating sub-component
@@ -25,48 +23,7 @@ function StarRating({ rating, size = 'w-3 h-3' }) {
 export { StarRating };
 
 export default function SessionHistoryList({ sessions, showHeader = true, maxItems }) {
-  // FIX: vault-model — demo data calculated from CLIENT_RATES instead of hardcoded old prices
-  const demoSessions = [
-    {
-      id: 1,
-      interpreter: { name: 'Maria Gonzalez', avatar: null, initials: 'MG' },
-      type: 'video',
-      language: 'Spanish → English',
-      duration: '45 min',
-      minutes: 45,
-      rating: 5,
-      date: '2024-01-15',
-      status: 'completed',
-    },
-    {
-      id: 2,
-      interpreter: { name: 'John Doe', avatar: null, initials: 'JD' },
-      type: 'audio',
-      language: 'French → English',
-      duration: '30 min',
-      minutes: 30,
-      rating: 4,
-      date: '2024-01-12',
-      status: 'completed',
-    },
-    {
-      id: 3,
-      interpreter: { name: 'Sarah Chen', avatar: null, initials: 'SC' },
-      type: 'video',
-      language: 'Mandarin → English',
-      duration: '60 min',
-      minutes: 60,
-      rating: 5,
-      date: '2024-01-10',
-      status: 'completed',
-    },
-  ].map(s => ({
-    ...s,
-    // FIX: vault-model — compute price dynamically from CLIENT_RATES
-    price: +(s.minutes * (CLIENT_RATES[s.type] || 0)).toFixed(2),
-  }));
-
-  const displaySessions = sessions || demoSessions;
+  const displaySessions = sessions || [];
   const limitedSessions = maxItems ? displaySessions.slice(0, maxItems) : displaySessions;
 
   return (

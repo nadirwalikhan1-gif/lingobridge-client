@@ -240,6 +240,7 @@ export default function RecentReviews() {
 
   const submitMutation = useMutation({
     mutationFn: submitReview,
+    onError: () => toast.error("Couldn't submit review — please try again"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] })
       queryClient.invalidateQueries({ queryKey: ['reviews-pending'] })
@@ -249,12 +250,14 @@ export default function RecentReviews() {
 
   const helpfulMutation = useMutation({
     mutationFn: markReviewHelpful,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] }),
+    onError: () => toast.error("Couldn't mark review as helpful — please try again")
   })
 
   const reportMutation = useMutation({
     mutationFn: reportReview,
-    onSuccess: () => toast.success('Review reported')
+    onSuccess: () => toast.success('Review reported'),
+    onError: () => toast.error("Couldn't report review — please try again")
   })
 
   const reviews = reviewsData?.reviews ?? []

@@ -1,15 +1,15 @@
-﻿import { useEffect, useState, useCallback, useMemo, memo, useRef } from 'react'
+﻿import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   Video, Phone, ChevronRight, Calendar, Plus, Star,
-  AlertCircle, Wallet, TrendingUp,
-  MessageSquare, ArrowRight
+  Loader2, AlertCircle, Wallet, Clock, TrendingUp,
+  MessageSquare, FileText, ArrowRight
 } from 'lucide-react'
 import { api } from '@/lib/api'
-import { useSocket } from '@/hooks/useSocket'
+import { useWebSocket } from '@/hooks/useWebSocket'
 
 // ─── Language Display Helper ────────────────────────────────────────────────
 const LANGUAGE_NAMES = {
@@ -20,40 +20,18 @@ const LANGUAGE_NAMES = {
 const langDisplay = (code) => LANGUAGE_NAMES[code] ?? code
 
 // ─── API Functions ──────────────────────────────────────────────────────────
-const fetchDashboardStats = async () => {
-  const { data } = await api.get('/v1/dashboard/stats')
+// Single combined endpoint — replaces 5 separate round trips with 1
+const fetchDashboard = async () => {
+  return api.get('/v1/dashboard')
+}
+
+const rebookSession = async (sessionId) => {
+  const { data } = await api.post('/v1/sessions/rebook', { sessionId })
   return data
-}
-
-const fetchRecentSessions = async (limit = 5) => {
-  const { data } = await api.get('/v1/sessions/recent', { params: { limit } })
-  return data.sessions
-}
-
-const fetchUpcomingSessions = async () => {
-  const { data } = await api.get('/v1/sessions/upcoming')
-  return data.sessions
-}
-
-const fetchActivityFeed = async (limit = 10) => {
-  const { data } = await api.get('/v1/activity', { params: { limit } })
-  return data.activities
-}
-
-const fetchWalletBalance = async () => {
-  const { data } = await api.get('/v1/wallet/balance')
-  return data
-}
-
-// ─── Shared query config: no refetch on window focus, 5min cache ─────────────
-const QUERY_CONFIG = {
-  refetchOnWindowFocus: false,
-  refetchOnReconnect: false,
-  gcTime: 5 * 60 * 1000, // 5 minutes
 }
 
 // ─── Star Rating Component ────────────────────────────────────────────────
-const StarRating = memo(function StarRating({ rating, size = 'w-3 h-3' }) {
+function StarRating({ rating, size = 'w-3 h-3' }) {
   return (
     <div className="flex items-center gap-0.5">
       {[...Array(5)].map((_, i) => (
@@ -63,13 +41,12 @@ const StarRating = memo(function StarRating({ rating, size = 'w-3 h-3' }) {
       ))}
     </div>
   )
-})
+}
 
-// ─── Live Countdown Hook (optimized: shared interval, reduced re-renders) ─────
+// ─── Live Countdown Hook ──────────────────────────────────────────────────────
 function useCountdown(targetDate) {
   const [label, setLabel] = useState('')
   const [isImminent, setIsImminent] = useState(false)
-  const intervalRef = useRef(null)
 
   useEffect(() => {
     if (!targetDate) return
@@ -85,15 +62,15 @@ function useCountdown(targetDate) {
       else setLabel('in <1 min')
     }
     tick()
-    intervalRef.current = setInterval(tick, 30000)
-    return () => clearInterval(intervalRef.current)
+    const id = setInterval(tick, 30000)
+    return () => clearInterval(id)
   }, [targetDate])
 
-  return useMemo(() => ({ label, isImminent }), [label, isImminent])
+  return { label, isImminent }
 }
 
 // ─── Stat Cards ─────────────────────────────────────────────────────────────
-const ClientStats = memo(function ClientStats({ stats, wallet, navigate }) {
+function ClientStats({ stats, wallet, navigate }) {
   const lowBalance = wallet?.available < 20
 
   return (
@@ -141,10 +118,10 @@ const ClientStats = memo(function ClientStats({ stats, wallet, navigate }) {
       </div>
     </div>
   )
-})
+}
 
 // ─── Upcoming Session Card ────────────────────────────────────────────────────
-const UpcomingSessionCard = memo(function UpcomingSessionCard({ session, navigate }) {
+function UpcomingSessionCard({ session, navigate }) {
   const { label, isImminent } = useCountdown(session.scheduledAt)
   const pairLabel = `${langDisplay(session.fromLang)} → ${langDisplay(session.toLang)}`
 
@@ -186,10 +163,10 @@ const UpcomingSessionCard = memo(function UpcomingSessionCard({ session, navigat
       </div>
     </div>
   )
-})
+}
 
 // ─── Recent Sessions ──────────────────────────────────────────────────────────
-const RecentSessionsList = memo(function RecentSessionsList({ sessions, isLoading, error, navigate }) {
+function RecentSessionsList({ sessions, isLoading, error, navigate }) {
   if (isLoading) return (
     <div className="lb-card p-6 space-y-4">
       {[...Array(3)].map((_, i) => (
@@ -278,10 +255,10 @@ const RecentSessionsList = memo(function RecentSessionsList({ sessions, isLoadin
       </div>
     </div>
   )
-})
+}
 
 // ─── Recent Activity ──────────────────────────────────────────────────────────
-const RecentActivity = memo(function RecentActivity({ activities, isLoading, navigate }) {
+function RecentActivity({ activities, isLoading, navigate }) {
   if (isLoading) return (
     <div className="lb-card p-6">
       <div className="h-4 bg-slate-200 rounded w-1/3 mb-4 animate-pulse" />
@@ -297,12 +274,12 @@ const RecentActivity = memo(function RecentActivity({ activities, isLoading, nav
     </div>
   )
 
-  const iconMap = useMemo(() => ({
+  const iconMap = {
     session: { bg: 'bg-[#EEEDFE]', icon: <Video className="w-3.5 h-3.5 text-[#534AB7]" /> },
     review: { bg: 'bg-[#FFF8E6]', icon: <Star className="w-3.5 h-3.5 text-[#BA7517]" /> },
     wallet: { bg: 'bg-[#E1F5EE]', icon: <TrendingUp className="w-3.5 h-3.5 text-[#0F6E56]" /> },
     message: { bg: 'bg-violet-50', icon: <MessageSquare className="w-3.5 h-3.5 text-violet-600" /> },
-  }), [])
+  }
 
   return (
     <div className="lb-card">
@@ -336,10 +313,10 @@ const RecentActivity = memo(function RecentActivity({ activities, isLoading, nav
       )}
     </div>
   )
-})
+}
 
 // ─── Quick Actions ────────────────────────────────────────────────────────────
-const QuickActions = memo(function QuickActions({ lastSession, navigate }) {
+function QuickActions({ lastSession, navigate }) {
   if (!lastSession) {
     return (
       <div className="lb-card">
@@ -363,7 +340,7 @@ const QuickActions = memo(function QuickActions({ lastSession, navigate }) {
 
   const rebookLabel = `${langDisplay(lastSession.fromLang)} → ${langDisplay(lastSession.toLang)}`
 
-  const actions = useMemo(() => [
+  const actions = [
     {
       label: `Rebook ${lastSession.interpreter?.name?.split(' ')[0] ?? 'interpreter'}`,
       desc: `${rebookLabel} · ${lastSession.duration} min`,
@@ -396,7 +373,7 @@ const QuickActions = memo(function QuickActions({ lastSession, navigate }) {
       descColor: 'text-lb-muted',
       onClick: () => navigate('/booking?schedule=true')
     },
-  ], [lastSession, navigate])
+  ]
 
   return (
     <div className="lb-card">
@@ -423,10 +400,10 @@ const QuickActions = memo(function QuickActions({ lastSession, navigate }) {
       </div>
     </div>
   )
-})
+}
 
 // ─── Wallet Snapshot ──────────────────────────────────────────────────────────
-const WalletSnapshot = memo(function WalletSnapshot({ balance, isLoading, navigate }) {
+function WalletSnapshot({ balance, isLoading, navigate }) {
   if (isLoading) return (
     <div className="lb-card p-6 animate-pulse">
       <div className="h-4 bg-slate-200 rounded w-1/4 mb-4" />
@@ -478,7 +455,7 @@ const WalletSnapshot = memo(function WalletSnapshot({ balance, isLoading, naviga
       </div>
     </div>
   )
-})
+}
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function ClientDashboard() {
@@ -486,56 +463,29 @@ export default function ClientDashboard() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
 
-  // Debounced query invalidation to prevent thundering herd from rapid socket events
-  const invalidateTimeoutRef = useRef(null)
+  // Real-time WebSocket for session updates
+  const { lastMessage } = useWebSocket('/ws/sessions')
 
-  // Use existing Socket.IO connection instead of separate raw WebSocket
-  useSocket('session_update', useCallback((data) => {
-    if (invalidateTimeoutRef.current) clearTimeout(invalidateTimeoutRef.current)
-    invalidateTimeoutRef.current = setTimeout(() => {
+  useEffect(() => {
+    if (lastMessage?.type === 'session_update') {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       toast.info('Session updated')
-    }, 1000) // 1 second debounce
-  }, [queryClient]))
+    }
+  }, [lastMessage, queryClient])
 
-  // Fetch all dashboard data — no refetch on window focus
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['dashboard', 'stats'],
-    queryFn: fetchDashboardStats,
+  // Single combined query — 1 round trip instead of 5
+  const { data: dashboard, isLoading, error: dashboardError } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: fetchDashboard,
     staleTime: 30000,
-    ...QUERY_CONFIG,
   })
 
-  const { data: sessions, isLoading: sessionsLoading, error: sessionsError } = useQuery({
-    queryKey: ['dashboard', 'sessions'],
-    queryFn: () => fetchRecentSessions(5),
-    staleTime: 60000,
-    ...QUERY_CONFIG,
-  })
-
-  const { data: upcoming, isLoading: upcomingLoading } = useQuery({
-    queryKey: ['dashboard', 'upcoming'],
-    queryFn: fetchUpcomingSessions,
-    staleTime: 15000,
-    ...QUERY_CONFIG,
-  })
-
-  const { data: activities, isLoading: activityLoading } = useQuery({
-    queryKey: ['dashboard', 'activity'],
-    queryFn: () => fetchActivityFeed(10),
-    staleTime: 60000,
-    ...QUERY_CONFIG,
-  })
-
-  const { data: wallet, isLoading: walletLoading } = useQuery({
-    queryKey: ['dashboard', 'wallet'],
-    queryFn: fetchWalletBalance,
-    staleTime: 30000,
-    ...QUERY_CONFIG,
-  })
-
-  const isLoading = statsLoading || sessionsLoading || upcomingLoading || activityLoading || walletLoading
-  const lastSession = useMemo(() => sessions?.[0] ?? null, [sessions])
+  const stats    = dashboard?.stats
+  const sessions = dashboard?.sessions
+  const upcoming = dashboard?.upcoming
+  const activities = dashboard?.activities
+  const wallet   = dashboard?.wallet
+  const sessionsError = dashboardError
 
   if (isLoading && !stats && !sessions) {
     return (
@@ -585,7 +535,7 @@ export default function ClientDashboard() {
         </div>
 
         <div className="space-y-4">
-          <QuickActions lastSession={lastSession} navigate={navigate} />
+          <QuickActions lastSession={sessions?.[0]} navigate={navigate} />
 
           <div className="lb-card">
             <div className="flex items-baseline justify-between mb-3">

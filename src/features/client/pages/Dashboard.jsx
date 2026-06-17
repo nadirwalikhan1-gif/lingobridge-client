@@ -464,14 +464,6 @@ export default function ClientDashboard() {
   const queryClient = useQueryClient()
 
   // Real-time WebSocket for session updates
-  const { lastMessage } = useWebSocket('/ws/sessions')
-
-  useEffect(() => {
-    if (lastMessage?.type === 'session_update') {
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-      toast.info('Session updated')
-    }
-  }, [lastMessage, queryClient])
 
   // Single combined query — 1 round trip instead of 5
   const { data: dashboard, isLoading, error: dashboardError } = useQuery({

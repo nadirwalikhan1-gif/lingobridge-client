@@ -1,7 +1,7 @@
-﻿import { useEffect, useState, useCallback, useMemo, memo } from 'react'
+﻿import { useEffect, useState, useCallback, useMemo, memo, useRef } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   Video, Phone, ChevronRight, Calendar, Plus, Star,
@@ -9,7 +9,7 @@ import {
   MessageSquare, ArrowRight
 } from 'lucide-react'
 import { api } from '@/lib/api'
-import { useWebSocket } from '@/hooks/useWebSocket'
+import { useSocket } from '@/hooks/useSocket'
 
 // ─── Language Display Helper ────────────────────────────────────────────────
 const LANGUAGE_NAMES = {
@@ -45,13 +45,15 @@ const fetchWalletBalance = async () => {
   return data
 }
 
-const rebookSession = async (sessionId) => {
-  const { data } = await api.post('/v1/sessions/rebook', { sessionId })
-  return data
+// ─── Shared query config: no refetch on window focus, 5min cache ─────────────
+const QUERY_CONFIG = {
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  gcTime: 5 * 60 * 1000, // 5 minutes
 }
 
 // ─── Star Rating Component ────────────────────────────────────────────────
-function StarRating({ rating, size = 'w-3 h-3' }) {
+const StarRating = memo(function StarRating({ rating, size = 'w-3 h-3' }) {
   return (
     <div className="flex items-center gap-0.5">
       {[...Array(5)].map((_, i) => (
@@ -61,12 +63,13 @@ function StarRating({ rating, size = 'w-3 h-3' }) {
       ))}
     </div>
   )
-}
+})
 
-// ─── Live Countdown Hook ──────────────────────────────────────────────────────
+// ─── Live Countdown Hook (optimized: shared interval, reduced re-renders) ─────
 function useCountdown(targetDate) {
   const [label, setLabel] = useState('')
   const [isImminent, setIsImminent] = useState(false)
+  const intervalRef = useRef(null)
 
   useEffect(() => {
     if (!targetDate) return
@@ -82,15 +85,15 @@ function useCountdown(targetDate) {
       else setLabel('in <1 min')
     }
     tick()
-    const id = setInterval(tick, 30000)
-    return () => clearInterval(id)
+    intervalRef.current = setInterval(tick, 30000)
+    return () => clearInterval(intervalRef.current)
   }, [targetDate])
 
-  return { label, isImminent }
+  return useMemo(() => ({ label, isImminent }), [label, isImminent])
 }
 
 // ─── Stat Cards ─────────────────────────────────────────────────────────────
-function ClientStats({ stats, wallet, navigate }) {
+const ClientStats = memo(function ClientStats({ stats, wallet, navigate }) {
   const lowBalance = wallet?.available < 20
 
   return (
@@ -138,10 +141,10 @@ function ClientStats({ stats, wallet, navigate }) {
       </div>
     </div>
   )
-}
+})
 
 // ─── Upcoming Session Card ────────────────────────────────────────────────────
-function UpcomingSessionCard({ session, navigate }) {
+const UpcomingSessionCard = memo(function UpcomingSessionCard({ session, navigate }) {
   const { label, isImminent } = useCountdown(session.scheduledAt)
   const pairLabel = `${langDisplay(session.fromLang)} → ${langDisplay(session.toLang)}`
 
@@ -183,7 +186,7 @@ function UpcomingSessionCard({ session, navigate }) {
       </div>
     </div>
   )
-}
+})
 
 // ─── Recent Sessions ──────────────────────────────────────────────────────────
 const RecentSessionsList = memo(function RecentSessionsList({ sessions, isLoading, error, navigate }) {
@@ -294,12 +297,12 @@ const RecentActivity = memo(function RecentActivity({ activities, isLoading, nav
     </div>
   )
 
-  const iconMap = {
+  const iconMap = useMemo(() => ({
     session: { bg: 'bg-[#EEEDFE]', icon: <Video className="w-3.5 h-3.5 text-[#534AB7]" /> },
     review: { bg: 'bg-[#FFF8E6]', icon: <Star className="w-3.5 h-3.5 text-[#BA7517]" /> },
     wallet: { bg: 'bg-[#E1F5EE]', icon: <TrendingUp className="w-3.5 h-3.5 text-[#0F6E56]" /> },
     message: { bg: 'bg-violet-50', icon: <MessageSquare className="w-3.5 h-3.5 text-violet-600" /> },
-  }
+  }), [])
 
   return (
     <div className="lb-card">
@@ -336,7 +339,7 @@ const RecentActivity = memo(function RecentActivity({ activities, isLoading, nav
 })
 
 // ─── Quick Actions ────────────────────────────────────────────────────────────
-function QuickActions({ lastSession, navigate }) {
+const QuickActions = memo(function QuickActions({ lastSession, navigate }) {
   if (!lastSession) {
     return (
       <div className="lb-card">
@@ -360,7 +363,7 @@ function QuickActions({ lastSession, navigate }) {
 
   const rebookLabel = `${langDisplay(lastSession.fromLang)} → ${langDisplay(lastSession.toLang)}`
 
-  const actions = [
+  const actions = useMemo(() => [
     {
       label: `Rebook ${lastSession.interpreter?.name?.split(' ')[0] ?? 'interpreter'}`,
       desc: `${rebookLabel} · ${lastSession.duration} min`,
@@ -393,7 +396,7 @@ function QuickActions({ lastSession, navigate }) {
       descColor: 'text-lb-muted',
       onClick: () => navigate('/booking?schedule=true')
     },
-  ]
+  ], [lastSession, navigate])
 
   return (
     <div className="lb-card">
@@ -420,10 +423,10 @@ function QuickActions({ lastSession, navigate }) {
       </div>
     </div>
   )
-}
+})
 
 // ─── Wallet Snapshot ──────────────────────────────────────────────────────────
-function WalletSnapshot({ balance, isLoading, navigate }) {
+const WalletSnapshot = memo(function WalletSnapshot({ balance, isLoading, navigate }) {
   if (isLoading) return (
     <div className="lb-card p-6 animate-pulse">
       <div className="h-4 bg-slate-200 rounded w-1/4 mb-4" />
@@ -475,7 +478,7 @@ function WalletSnapshot({ balance, isLoading, navigate }) {
       </div>
     </div>
   )
-}
+})
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function ClientDashboard() {
@@ -483,54 +486,55 @@ export default function ClientDashboard() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
 
-  // Real-time WebSocket for session updates
-  const { lastMessage } = useWebSocket('/ws/sessions')
+  // Debounced query invalidation to prevent thundering herd from rapid socket events
+  const invalidateTimeoutRef = useRef(null)
 
-  useEffect(() => {
-    if (lastMessage?.type === 'session_update') {
+  // Use existing Socket.IO connection instead of separate raw WebSocket
+  useSocket('session_update', useCallback((data) => {
+    if (invalidateTimeoutRef.current) clearTimeout(invalidateTimeoutRef.current)
+    invalidateTimeoutRef.current = setTimeout(() => {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       toast.info('Session updated')
-    }
-  }, [lastMessage, queryClient])
+    }, 1000) // 1 second debounce
+  }, [queryClient]))
 
-  // Fetch all dashboard data
+  // Fetch all dashboard data — no refetch on window focus
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['dashboard', 'stats'],
     queryFn: fetchDashboardStats,
     staleTime: 30000,
+    ...QUERY_CONFIG,
   })
 
   const { data: sessions, isLoading: sessionsLoading, error: sessionsError } = useQuery({
     queryKey: ['dashboard', 'sessions'],
     queryFn: () => fetchRecentSessions(5),
     staleTime: 60000,
+    ...QUERY_CONFIG,
   })
 
   const { data: upcoming, isLoading: upcomingLoading } = useQuery({
     queryKey: ['dashboard', 'upcoming'],
     queryFn: fetchUpcomingSessions,
     staleTime: 15000,
+    ...QUERY_CONFIG,
   })
 
   const { data: activities, isLoading: activityLoading } = useQuery({
     queryKey: ['dashboard', 'activity'],
     queryFn: () => fetchActivityFeed(10),
     staleTime: 60000,
+    ...QUERY_CONFIG,
   })
 
   const { data: wallet, isLoading: walletLoading } = useQuery({
     queryKey: ['dashboard', 'wallet'],
     queryFn: fetchWalletBalance,
     staleTime: 30000,
+    ...QUERY_CONFIG,
   })
 
-  // Memoize: only recompute when any loading state actually changes
-  const isLoading = useMemo(
-    () => statsLoading || sessionsLoading || upcomingLoading || activityLoading || walletLoading,
-    [statsLoading, sessionsLoading, upcomingLoading, activityLoading, walletLoading]
-  )
-
-  // Memoize: prevent QuickActions re-render when parent state changes but sessions don't
+  const isLoading = statsLoading || sessionsLoading || upcomingLoading || activityLoading || walletLoading
   const lastSession = useMemo(() => sessions?.[0] ?? null, [sessions])
 
   if (isLoading && !stats && !sessions) {

@@ -475,17 +475,17 @@ export default function ClientDashboard() {
 
   // Single combined query — 1 round trip instead of 5
   const { data: dashboard, isLoading, error: dashboardError } = useQuery({
-    queryKey: ['dashboard'],
-    queryFn: fetchDashboard,
-    staleTime: 30000,
-  })
+  queryKey: ['dashboard'],
+  queryFn: fetchDashboard,
+  staleTime: 30000,
+})
 
-  const stats    = dashboard?.stats
-  const sessions = dashboard?.sessions
-  const upcoming = dashboard?.upcoming
-  const activities = dashboard?.activities
-  const wallet   = dashboard?.wallet
-  const sessionsError = dashboardError
+const stats      = dashboard?.stats
+const sessions   = dashboard?.sessions
+const upcoming   = dashboard?.upcoming
+const activities = dashboard?.activities
+const wallet     = dashboard?.wallet
+const sessionsError = dashboardError
 
   if (isLoading && !stats && !sessions) {
     return (

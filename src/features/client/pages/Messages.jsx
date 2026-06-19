@@ -164,7 +164,7 @@ function NewConversationModal({ onClose, onStart }) {
       <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-xl">
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <h3 className="text-[16px] font-bold text-slate-900">New Conversation</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600">
             <X size={18} />
           </button>
         </div>
@@ -174,6 +174,7 @@ function NewConversationModal({ onClose, onStart }) {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text" 
+              aria-label="Search interpreters by name or language"
               placeholder="Search interpreters by name or language..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)}
@@ -220,6 +221,7 @@ function NewConversationModal({ onClose, onStart }) {
         {selectedInterp && (
           <div className="p-4 border-t border-slate-100">
             <textarea
+              aria-label={`Write your first message to ${selectedInterp.name}`}
               value={initialMessage}
               onChange={(e) => setInitialMessage(e.target.value)}
               placeholder={`Write your first message to ${selectedInterp.name}...`}
@@ -389,6 +391,7 @@ export default function Messages() {
               onClick={() => setShowNewModal(true)} 
               className="p-2 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors" 
               title="New conversation"
+              aria-label="New conversation"
             >
               <Plus size={16} />
             </button>
@@ -397,6 +400,7 @@ export default function Messages() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text" 
+              aria-label="Search conversations"
               placeholder="Search conversations..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)}
@@ -487,6 +491,7 @@ export default function Messages() {
                   onClick={() => navigate(`/call?interpreter=${activeConversation.interpreter?.id}&type=audio`)}
                   className="p-2 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors" 
                   title="Voice call"
+                  aria-label="Voice call"
                 >
                   <Phone size={16} />
                 </button>
@@ -494,17 +499,18 @@ export default function Messages() {
                   onClick={() => navigate(`/call?interpreter=${activeConversation.interpreter?.id}&type=video`)}
                   className="p-2 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors" 
                   title="Video call"
+                  aria-label="Video call"
                 >
                   <Video size={16} />
                 </button>
-                <button className="p-2 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors" title="More">
+                <button className="p-2 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors" title="More" aria-label="More options">
                   <MoreVertical size={16} />
                 </button>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3" role="log" aria-live="polite" aria-label="Messages">
               {msgLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 size={24} className="text-violet-600 animate-spin" />
@@ -561,6 +567,7 @@ export default function Messages() {
               <div className="flex items-end gap-2">
                 <button 
                   onClick={() => fileInputRef.current?.click()}
+                  aria-label="Attach file"
                   className="p-2.5 rounded-xl hover:bg-slate-50 text-slate-300 hover:text-slate-500 transition-colors shrink-0"
                 >
                   <Paperclip size={18} />
@@ -568,6 +575,7 @@ export default function Messages() {
                 <input 
                   type="file" 
                   ref={fileInputRef} 
+                  aria-label="Attach file"
                   className="hidden" 
                   onChange={handleFileSelect}
                   multiple
@@ -575,6 +583,7 @@ export default function Messages() {
                 />
                 <div className="flex-1 relative">
                   <textarea 
+                    aria-label="Type a message"
                     value={input} 
                     onChange={(e) => setInput(e.target.value)} 
                     onKeyDown={(e) => { 

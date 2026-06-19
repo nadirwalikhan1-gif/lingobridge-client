@@ -151,10 +151,11 @@ function ContactForm({ user }) {
       <div className="space-y-3">
         {/* Subject */}
         <div>
-          <label className="text-[11px] font-medium text-lb-subtle uppercase tracking-wider block mb-1">
+          <label htmlFor="help-subject" className="text-[11px] font-medium text-lb-subtle uppercase tracking-wider block mb-1">
             Subject
           </label>
           <select
+            id="help-subject"
             value={subject}
             onChange={e => setSubject(e.target.value)}
             className="w-full px-3 py-2 text-[13px] text-lb-ink bg-lb-surface border border-lb-border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#7F77DD] focus:border-[#7F77DD]"
@@ -166,10 +167,11 @@ function ContactForm({ user }) {
 
         {/* Message */}
         <div>
-          <label className="text-[11px] font-medium text-lb-subtle uppercase tracking-wider block mb-1">
+          <label htmlFor="help-message" className="text-[11px] font-medium text-lb-subtle uppercase tracking-wider block mb-1">
             Message
           </label>
           <textarea
+            id="help-message"
             value={message}
             onChange={e => setMessage(e.target.value)}
             placeholder="Describe your issue in detail. Include any session IDs or dates that are relevant."

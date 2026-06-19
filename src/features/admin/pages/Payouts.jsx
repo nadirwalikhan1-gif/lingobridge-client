@@ -1,4 +1,4 @@
-﻿// Payouts.jsx � Admin payout management
+﻿// Payouts.jsx — Admin payout management
 // Real-time via socket. Filters, bulk approve, export.
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -29,7 +29,7 @@ export default function Payouts() {
     staleTime: 30000,
   })
 
-  // ? FIX: removed top-level getSocket() call � socket captured at render time
+  // ? FIX: removed top-level getSocket() call — socket captured at render time
   // may be null on mount and goes stale after reconnects. Moved into handlers below.
 
   const filtered = useMemo(() => {
@@ -145,7 +145,8 @@ export default function Payouts() {
         </div>
         <input
           type="text"
-          placeholder="Search interpreter�"
+          aria-label="Search interpreter"
+          placeholder="Search interpreter…"
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="text-[11px] border border-lb-border rounded px-3 py-1.5 bg-white text-lb-ink placeholder:text-lb-subtle focus:outline-none focus:border-[#7F77DD] w-52"
@@ -163,6 +164,7 @@ export default function Payouts() {
                   <th className="text-left text-[10px] font-medium text-lb-muted uppercase px-3 py-2 w-8">
                     <input
                       type="checkbox"
+                      aria-label="Select all payouts"
                       checked={filtered.length > 0 && selectedIds.size === filtered.length}
                       onChange={selectAll}
                       className="w-3.5 h-3.5 rounded border-lb-border"
@@ -186,6 +188,7 @@ export default function Payouts() {
                       <td className="px-3 py-2.5">
                         <input
                           type="checkbox"
+                          aria-label={`Select payout for ${p.name}`}
                           checked={isSelected}
                           onChange={() => toggleSelect(p.id)}
                           className="w-3.5 h-3.5 rounded border-lb-border"
@@ -229,7 +232,7 @@ export default function Payouts() {
                             disabled={isPending}
                             className="text-[10px] px-2.5 py-1 rounded bg-[#E1F5EE] text-[#0F6E56] font-medium hover:bg-[#c8ede2] transition-colors disabled:opacity-50"
                           >
-                            {isPending ? '�' : 'Approve'}
+                            {isPending ? '…' : 'Approve'}
                           </button>
                         )}
                       </td>

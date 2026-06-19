@@ -78,7 +78,7 @@ export function useAgora({ channel, sessionType = 'audio', token: tokenProp }) {
       try {
         // Restore + chars that URL encoding may have corrupted to spaces
         const token = tokenProp ? tokenProp.replace(/ /g, '+') : null;
-        console.log('[Agora] joining', { appId: AGORA_APP_ID.substring(0, 6), channel, sessionType, tokenLength: token?.length });
+        if (import.meta.env.DEV) console.log('[Agora] joining', { appId: AGORA_APP_ID.substring(0, 6), channel, sessionType, tokenLength: token?.length });
 
         await client.join(AGORA_APP_ID, channel, token, 0);
 
@@ -92,7 +92,7 @@ export function useAgora({ channel, sessionType = 'audio', token: tokenProp }) {
         await client.publish(cam ? [mic, cam] : [mic]);
         setLocalTracks({ mic, cam: cam ?? null });
         setJoined(true);
-        console.log('[Agora] joined successfully');
+        if (import.meta.env.DEV) console.log('[Agora] joined successfully');
 
         // Live captions via Web Speech API (best-effort, non-critical)
         if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {

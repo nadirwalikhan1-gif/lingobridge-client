@@ -1,41 +1,64 @@
-﻿import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { useAuth } from './providers/AuthProvider';
-import CallRoom from './features/call/pages/CallRoom';
-import DashboardLayout from './components/layout/DashboardLayout';
-import AdminDashboard from './features/admin/pages/Dashboard';
-import InterpreterDashboard from './features/interpreter/pages/Dashboard';
-import BookingPage from './features/booking/pages/BookingPage';
-import LoginPage from './pages/LoginPage';
-import ClientDashboard  from './features/client/pages/Dashboard';
-import SessionHistory   from './features/client/pages/SessionHistory';
-import Wallet           from './features/client/pages/Wallet';
-import Messages         from './features/client/pages/Messages';
-import Favourites       from './features/client/pages/Favourites';
-import RecentReviews    from './features/client/pages/RecentReviews';
-import Profile          from './features/client/pages/Profile';
-import Settings         from './features/client/pages/Settings';
-import Teams            from './features/booking/pages/Teams';
-import Availability         from './features/interpreter/pages/Availability';
-import Requests             from './features/interpreter/pages/Requests';
-import MySessions           from './features/interpreter/pages/MySessions';
-import Earnings             from './features/interpreter/pages/Earnings';
-import Payouts              from './features/interpreter/pages/Payouts';
-import InterpreterReviews   from './features/interpreter/pages/Reviews';
-import InterpreterProfile   from './features/interpreter/pages/Profile';
-import InterpreterSettings  from './features/interpreter/pages/Settings';
-import Help                 from './features/interpreter/pages/Help';
-import AdminLayout          from './features/admin/components/AdminLayout';
-import Users                from './features/admin/pages/Users';
-import Interpreters         from './features/admin/pages/Interpreters';
-import Sessions             from './features/admin/pages/Sessions';
-import Transactions         from './features/admin/pages/Transactions';
-import Reviews              from './features/admin/pages/Reviews';
-import Disputes             from './features/admin/pages/Disputes';
-import AdminRequests        from './features/admin/pages/Requests';
-import AdminPayouts         from './features/admin/pages/Payouts';
-import Comms                from './features/admin/pages/Comms';
-import AdminSettings        from './features/admin/pages/Settings';
 
+// ─── Always-eager: auth shell + layout chrome ────────────────────────────────
+// These must be synchronous — they render before any authenticated page loads.
+import LoginPage      from './pages/LoginPage';
+import DashboardLayout from './components/layout/DashboardLayout';
+import AdminLayout    from './features/admin/components/AdminLayout';
+
+// ─── Admin pages (lazy — only admins ever load these) ────────────────────────
+const AdminDashboard  = lazy(() => import('./features/admin/pages/Dashboard'));
+const Users           = lazy(() => import('./features/admin/pages/Users'));
+const Interpreters    = lazy(() => import('./features/admin/pages/Interpreters'));
+const Sessions        = lazy(() => import('./features/admin/pages/Sessions'));
+const AdminRequests   = lazy(() => import('./features/admin/pages/Requests'));
+const Transactions    = lazy(() => import('./features/admin/pages/Transactions'));
+const Reviews         = lazy(() => import('./features/admin/pages/Reviews'));
+const Disputes        = lazy(() => import('./features/admin/pages/Disputes'));
+const AdminPayouts    = lazy(() => import('./features/admin/pages/Payouts'));
+const Comms           = lazy(() => import('./features/admin/pages/Comms'));
+const AdminSettings   = lazy(() => import('./features/admin/pages/Settings'));
+
+// ─── Interpreter pages (lazy — only interpreters ever load these) ─────────────
+const InterpreterDashboard = lazy(() => import('./features/interpreter/pages/Dashboard'));
+const Availability         = lazy(() => import('./features/interpreter/pages/Availability'));
+const Requests             = lazy(() => import('./features/interpreter/pages/Requests'));
+const MySessions           = lazy(() => import('./features/interpreter/pages/MySessions'));
+const Earnings             = lazy(() => import('./features/interpreter/pages/Earnings'));
+const Payouts              = lazy(() => import('./features/interpreter/pages/Payouts'));
+const InterpreterReviews   = lazy(() => import('./features/interpreter/pages/Reviews'));
+const InterpreterProfile   = lazy(() => import('./features/interpreter/pages/Profile'));
+const InterpreterSettings  = lazy(() => import('./features/interpreter/pages/Settings'));
+const Help                 = lazy(() => import('./features/interpreter/pages/Help'));
+
+// ─── Client pages (lazy — only clients ever load these) ──────────────────────
+const ClientDashboard = lazy(() => import('./features/client/pages/Dashboard'));
+const BookingPage     = lazy(() => import('./features/booking/pages/BookingPage'));
+const SessionHistory  = lazy(() => import('./features/client/pages/SessionHistory'));
+const Wallet          = lazy(() => import('./features/client/pages/Wallet'));
+const Messages        = lazy(() => import('./features/client/pages/Messages'));
+const Favourites      = lazy(() => import('./features/client/pages/Favourites'));
+const RecentReviews   = lazy(() => import('./features/client/pages/RecentReviews'));
+const Profile         = lazy(() => import('./features/client/pages/Profile'));
+const Teams           = lazy(() => import('./features/booking/pages/Teams'));
+const Settings        = lazy(() => import('./features/client/pages/Settings'));
+
+// ─── Call room (lazy — heaviest chunk, contains Agora SDK) ───────────────────
+// Only loads when a user actually enters a call.
+const CallRoom = lazy(() => import('./features/call/pages/CallRoom'));
+
+// ─── Loading fallback ─────────────────────────────────────────────────────────
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-screen bg-[#12131f]">
+      <div className="w-8 h-8 border-2 border-[#7F77DD] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
+// ─── Route guard ─────────────────────────────────────────────────────────────
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -60,6 +83,7 @@ function Placeholder({ title }) {
   );
 }
 
+// ─── Role route trees ─────────────────────────────────────────────────────────
 function AdminRoutes() {
   return (
     <AdminLayout>
@@ -122,9 +146,11 @@ function ClientRoutes() {
   );
 }
 
+// ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const { user, loading } = useAuth();
   if (loading) return null;
+
   if (!user) {
     return (
       <Routes>
@@ -133,15 +159,18 @@ export default function App() {
       </Routes>
     );
   }
+
   const role = user.app_metadata?.role || user.user_metadata?.role;
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to={roleHome(role)} replace />} />
-      <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['admin']}><AdminRoutes /></ProtectedRoute>} />
-      <Route path="/interpreter/*" element={<ProtectedRoute allowedRoles={['interpreter']}><InterpreterRoutes /></ProtectedRoute>} />
-      <Route path="/client/*" element={<ProtectedRoute allowedRoles={['client']}><ClientRoutes /></ProtectedRoute>} />
-      <Route path="/call/:channelId" element={<ProtectedRoute allowedRoles={['client', 'interpreter', 'admin']}><CallRoom /></ProtectedRoute>} />
-      <Route path="*" element={<Navigate to={roleHome(role)} replace />} />
-    </Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<Navigate to={roleHome(role)} replace />} />
+        <Route path="/admin/*"       element={<ProtectedRoute allowedRoles={['admin']}><AdminRoutes /></ProtectedRoute>} />
+        <Route path="/interpreter/*" element={<ProtectedRoute allowedRoles={['interpreter']}><InterpreterRoutes /></ProtectedRoute>} />
+        <Route path="/client/*"      element={<ProtectedRoute allowedRoles={['client']}><ClientRoutes /></ProtectedRoute>} />
+        <Route path="/call/:channelId" element={<ProtectedRoute allowedRoles={['client', 'interpreter', 'admin']}><CallRoom /></ProtectedRoute>} />
+        <Route path="*" element={<Navigate to={roleHome(role)} replace />} />
+      </Routes>
+    </Suspense>
   );
 }

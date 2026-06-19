@@ -845,7 +845,7 @@ export default function BookingPage() {
                   </div>
 
                   {/* Status */}
-                  <div>
+                  <div role="status" aria-live="polite">
                     <p className="text-[18px] font-semibold text-lb-ink mb-1">
                       Connecting you to {interpreterName ?? 'your interpreter'}…
                     </p>

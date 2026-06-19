@@ -48,6 +48,7 @@ function SelectRow({ label, description, value, options, onChange }) {
         {description && <p className="text-[11px] text-lb-muted mt-0.5">{description}</p>}
       </div>
       <select
+        aria-label={label}
         value={value ?? ''}
         onChange={e => onChange(e.target.value)}
         className="text-[12px] text-lb-ink bg-lb-surface border border-lb-border rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#7F77DD] cursor-pointer"

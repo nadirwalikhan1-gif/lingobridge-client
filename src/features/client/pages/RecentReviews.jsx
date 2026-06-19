@@ -97,7 +97,7 @@ function WriteReviewModal({ session, onClose, onSubmit }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+        <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
           <X size={16} />
         </button>
 
@@ -128,8 +128,9 @@ function WriteReviewModal({ session, onClose, onSubmit }) {
             </div>
 
             <div className="mb-6">
-              <p className="text-[12px] font-semibold text-slate-600 uppercase tracking-wider mb-2">Your Comments <span className="text-slate-300">(optional)</span></p>
+              <label htmlFor="review-comments" className="text-[12px] font-semibold text-slate-600 uppercase tracking-wider mb-2 block">Your Comments <span className="text-slate-300">(optional)</span></label>
               <textarea
+                id="review-comments"
                 value={text}
                 onChange={e => setText(e.target.value.slice(0, 500))}
                 placeholder="How was the interpretation quality, professionalism, and accuracy?"
@@ -207,6 +208,7 @@ function ReviewCard({ review, onHelpful, onReport }) {
           {showReport && (
             <div className="mt-2 flex items-center gap-2">
               <select 
+                aria-label="Report reason"
                 value={reportReason} 
                 onChange={e => setReportReason(e.target.value)}
                 className="text-[11px] bg-white border border-slate-200 rounded-lg px-2 py-1"
@@ -398,6 +400,7 @@ export default function RecentReviews() {
             </div>
             <div className="relative ml-auto">
               <select
+                aria-label="Filter by interpreter"
                 value={interpreterFilter}
                 onChange={e => { setInterpreterFilter(e.target.value); setPage(1); }}
                 className="appearance-none bg-white border border-slate-200 text-[12px] text-slate-700 rounded-xl pl-3 pr-8 py-1.5 focus:outline-none focus:border-violet-400 cursor-pointer hover:border-slate-300 transition-colors"

@@ -164,8 +164,9 @@ export default function RatingModal({
               label="Rate the interpreter"
             />
             <div className="flex flex-col gap-2">
-              <p className="text-white/70 text-sm">Comments (optional)</p>
+              <label htmlFor="rating-comment-client" className="text-white/70 text-sm">Comments (optional)</label>
               <textarea
+                id="rating-comment-client"
                 value={comment}
                 onChange={e => setComment(e.target.value)}
                 placeholder="Share your experience…"
@@ -205,8 +206,9 @@ export default function RatingModal({
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <p className="text-white/70 text-sm">Comments (optional)</p>
+              <label htmlFor="rating-comment-interpreter" className="text-white/70 text-sm">Comments (optional)</label>
               <textarea
+                id="rating-comment-interpreter"
                 value={comment}
                 onChange={e => setComment(e.target.value)}
                 placeholder="Note any terminology challenges, cultural context, or other feedback…"

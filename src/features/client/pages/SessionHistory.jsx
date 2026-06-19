@@ -304,6 +304,7 @@ export default function SessionHistory() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
+              aria-label="Search by interpreter, language, or invoice number"
               placeholder="Search by interpreter, language, or invoice #..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -312,6 +313,7 @@ export default function SessionHistory() {
             {search && (
               <button 
                 onClick={() => setSearch('')}
+                aria-label="Clear search"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 <X size={14} />
@@ -320,6 +322,7 @@ export default function SessionHistory() {
           </div>
 
           <select
+            aria-label="Filter by date"
             value={dateFilter}
             onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
             className="bg-white text-[13px] font-medium text-slate-600 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-violet-200 focus:border-violet-400 outline-none cursor-pointer"
@@ -330,6 +333,7 @@ export default function SessionHistory() {
           </select>
 
           <select
+            aria-label="Sort sessions"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="bg-white text-[13px] font-medium text-slate-600 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-violet-200 focus:border-violet-400 outline-none cursor-pointer"

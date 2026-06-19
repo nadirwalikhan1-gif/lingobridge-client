@@ -364,6 +364,7 @@ function TransactionsTable({ transactions, loading }) {
           </svg>
           <input
             type="text"
+            aria-label="Search client or language"
             placeholder="Search client or language…"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0) }}
@@ -505,6 +506,7 @@ function PayoutCard({ balance, onRequest }) {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-lb-muted">$</span>
               <input
                 type="number"
+                aria-label="Payout amount"
                 min={MIN_PAYOUT}
                 max={balance}
                 step="0.01"

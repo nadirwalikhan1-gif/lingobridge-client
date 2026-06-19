@@ -45,7 +45,7 @@ export function AdminDataProvider({ children }) {
     }
 
     const onConnect = () => {
-      console.log('Admin socket connected')
+      if (import.meta.env.DEV) console.log('Admin socket connected')
       if (errorTimeoutRef.current) {
         clearTimeout(errorTimeoutRef.current)
         errorTimeoutRef.current = null

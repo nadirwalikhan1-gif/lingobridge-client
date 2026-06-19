@@ -97,11 +97,12 @@ function OverviewCard({ label, value, sub, color = 'text-lb-ink', icon }) {
   )
 }
 
-function Toggle({ checked, onChange }) {
+function Toggle({ checked, onChange, label }) {
   return (
     <button
       role="switch"
       aria-checked={checked}
+      aria-label={label}
       onClick={onChange}
       className={`relative w-10 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#7F77DD] focus:ring-offset-1 ${
         checked ? 'bg-[#7F77DD]' : 'bg-lb-border'
@@ -116,9 +117,10 @@ function Toggle({ checked, onChange }) {
   )
 }
 
-function TimeSelect({ value, onChange, disabled }) {
+function TimeSelect({ value, onChange, disabled, label }) {
   return (
     <select
+      aria-label={label}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
@@ -149,6 +151,7 @@ function DayRow({ slot, onChange }) {
       <Toggle
         checked={slot.available}
         onChange={() => onChange({ ...slot, available: !slot.available })}
+        label={`Available on ${slot.day}`}
       />
 
       {/* Time range */}
@@ -157,11 +160,13 @@ function DayRow({ slot, onChange }) {
           <TimeSelect
             value={slot.start}
             onChange={(v) => onChange({ ...slot, start: v })}
+            label={`${slot.day} start time`}
           />
           <span className="text-[11px] text-lb-subtle">to</span>
           <TimeSelect
             value={slot.end}
             onChange={(v) => onChange({ ...slot, end: v })}
+            label={`${slot.day} end time`}
           />
           <span className="text-[11px] text-lb-subtle ml-1">
             ({hoursFromSlot(slot.start, slot.end).toFixed(1)}h)
@@ -503,15 +508,16 @@ export default function Availability() {
             <h3 className="text-[13px] font-medium text-lb-ink">Vacation mode</h3>
             <p className="text-[11px] text-lb-muted mt-0.5">Pause all bookings for a date range</p>
           </div>
-          <Toggle checked={vacationMode} onChange={() => setVacationMode((v) => !v)} />
+          <Toggle checked={vacationMode} onChange={() => setVacationMode((v) => !v)} label="Vacation mode" />
         </div>
 
         {vacationMode && (
           <div className="space-y-3 pt-3 border-t border-lb-border">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] text-lb-muted font-medium block mb-1.5">Start date</label>
+                <label htmlFor="vacation-start" className="text-[11px] text-lb-muted font-medium block mb-1.5">Start date</label>
                 <input
+                  id="vacation-start"
                   type="date"
                   value={vacationStart}
                   min={new Date().toISOString().split('T')[0]}
@@ -520,8 +526,9 @@ export default function Availability() {
                 />
               </div>
               <div>
-                <label className="text-[11px] text-lb-muted font-medium block mb-1.5">End date</label>
+                <label htmlFor="vacation-end" className="text-[11px] text-lb-muted font-medium block mb-1.5">End date</label>
                 <input
+                  id="vacation-end"
                   type="date"
                   value={vacationEnd}
                   min={vacationStart || new Date().toISOString().split('T')[0]}

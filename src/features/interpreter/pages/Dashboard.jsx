@@ -6,7 +6,7 @@ import CommandCenter, { PerformanceTrendPanel } from '../components/dashboard/Co
 import IncomingRequests from '../components/dashboard/IncomingRequests'
 
 // ─── Below-the-fold: lazy loaded ─────────────────────────────────────────────
-const EarningsChart   = lazy(() => import('../components/dashboard/EarningsChart'))
+import EarningsChart    from '../components/dashboard/EarningsChart'
 const TodaysSchedule  = lazy(() => import('../components/dashboard/TodaysSchedule'))
 const RecentSessions  = lazy(() => import('../components/dashboard/RecentSessions'))
 const RecentReviews   = lazy(() => import('../components/dashboard/RecentReviews'))

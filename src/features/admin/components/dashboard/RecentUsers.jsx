@@ -53,7 +53,7 @@ export default function RecentUsers() {
                   <span className="text-xs text-slate-500">{u.joined}</span>
                 </td>
                 <td className="py-2">
-                  <button className="p-1 text-slate-400 hover:text-slate-600">
+                  <button aria-label="More options" className="p-1 text-slate-400 hover:text-slate-600">
                     <MoreVertical className="w-3.5 h-3.5" />
                   </button>
                 </td>

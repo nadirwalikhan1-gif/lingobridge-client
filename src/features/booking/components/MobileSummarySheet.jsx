@@ -16,7 +16,7 @@ export default function MobileSummarySheet({ open, onClose, fromLang, toLang, se
       <div className="relative bg-white rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up">
         <div className="sticky top-0 bg-white pt-3 pb-2 px-4 flex justify-center border-b border-lb-border-light z-10">
           <div className="w-10 h-1 bg-slate-300 rounded-full" />
-          <button onClick={onClose} className="absolute right-4 top-3 p-1 text-lb-text-secondary hover:text-lb-text">
+          <button onClick={onClose} aria-label="Close" className="absolute right-4 top-3 p-1 text-lb-text-secondary hover:text-lb-text">
             <X className="w-5 h-5" />
           </button>
         </div>

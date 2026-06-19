@@ -1,4 +1,4 @@
-﻿import { forwardRef, useState, useRef, useEffect } from 'react'
+﻿import { forwardRef, useState, useRef, useEffect, useId } from 'react'
 
 const accentMap = {
   admin:       'focus-within:ring-2 focus-within:ring-admin-accent/20 focus-within:border-admin-accent',
@@ -24,6 +24,7 @@ const Select = forwardRef(function Select(
 ) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef(null)
+  const labelId = useId()
 
   const accentClasses    = accentMap[accent]       || accentMap.admin
   const highlightClasses = accentHighlight[accent]  || accentHighlight.admin
@@ -66,7 +67,7 @@ const Select = forwardRef(function Select(
   return (
     <div className={`w-full relative ${className}`} ref={containerRef}>
       {label && (
-        <label className="block text-[9px] font-medium text-slate-400 mb-1 uppercase tracking-wide">
+        <label id={labelId} className="block text-[9px] font-medium text-slate-400 mb-1 uppercase tracking-wide">
           {label}
         </label>
       )}
@@ -75,6 +76,7 @@ const Select = forwardRef(function Select(
         role="combobox"
         aria-expanded={open}
         aria-haspopup="listbox"
+        aria-labelledby={label ? labelId : undefined}
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onClick={() => setOpen((v) => !v)}

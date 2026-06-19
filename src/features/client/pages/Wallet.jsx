@@ -138,14 +138,15 @@ function TopUpModal({ isOpen, onClose, paymentMethods, onTopUp }) {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-[18px] font-bold text-slate-900">Add Funds</h3>
-              <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
+              <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
             </div>
 
             <div className="mb-6">
-              <label className="text-[12px] font-medium text-slate-600 mb-2 block">Amount</label>
+              <label htmlFor="add-funds-amount" className="text-[12px] font-medium text-slate-600 mb-2 block">Amount</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[18px] font-bold text-slate-400">$</span>
                 <input
+                  id="add-funds-amount"
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
@@ -535,6 +536,7 @@ export default function Wallet() {
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text" 
+                aria-label="Search by description, interpreter, or invoice number"
                 placeholder="Search by description, interpreter, or invoice #..."
                 value={search} 
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -542,6 +544,7 @@ export default function Wallet() {
               />
             </div>
             <select 
+              aria-label="Filter by type"
               value={typeFilter} 
               onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
               className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer shrink-0"
@@ -552,6 +555,7 @@ export default function Wallet() {
               <option value="refund">Refunds Only</option>
             </select>
             <select 
+              aria-label="Filter by date"
               value={dateFilter} 
               onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
               className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer shrink-0"
@@ -562,6 +566,7 @@ export default function Wallet() {
               <option value="month">This Month</option>
             </select>
             <select 
+              aria-label="Sort transactions"
               value={sortBy} 
               onChange={(e) => setSortBy(e.target.value)}
               className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer shrink-0"

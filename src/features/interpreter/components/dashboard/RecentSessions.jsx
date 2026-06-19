@@ -141,6 +141,7 @@ export default function RecentSessions() {
                         <div className="space-y-1.5">
                           <textarea
                             autoFocus
+                            aria-label="Session notes"
                             defaultValue={notes[s.id] || ''}
                             placeholder="e.g. medical terms used, client preferred terminology, follow-up needed..."
                             className="w-full text-[11px] text-lb-ink bg-white border border-lb-border rounded-md p-2 resize-none focus:outline-none focus:border-[#7F77DD]"

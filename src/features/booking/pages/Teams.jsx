@@ -209,6 +209,7 @@ function InviteModal({ isOpen, onClose, departments, teamSeats, usedSeats }) {
             </h3>
             <button
               onClick={onClose}
+              aria-label="Close"
               className="p-1 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X size={18} />
@@ -254,12 +255,13 @@ function InviteModal({ isOpen, onClose, departments, teamSeats, usedSeats }) {
           <div className="space-y-4">
             {mode === 'single' ? (
               <div>
-                <label className="text-[12px] font-medium text-slate-600 mb-1.5 block">
+                <label htmlFor="invite-email" className="text-[12px] font-medium text-slate-600 mb-1.5 block">
                   Email address
                 </label>
                 <div className="relative">
                   <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
+                    id="invite-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -270,13 +272,14 @@ function InviteModal({ isOpen, onClose, departments, teamSeats, usedSeats }) {
               </div>
             ) : (
               <div>
-                <label className="text-[12px] font-medium text-slate-600 mb-1.5 block">
+                <label htmlFor="invite-emails-bulk" className="text-[12px] font-medium text-slate-600 mb-1.5 block">
                   Email addresses{' '}
                   <span className="text-slate-400">(comma, semicolon, or newline separated)</span>
                 </label>
                 {/* FIX 5: Use String.fromCharCode(10) or a template literal for the
                     join separator to avoid raw newline characters in JSX source */}
                 <textarea
+                  id="invite-emails-bulk"
                   value={emails.join('\n')}
                   onChange={(e) => handleBulkInput(e.target.value)}
                   placeholder="colleague1@company.com, colleague2@company.com"
@@ -290,8 +293,9 @@ function InviteModal({ isOpen, onClose, departments, teamSeats, usedSeats }) {
             )}
 
             <div>
-              <label className="text-[12px] font-medium text-slate-600 mb-1.5 block">Role</label>
+              <label htmlFor="invite-role" className="text-[12px] font-medium text-slate-600 mb-1.5 block">Role</label>
               <select
+                id="invite-role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer"
@@ -305,10 +309,11 @@ function InviteModal({ isOpen, onClose, departments, teamSeats, usedSeats }) {
             </div>
 
             <div>
-              <label className="text-[12px] font-medium text-slate-600 mb-1.5 block">
+              <label htmlFor="invite-department" className="text-[12px] font-medium text-slate-600 mb-1.5 block">
                 Department
               </label>
               <select
+                id="invite-department"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer"
@@ -491,6 +496,7 @@ function InviteLinkModal({ isOpen, onClose }) {
           <h3 className="text-[16px] font-bold text-slate-900">Team Invite Link</h3>
           <button
             onClick={onClose}
+            aria-label="Close"
             className="p-1 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600"
           >
             <X size={18} />
@@ -509,6 +515,7 @@ function InviteLinkModal({ isOpen, onClose }) {
           <button
             onClick={copyLink}
             disabled={!link || isLoading}
+            aria-label={copied ? 'Link copied' : 'Copy invite link'}
             className="p-2.5 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-30"
           >
             {copied ? <CheckCheck size={16} /> : <Copy size={16} />}
@@ -858,6 +865,7 @@ export default function Teams() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
+            aria-label="Search members by name, email, or department"
             placeholder="Search members by name, email, or department..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -866,6 +874,7 @@ export default function Teams() {
           {search && (
             <button
               onClick={() => setSearch('')}
+              aria-label="Clear search"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
               <X size={14} />
@@ -873,6 +882,7 @@ export default function Teams() {
           )}
         </div>
         <select
+          aria-label="Filter by role"
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
           className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer shrink-0 shadow-sm"
@@ -884,6 +894,7 @@ export default function Teams() {
           <option value="viewer">Viewer</option>
         </select>
         <select
+          aria-label="Filter by department"
           value={deptFilter}
           onChange={(e) => { setDeptFilter(e.target.value); setPage(1); }}
           className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer shrink-0 shadow-sm"
@@ -894,6 +905,7 @@ export default function Teams() {
           ))}
         </select>
         <select
+          aria-label="Sort members"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer shrink-0 shadow-sm"

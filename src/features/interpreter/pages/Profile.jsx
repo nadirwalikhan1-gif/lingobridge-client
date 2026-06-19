@@ -1,7 +1,7 @@
 ﻿// Profile.jsx — Interpreter Profile Page
 // Socket + REST driven, no mock data, skeleton → empty state
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
 import { FALLBACK_TIMEOUT_MS } from '../../../hooks/useFallbackTimeout'
@@ -20,11 +20,13 @@ function Skeleton({ className = '' }) {
 }
 
 function Field({ label, value, editing, name, onChange, type = 'text', placeholder = '' }) {
+  const id = useId()
   return (
     <div>
-      <p className="text-[11px] font-medium text-lb-subtle uppercase tracking-wider mb-1">{label}</p>
+      <label htmlFor={id} className="text-[11px] font-medium text-lb-subtle uppercase tracking-wider mb-1 block">{label}</label>
       {editing ? (
         <input
+          id={id}
           type={type}
           name={name}
           value={value ?? ''}
@@ -40,11 +42,13 @@ function Field({ label, value, editing, name, onChange, type = 'text', placehold
 }
 
 function TextAreaField({ label, value, editing, name, onChange, placeholder = '' }) {
+  const id = useId()
   return (
     <div>
-      <p className="text-[11px] font-medium text-lb-subtle uppercase tracking-wider mb-1">{label}</p>
+      <label htmlFor={id} className="text-[11px] font-medium text-lb-subtle uppercase tracking-wider mb-1 block">{label}</label>
       {editing ? (
         <textarea
+          id={id}
           name={name}
           value={value ?? ''}
           onChange={onChange}

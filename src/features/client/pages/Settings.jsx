@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -106,6 +106,8 @@ function Toggle({ checked, onChange, label, description }) {
       </div>
       <button
         type="button"
+        role="switch"
+        aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative w-10 h-5 rounded-full transition-colors shrink-0 mt-0.5 ${checked ? "bg-violet-600" : "bg-slate-200"}`}
       >
@@ -116,13 +118,15 @@ function Toggle({ checked, onChange, label, description }) {
 }
 
 function SelectField({ label, value, onChange, options, icon: Icon }) {
+  const id = useId();
   return (
     <div className="space-y-1.5">
-      <label className="flex items-center gap-1.5 text-[12px] font-medium text-slate-600">
+      <label htmlFor={id} className="flex items-center gap-1.5 text-[12px] font-medium text-slate-600">
         {Icon && <Icon size={12} className="text-slate-400" />}
         {label}
       </label>
       <select
+        id={id}
         value={value}
         onChange={onChange}
         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-[13px] text-slate-900 focus:outline-none focus:border-violet-400 appearance-none cursor-pointer"
@@ -176,7 +180,7 @@ function DeleteModal({ isOpen, onClose }) {
       <div className="bg-white border border-red-100 rounded-2xl p-6 max-w-md w-full shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-bold text-slate-900">Delete Account?</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
         </div>
         <div className="flex items-center gap-3 p-3 bg-red-50 rounded-xl mb-4">
           <AlertTriangle size={20} className="text-red-500 shrink-0" />
@@ -184,6 +188,7 @@ function DeleteModal({ isOpen, onClose }) {
         </div>
         <div className="space-y-3 mb-4">
           <select 
+            aria-label="Reason for leaving (optional)"
             value={reason} 
             onChange={e => setReason(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-[13px] text-slate-900 focus:outline-none focus:border-red-400"
@@ -197,6 +202,7 @@ function DeleteModal({ isOpen, onClose }) {
           </select>
           <input 
             type="text" 
+            aria-label="Type DELETE to confirm"
             value={confirmText} 
             onChange={e => setConfirmText(e.target.value)}
             placeholder="Type 'DELETE' to confirm"
@@ -246,7 +252,7 @@ function ExportModal({ isOpen, onClose }) {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-bold text-slate-900">Export Your Data</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
         </div>
         <p className="text-[13px] text-slate-500 mb-4">Download all your personal data, session history, and preferences in GDPR-compliant format.</p>
         <div className="space-y-3 mb-4">
@@ -310,7 +316,7 @@ function PaymentMethodsModal({ isOpen, onClose }) {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-bold text-slate-900">Payment Methods</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
         </div>
 
         {isLoading ? (

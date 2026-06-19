@@ -348,7 +348,12 @@ export default function IncomingRequests({ onRequestsChange, nextSession }) {
             <NextSessionBanner nextSession={nextSession} />
           </>
         ) : (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in"
+            role="alertdialog"
+            aria-live="assertive"
+            aria-label="Incoming call request"
+          >
             <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up mx-auto">
               <div className="bg-[#7F77DD] px-5 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">

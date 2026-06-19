@@ -53,7 +53,7 @@ export default function ChatSidebar({ channel, currentUser }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3" role="log" aria-live="polite" aria-label="Chat messages">
         {messages.length === 0 && (
           <p className="text-xs text-lb-muted text-center mt-6">Messages are visible to everyone in the call</p>
         )}
@@ -81,6 +81,7 @@ export default function ChatSidebar({ channel, currentUser }) {
       <div className="px-3 py-2 border-t border-lb-border flex gap-2 items-end">
         <textarea
           rows={1}
+          aria-label="Type a message"
           value={draft}
           onChange={e => setDraft(e.target.value)}
           onKeyDown={onKeyDown}
@@ -91,6 +92,7 @@ export default function ChatSidebar({ channel, currentUser }) {
         <button
           onClick={send}
           disabled={!draft.trim()}
+          aria-label="Send message"
           className="w-8 h-8 rounded-lg bg-[#7F77DD] text-white flex items-center justify-center disabled:opacity-40 hover:bg-[#534AB7] transition-colors shrink-0"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

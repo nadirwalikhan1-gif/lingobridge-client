@@ -20,6 +20,7 @@ export default function Topbar({ onMenuClick }) {
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
+          aria-label="Open menu"
           className="lg:hidden p-1.5 rounded-lg hover:bg-slate-100 text-slate-600"
         >
           <Menu className="w-4 h-4" />
@@ -31,7 +32,7 @@ export default function Topbar({ onMenuClick }) {
 
       {/* Right: Notifications + Avatar */}
       <div className="flex items-center gap-3">
-        <button className="relative p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors">
+        <button aria-label="Notifications" className="relative p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors">
           <Bell className="w-4 h-4" />
           {!isBookingPage && (
             <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-lb-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">

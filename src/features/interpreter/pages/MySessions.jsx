@@ -276,6 +276,7 @@ function SessionModal({ session, onClose, onJoin }) {
             </div>
             <button
               onClick={onClose}
+              aria-label="Close"
               className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -629,6 +630,7 @@ export default function MySessions() {
             </svg>
             <input
               type="text"
+              aria-label="Search client, language, category"
               placeholder="Search client, language, category…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -636,6 +638,7 @@ export default function MySessions() {
             />
           </div>
           <select
+            aria-label="Sort sessions"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="text-[12px] text-lb-ink bg-white border border-lb-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#7F77DD]"

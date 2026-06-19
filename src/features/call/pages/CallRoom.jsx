@@ -310,7 +310,6 @@ const sessionCost = useMemo(
   }, [channelId]);
 
   function handleRatingSubmit(payload) {
-    console.log('Rating submitted:', payload);
     setTimeout(() => navigate('/client/dashboard'), 1500);
   }
 
@@ -641,14 +640,14 @@ const sessionCost = useMemo(
 
         {/* Connecting state */}
         {!joined && !error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#0f0f1a]/80">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0f0f1a]/80" role="status" aria-live="polite">
             <p className="text-white/60 text-sm animate-pulse">Connecting…</p>
           </div>
         )}
 
         {/* FIX: reconnecting banner — replaces cryptic silent auto-end */}
         {remoteReconnecting && (
-          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a1a2e] border border-[#F09595]/30 shadow-lg">
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a1a2e] border border-[#F09595]/30 shadow-lg" role="status" aria-live="assertive">
             <svg className="w-3.5 h-3.5 text-[#F09595] animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
@@ -658,7 +657,7 @@ const sessionCost = useMemo(
 
         {/* Hold overlay */}
         {onHold && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#0f0f1a]/70 z-20">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0f0f1a]/70 z-20" role="status" aria-live="assertive">
             <div className="flex flex-col items-center gap-3">
               <div className="w-16 h-16 rounded-full bg-[#BA7517]/20 flex items-center justify-center">
                 <svg className="w-8 h-8 text-[#BA7517]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -710,6 +709,7 @@ const sessionCost = useMemo(
           </svg>
           <input
             type="text"
+            aria-label="Quick note: medication names, diagnoses, proper nouns"
             value={quickNote}
             onChange={(e) => setQuickNote(e.target.value)}
             placeholder="Quick note: medication names, diagnoses, proper nouns…"
@@ -794,10 +794,11 @@ const sessionCost = useMemo(
       {notesOpen && (
         <div className="absolute top-3 right-3 z-30 w-72 bg-[rgba(20,20,36,0.95)] border border-white/10 rounded-xl shadow-lg flex flex-col max-h-[300px] overflow-hidden">
           <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
-            <span className="text-[10px] text-white/35 uppercase tracking-wider">Session notes</span>
-            <button onClick={() => setNotesOpen(false)} className="text-white/40 hover:text-white text-[10px]">✕</button>
+            <span id="session-notes-label" className="text-[10px] text-white/35 uppercase tracking-wider">Session notes</span>
+            <button onClick={() => setNotesOpen(false)} aria-label="Close notes panel" className="text-white/40 hover:text-white text-[10px]">✕</button>
           </div>
           <textarea
+            aria-labelledby="session-notes-label"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="e.g. medication names, diagnoses, proper nouns, cultural context…"

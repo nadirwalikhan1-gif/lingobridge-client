@@ -32,7 +32,7 @@ const FILTERS = ['All', 'Pending', 'Assigned', 'Expired', 'Cancelled']
 
 export default function Requests() {
   const { requestQueue, isSocketReady } = useAdminData()
-  // FIX: removed top-level getSocket() call � was missing import + stale socket on reconnect
+  // FIX: removed top-level getSocket() call — was missing import + stale socket on reconnect
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [pendingIds, setPendingIds] = useState(new Set())
@@ -52,7 +52,7 @@ export default function Requests() {
     })
   }, [requestQueue, filter, search])
 
-  // FIX: getSocket() called at action time � always gets the live socket
+  // FIX: getSocket() called at action time — always gets the live socket
   const handleAssign = (id) => {
     setPendingIds(prev => new Set(prev).add(id))
     getSocket()?.emit('admin-assign-interpreter', { requestId: id })
@@ -137,7 +137,8 @@ export default function Requests() {
         </div>
         <input
           type="text"
-          placeholder="Search client or language�"
+          aria-label="Search client or language"
+          placeholder="Search client or language…"
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="text-[11px] border border-lb-border rounded px-3 py-1.5 bg-white text-lb-ink placeholder:text-lb-subtle focus:outline-none focus:border-[#7F77DD] w-52"
@@ -155,6 +156,7 @@ export default function Requests() {
                   <th className="text-left text-[10px] font-medium text-lb-muted uppercase px-3 py-2 w-8">
                     <input
                       type="checkbox"
+                      aria-label="Select all requests"
                       checked={filtered.length > 0 && selectedIds.size === filtered.length}
                       onChange={selectAll}
                       className="w-3.5 h-3.5 rounded border-lb-border"
@@ -182,6 +184,7 @@ export default function Requests() {
                       <td className="px-3 py-2.5">
                         <input
                           type="checkbox"
+                          aria-label={`Select request from ${r.client}`}
                           checked={isSelected}
                           onChange={() => toggleSelect(r.id)}
                           className="w-3.5 h-3.5 rounded border-lb-border"
@@ -190,9 +193,9 @@ export default function Requests() {
                       <td className="px-3 py-2.5">
                         <div>
                           <p className="text-[12px] font-medium text-lb-ink">
-                            {r.fromLang} ? {r.toLang}
+                            {r.fromLang} → {r.toLang}
                           </p>
-                          <p className="text-[10px] text-lb-muted">{r.category} � {r.duration}</p>
+                          <p className="text-[10px] text-lb-muted">{r.category} • {r.duration}</p>
                         </div>
                       </td>
                       <td className="px-3 py-2.5">
@@ -242,14 +245,14 @@ export default function Requests() {
                                 : 'bg-[#7F77DD] hover:bg-[#534AB7]'
                             }`}
                           >
-                            {isPending ? '�' : noMatch ? 'Force' : 'Assign'}
+                            {isPending ? '…' : noMatch ? 'Force' : 'Assign'}
                           </button>
                           <button
                             onClick={() => handleSkip(r.id)}
                             disabled={isPending}
                             className="text-[10px] px-2.5 py-1 rounded border border-lb-border bg-white text-lb-muted hover:bg-lb-surface transition-colors disabled:opacity-50"
                           >
-                            {isPending ? '�' : 'Skip'}
+                            {isPending ? '…' : 'Skip'}
                           </button>
                         </div>
                       </td>

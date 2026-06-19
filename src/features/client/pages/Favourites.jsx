@@ -107,7 +107,7 @@ function BookModal({ interpreter, isOpen, onClose }) {
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[16px] font-bold text-slate-900">Book with {interpreter.name}</h3>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600">
+            <button onClick={onClose} aria-label="Close" className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600">
               <X size={18} />
             </button>
           </div>
@@ -150,8 +150,9 @@ function BookModal({ interpreter, isOpen, onClose }) {
 
             {mode === 'later' && (
               <div>
-                <label className="text-[12px] font-medium text-slate-600 mb-1.5 block">Date & Time</label>
+                <label htmlFor="schedule-datetime" className="text-[12px] font-medium text-slate-600 mb-1.5 block">Date & Time</label>
                 <input 
+                  id="schedule-datetime"
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
@@ -402,6 +403,7 @@ export default function Favourites() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input 
             type="text" 
+            aria-label="Search by name or language"
             placeholder="Search by name or language..." 
             value={search} 
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -417,6 +419,7 @@ export default function Favourites() {
           <SlidersHorizontal size={14} /> Filters
         </button>
         <select 
+          aria-label="Sort favourites"
           value={sortBy} 
           onChange={(e) => setSortBy(e.target.value)} 
           className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-900 focus:outline-none appearance-none cursor-pointer shrink-0 shadow-sm"

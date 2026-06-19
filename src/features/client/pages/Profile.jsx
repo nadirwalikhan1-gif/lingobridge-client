@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -103,14 +103,15 @@ function Section({ icon: Icon, title, children, description, danger }) {
 }
 
 function Field({ label, icon: Icon, children, required, error, hint }) {
+  const fieldId = useId();
   return (
     <div className="space-y-1.5">
-      <label className="flex items-center gap-1.5 text-[12px] font-medium text-slate-600">
+      <label htmlFor={fieldId} className="flex items-center gap-1.5 text-[12px] font-medium text-slate-600">
         {Icon && <Icon size={12} className="text-slate-400" />}
         {label}
         {required && <span className="text-red-500">*</span>}
       </label>
-      {children}
+      {React.isValidElement(children) ? React.cloneElement(children, { id: fieldId }) : children}
       {error && (
         <p className="text-[11px] text-red-500 flex items-center gap-1">
           <AlertCircle size={10} /> {error}
@@ -121,9 +122,10 @@ function Field({ label, icon: Icon, children, required, error, hint }) {
   );
 }
 
-function TextInput({ value, onChange, placeholder, type = 'text', disabled, maxLength }) {
+function TextInput({ value, onChange, placeholder, type = 'text', disabled, maxLength, id }) {
   return (
     <input
+      id={id}
       type={type}
       value={value}
       onChange={onChange}
@@ -135,9 +137,10 @@ function TextInput({ value, onChange, placeholder, type = 'text', disabled, maxL
   );
 }
 
-function Select({ value, onChange, options, placeholder, disabled }) {
+function Select({ value, onChange, options, placeholder, disabled, id }) {
   return (
     <select
+      id={id}
       value={value}
       onChange={onChange}
       disabled={disabled}
@@ -158,6 +161,8 @@ function Toggle({ checked, onChange, label, description }) {
       </div>
       <button
         type="button"
+        role="switch"
+        aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative w-10 h-5 rounded-full transition-colors shrink-0 mt-0.5 ${checked ? "bg-violet-600" : "bg-slate-200"}`}
       >
@@ -246,7 +251,7 @@ function PasswordModal({ isOpen, onClose }) {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-bold text-slate-900">Change Password</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
         </div>
         <div className="space-y-4">
           <Field label="Current Password" required error={errors.currentPassword}>
@@ -318,7 +323,7 @@ function MFAModal({ isOpen, onClose, mfaEnabled }) {
           <h3 className="text-[16px] font-bold text-slate-900">
             {step === 'disable' ? 'Disable 2FA' : 'Two-Factor Authentication'}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
         </div>
 
         {step === 'setup' && (
@@ -342,6 +347,7 @@ function MFAModal({ isOpen, onClose, mfaEnabled }) {
             <code className="text-[12px] bg-slate-100 px-2 py-1 rounded mb-4 block">{secret}</code>
             <input 
               type="text" 
+              aria-label="6-digit verification code"
               value={code} 
               onChange={e => setCode(e.target.value)}
               placeholder="Enter 6-digit code"
@@ -401,13 +407,14 @@ function DeleteModal({ isOpen, onClose }) {
       <div className="bg-white border border-red-100 rounded-2xl p-6 max-w-md w-full shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-bold text-slate-900">Delete Account?</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
         </div>
         <p className="text-[13px] text-slate-500 leading-relaxed mb-4">
           This will permanently delete your account and all associated data. If you are under an active enterprise contract, please contact your admin first.
         </p>
         <div className="space-y-3 mb-4">
           <select 
+            aria-label="Reason for deleting account (optional)"
             value={reason} 
             onChange={e => setReason(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-[13px] text-slate-900 focus:outline-none focus:border-violet-400"
@@ -420,6 +427,7 @@ function DeleteModal({ isOpen, onClose }) {
           </select>
           <input 
             type="text" 
+            aria-label="Type DELETE to confirm"
             value={confirmText} 
             onChange={e => setConfirmText(e.target.value)}
             placeholder="Type 'DELETE' to confirm"
@@ -616,7 +624,7 @@ export default function Profile() {
               </div>
               <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center cursor-pointer hover:bg-violet-700 transition-colors shadow-lg">
                 <Camera size={14} className="text-white" />
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                <input type="file" accept="image/*" aria-label="Upload profile photo" className="hidden" onChange={handleAvatarChange} />
               </label>
             </div>
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">

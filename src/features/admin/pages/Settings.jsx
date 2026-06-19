@@ -1,4 +1,4 @@
-﻿// Settings.jsx � Admin platform configuration
+﻿// Settings.jsx — Admin platform configuration
 // Commission rates, session timeouts, feature flags, notification preferences.
 
 import { useState } from 'react'
@@ -69,10 +69,14 @@ export default function Settings() {
     </div>
   )
 
-  const Field = ({ label, children }) => (
+  const Field = ({ label, id, children }) => (
     <div className="flex items-center justify-between gap-4">
       <div>
-        <p className="text-[12px] text-lb-ink">{label}</p>
+        {id ? (
+          <label htmlFor={id} className="text-[12px] text-lb-ink">{label}</label>
+        ) : (
+          <p className="text-[12px] text-lb-ink">{label}</p>
+        )}
       </div>
       {children}
     </div>
@@ -81,6 +85,7 @@ export default function Settings() {
   const NumberInput = ({ field, min, max, suffix }) => (
     <div className="flex items-center gap-2">
       <input
+        id={field}
         type="number"
         min={min}
         max={max}
@@ -92,9 +97,12 @@ export default function Settings() {
     </div>
   )
 
-  const Toggle = ({ field }) => (
+  const Toggle = ({ field, label }) => (
     <button
       onClick={() => handleChange(field, !form[field])}
+      role="switch"
+      aria-checked={form[field]}
+      aria-label={label}
       className={`relative w-9 h-5 rounded-full transition-colors ${
         form[field] ? 'bg-[#7F77DD]' : 'bg-lb-border'
       }`}
@@ -121,51 +129,51 @@ export default function Settings() {
             disabled={saving}
             className="px-4 py-1.5 rounded-lg text-[12px] font-medium bg-[#7F77DD] text-white hover:bg-[#534AB7] transition-colors disabled:opacity-50"
           >
-            {saving ? 'Saving�' : 'Save changes'}
+            {saving ? 'Saving…' : 'Save changes'}
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <Section title="Financial">
-          <Field label="Platform commission">
+          <Field label="Platform commission" id="commissionRate">
             <NumberInput field="commissionRate" min={0} max={50} suffix="%" />
           </Field>
-          <Field label="Minimum top-up amount">
+          <Field label="Minimum top-up amount" id="minTopUpAmount">
             <NumberInput field="minTopUpAmount" min={1} max={100} suffix="USD" />
           </Field>
         </Section>
 
         <Section title="Session Rules">
-          <Field label="Session timeout">
+          <Field label="Session timeout" id="sessionTimeoutMinutes">
             <NumberInput field="sessionTimeoutMinutes" min={5} max={120} suffix="min" />
           </Field>
-          <Field label="Request timeout">
+          <Field label="Request timeout" id="requestTimeoutSeconds">
             <NumberInput field="requestTimeoutSeconds" min={30} max={600} suffix="sec" />
           </Field>
-          <Field label="Max session duration">
+          <Field label="Max session duration" id="maxSessionDurationMinutes">
             <NumberInput field="maxSessionDurationMinutes" min={10} max={300} suffix="min" />
           </Field>
         </Section>
 
         <Section title="Automation">
           <Field label="Auto-assign requests">
-            <Toggle field="autoAssignEnabled" />
+            <Toggle field="autoAssignEnabled" label="Auto-assign requests" />
           </Field>
         </Section>
 
         <Section title="Notifications">
           <Field label="Email notifications">
-            <Toggle field="emailNotificationsEnabled" />
+            <Toggle field="emailNotificationsEnabled" label="Email notifications" />
           </Field>
           <Field label="SMS notifications">
-            <Toggle field="smsNotificationsEnabled" />
+            <Toggle field="smsNotificationsEnabled" label="SMS notifications" />
           </Field>
         </Section>
 
         <Section title="System">
           <Field label="Maintenance mode">
-            <Toggle field="maintenanceMode" />
+            <Toggle field="maintenanceMode" label="Maintenance mode" />
           </Field>
           {form.maintenanceMode && (
             <p className="text-[10px] text-[#A32D2D] bg-[#FCEBEB]/50 p-2 rounded">

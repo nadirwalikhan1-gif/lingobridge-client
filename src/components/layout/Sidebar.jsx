@@ -90,6 +90,7 @@ export default function Sidebar({
           {!mobile && (
             <button
               onClick={handleCollapseToggle}
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors shrink-0"
               title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
@@ -213,6 +214,7 @@ export default function Sidebar({
               <button
                 onClick={logout}
                 title="Logout"
+                aria-label="Logout"
                 className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />

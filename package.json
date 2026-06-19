@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "vite",
     "build": "npx vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
@@ -26,9 +29,14 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@vitest/coverage-v8": "^3.2.6",
     "autoprefixer": "^10.5.0",
     "eslint": "^9.39.4",
+    "jsdom": "^25.0.1",
     "postcss": "^8.5.14",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "vitest": "^3.2.6"
   }
 }

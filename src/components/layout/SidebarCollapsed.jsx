@@ -40,6 +40,7 @@ export default function SidebarCollapsed({ onExpand }) {
       <div className="mb-4">
         <button
           onClick={onExpand}
+          aria-label="Expand sidebar"
           className="w-8 h-8 rounded-lg bg-lb-primary/20 flex items-center justify-center hover:bg-lb-primary/30 transition-colors"
           title="Expand sidebar"
         >
@@ -82,6 +83,7 @@ export default function SidebarCollapsed({ onExpand }) {
         />
         <button
           onClick={logout}
+          aria-label="Logout"
           className="flex items-center justify-center w-8 h-8 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
           title="Logout"
         >

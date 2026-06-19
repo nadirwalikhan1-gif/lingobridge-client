@@ -93,18 +93,18 @@ export default function AdminSessions() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-[12.5px] font-medium text-lb-ink">
-                        {s.fromLang} ? {s.toLang}
+                        {s.fromLang} → {s.toLang}
                       </span>
                       <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#EEEDFE] text-[#534AB7]">
                         {s.category}
                       </span>
                     </div>
                     <p className="text-[10.5px] text-lb-muted mt-0.5">
-                      {s.interpreter} � {s.client} � {s.ref}
+                      {s.interpreter} • {s.client} • {s.ref}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] text-lb-muted">{s.startedAt} � {s.elapsedMins}m</p>
+                    <p className="text-[11px] text-lb-muted">{s.startedAt} • {s.elapsedMins}m</p>
                   </div>
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.pill}`}>
                     {cfg.label}

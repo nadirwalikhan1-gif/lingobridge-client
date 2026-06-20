@@ -1,12 +1,9 @@
-﻿import React from 'react';
+import React from 'react';
 
 /**
  * Button Component
- * 
- * FIXES APPLIED:
- * - Added loading prop with spinner animation
- * - Added tooltip prop for disabled state feedback
- * - Verified lb-primary and lb-deep tokens (if lb-deep missing, hover silently fails per design note)
+ * Polish: tighter radius token, spring transition, improved disabled opacity,
+ *         subtle glow on primary focus (UI UX Pro Max — Micro SaaS pattern)
  */
 export default function Button({
   children,
@@ -20,17 +17,22 @@ export default function Button({
   className = '',
   ...props
 }) {
-  const baseStyles = 'inline-flex items-center justify-center gap-1.5 font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-1';
+  const baseStyles = [
+    'inline-flex items-center justify-center gap-1.5 font-semibold',
+    'rounded-[10px] transition-all duration-150',
+    'focus:outline-none focus:ring-2 focus:ring-offset-1',
+    'select-none',
+  ].join(' ');
 
   const variants = {
-    primary: 'bg-lb-primary text-white hover:bg-lb-deep focus:ring-lb-primary/30',
-    secondary: 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 focus:ring-slate-200',
-    ghost: 'bg-transparent text-slate-600 hover:bg-slate-100 focus:ring-slate-200',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500/30',
+    primary:   'bg-lb-primary text-white hover:bg-lb-deep focus:ring-lb-primary/30 shadow-sm hover:shadow-md active:scale-[0.98]',
+    secondary: 'bg-white text-slate-700 border border-lb-border hover:bg-lb-surface hover:border-lb-primary/30 focus:ring-lb-primary/20 shadow-sm',
+    ghost:     'bg-transparent text-lb-muted hover:bg-lb-surface hover:text-lb-ink focus:ring-lb-primary/20',
+    danger:    'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500/30 shadow-sm active:scale-[0.98]',
   };
 
   const sizes = {
-    sm: 'px-2.5 py-1.5 text-xs',
+    sm: 'px-3 py-1.5 text-xs',
     md: 'px-4 py-2 text-sm',
     lg: 'px-6 py-3 text-base',
   };
@@ -47,7 +49,7 @@ export default function Button({
         ${baseStyles}
         ${variants[variant] || variants.primary}
         ${sizes[size] || sizes.md}
-        ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+        ${isDisabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}
         ${className}
       `}
       {...props}
@@ -59,14 +61,7 @@ export default function Button({
           fill="none"
           viewBox="0 0 24 24"
         >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path
             className="opacity-75"
             fill="currentColor"

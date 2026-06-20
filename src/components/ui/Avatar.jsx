@@ -1,25 +1,21 @@
-﻿import React from 'react';
+import React from 'react';
 
 /**
  * Avatar Component
- * 
- * Displays a user avatar image with a text fallback.
- * 
- * @param {string|null} src - Image URL
- * @param {string} fallback - Fallback initials/text when no image
- * @param {string} className - Additional Tailwind classes
+ * Polish: ring border for depth, brand tint fallback bg, improved text sizing
  */
-export default function Avatar({ src, fallback = 'U', className = '' }) {
+export default function Avatar({ src, fallback = 'U', className = '', ring = false }) {
   const [error, setError] = React.useState(false);
 
-  // Show fallback if no src or image failed to load
+  const ringClass = ring ? 'ring-2 ring-lb-primary/20 ring-offset-1' : '';
+
   if (!src || error) {
     return (
       <div
-        className={`rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold ${className}`}
+        className={`rounded-full bg-[#EEEDFE] flex items-center justify-center text-[#4C3FCC] font-bold ${ringClass} ${className}`}
         title={fallback}
       >
-        <span className="text-sm">{fallback.slice(0, 2).toUpperCase()}</span>
+        <span className="text-[11px] leading-none">{fallback.slice(0, 2).toUpperCase()}</span>
       </div>
     );
   }
@@ -29,7 +25,7 @@ export default function Avatar({ src, fallback = 'U', className = '' }) {
       src={src}
       alt="Avatar"
       onError={() => setError(true)}
-      className={`rounded-full object-cover ${className}`}
+      className={`rounded-full object-cover ${ringClass} ${className}`}
     />
   );
 }

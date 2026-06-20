@@ -122,14 +122,34 @@ export default function Settings() {
       setTimeout(() => setToast(null), 3000)
     }
 
+    const onDataExportReady = (data) => {
+      if (data?.ok && data.csv) {
+        const blob = new Blob([data.csv], { type: 'text/csv' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = data.filename || 'lingobridge-export.csv'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        setToast({ ok: true, text: 'Your data export has downloaded.' })
+      } else {
+        setToast({ ok: false, text: 'Could not generate export. Try again.' })
+      }
+      setTimeout(() => setToast(null), 3000)
+    }
+
     socket.on('interpreter-settings', onSettings)
     socket.on('settings-saved',       onSettingsSaved)
+    socket.on('data-export-ready',    onDataExportReady)
 
     const t = setTimeout(() => setLoading(false), FALLBACK_TIMEOUT_MS)
 
     return () => {
       socket.off('interpreter-settings', onSettings)
       socket.off('settings-saved',       onSettingsSaved)
+      socket.off('data-export-ready',    onDataExportReady)
       clearTimeout(t)
     }
   }, [user?.id])

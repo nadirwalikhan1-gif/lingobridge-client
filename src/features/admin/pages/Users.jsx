@@ -1,4 +1,4 @@
-﻿// src/features/admin/pages/Users.jsx
+// src/features/admin/pages/Users.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -90,7 +90,7 @@ export default function Users() {
       <div className="flex items-center justify-between pb-1">
         <div>
           <p className="text-xs text-lb-muted">Platform operations</p>
-          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Users</h1>
+          <h1 className="lb-page-title">Users</h1>
         </div>
         <button
           onClick={handleInvite}

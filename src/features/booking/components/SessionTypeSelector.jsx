@@ -1,4 +1,4 @@
-﻿// SessionTypeSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
+// SessionTypeSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
 // FIX: vault-model — display client rates ($1.49 audio / $1.79 video)
 
 import { Headphones, Video } from 'lucide-react'
@@ -38,8 +38,8 @@ export default function SessionTypeSelector({ selected, onSelect }) {
               !type.available
                 ? 'border-lb-border bg-lb-surface opacity-50 cursor-not-allowed'
                 : isActive
-                  ? 'border-[#7F77DD] bg-[#EEEDFE]'
-                  : 'border-lb-border bg-lb-surface hover:border-[#7F77DD] hover:bg-[#EEEDFE]/40'
+                  ? 'border-lb-primary bg-[#EEEDFE] shadow-[0_0_0_3px_var(--color-lb-primary-glow)]'
+                  : 'border-lb-border bg-lb-surface hover:border-lb-primary hover:shadow-[0_0_0_3px_var(--color-lb-primary-glow)] hover:bg-[#EEEDFE]/40'
             }`}
             aria-pressed={isActive}
             aria-disabled={!type.available}

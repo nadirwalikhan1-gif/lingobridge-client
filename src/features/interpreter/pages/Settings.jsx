@@ -1,4 +1,4 @@
-﻿// Settings.jsx — Interpreter Settings Page
+// Settings.jsx — Interpreter Settings Page
 // Socket-driven, no mock data, skeleton → real state
 
 import { useState, useEffect } from 'react'
@@ -184,7 +184,7 @@ export default function Settings() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-lg font-medium text-lb-ink">Settings</h1>
+        <h1 className="lb-page-title">Settings</h1>
         {saving && <p className="text-[11px] text-lb-muted animate-pulse">Saving…</p>}
       </div>
 

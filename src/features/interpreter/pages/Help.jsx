@@ -1,4 +1,4 @@
-﻿// Help.jsx — Interpreter Help & Support Page
+// Help.jsx — Interpreter Help & Support Page
 // No live data needed — static content + contact form via socket
 
 import { useState } from 'react'

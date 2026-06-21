@@ -1,4 +1,4 @@
-﻿// InterpreterCards.jsx — rebuilt with lb-* tokens to match interpreter design language
+// InterpreterCards.jsx — rebuilt with lb-* tokens to match interpreter design language
 import { useState } from 'react'
 import { Star, BadgeCheck, Clock, Award, Check, Info, ChevronRight } from 'lucide-react'
 import Avatar from '../../../components/ui/Avatar'
@@ -101,8 +101,8 @@ export default function InterpreterCards({ selected, onSelect }) {
               onClick={() => onSelect?.(interp.id)}
               className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors ${
                 isSelected
-                  ? 'border-[#7F77DD] bg-[#EEEDFE]'
-                  : 'border-lb-border bg-lb-surface hover:border-[#7F77DD] hover:bg-[#EEEDFE]/30'
+                  ? 'border-lb-primary bg-[#EEEDFE]'
+                  : 'border-lb-border bg-lb-surface hover:border-lb-primary hover:shadow-[0_0_0_3px_var(--color-lb-primary-glow)] hover:bg-[#EEEDFE]/30'
               }`}
             >
               {/* Avatar with online dot */}

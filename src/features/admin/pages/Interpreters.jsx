@@ -1,4 +1,4 @@
-﻿// src/features/admin/pages/Interpreters.jsx
+// src/features/admin/pages/Interpreters.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -71,8 +71,8 @@ export default function Interpreters() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Platform operations</p>
-          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Interpreters</h1>
+          <p className="lb-page-eyebrow">Platform operations</p>
+          <h1 className="lb-page-title mt-0.5">Interpreters</h1>
         </div>
         <button
           onClick={handleInvite}

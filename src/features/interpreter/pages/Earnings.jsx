@@ -1,4 +1,4 @@
-﻿// Earnings.jsx — full production page
+// Earnings.jsx — full production page
 // Hero metrics, chart, breakdowns by language/type/client, filterable transactions table
 
 import { useState, useEffect, useCallback } from 'react'

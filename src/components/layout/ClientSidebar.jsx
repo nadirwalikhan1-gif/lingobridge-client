@@ -1,4 +1,4 @@
-﻿// ClientSidebar.jsx — fixed
+// ClientSidebar.jsx — fixed
 // Added navItems here (were missing — Sidebar had no labels to show)
 // Passes all props through so isCollapsed/onCollapse work from DashboardLayout
 

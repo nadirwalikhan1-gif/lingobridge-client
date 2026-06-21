@@ -1,4 +1,4 @@
-﻿// Settings.jsx — Admin platform configuration
+// Settings.jsx — Admin platform configuration
 // Commission rates, session timeouts, feature flags, notification preferences.
 
 import { useState } from 'react'
@@ -117,8 +117,8 @@ export default function Settings() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Platform configuration</p>
-          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Settings</h1>
+          <p className="lb-page-eyebrow">Platform configuration</p>
+          <h1 className="lb-page-title mt-0.5">Settings</h1>
         </div>
         <div className="flex items-center gap-2">
           {saved && (

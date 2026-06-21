@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 const DOMAIN_COLORS = {
   'Medical':         { bg: '#E1F5EE', text: '#0F6E56', border: '#1D9E75' },
@@ -129,7 +129,7 @@ export default function TodaysSchedule() {
                 </div>
 
                 <div className="flex items-center gap-1.5 ml-[52px]">
-                  <span className="text-[13px] font-medium text-lb-ink">{s.fromLang} → {s.toLang}</span>
+                  <span className="lb-section-title">{s.fromLang} → {s.toLang}</span>
                   <TypeIcon type={s.type} />
                   <span className="text-[10px] text-lb-muted">{s.type === 'video' ? 'Video' : 'Audio'} · {s.duration}</span>
                 </div>

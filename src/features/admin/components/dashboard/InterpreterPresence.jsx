@@ -1,4 +1,4 @@
-﻿// InterpreterPresence.jsx — Admin interpreter online/availability panel
+// InterpreterPresence.jsx — Admin interpreter online/availability panel
 
 const statusConfig = {
   online: { dot: 'bg-[#1D9E75]', label: 'Available', labelColor: 'text-[#0F6E56]' },
@@ -20,24 +20,27 @@ export default function InterpreterPresence({ interpreters = [] }) {
       <div className="flex items-baseline justify-between mb-3">
         <div>
           <div className="flex items-center gap-1.5">
-            <h3 className="text-[13px] font-medium text-lb-ink">Interpreters online</h3>
+            <h3 className="lb-section-title">Interpreters online</h3>
             <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#E1F5EE] text-[#0F6E56]">
               {onlineCount} free
             </span>
           </div>
         </div>
-        <button className="text-[12px] text-[#7F77DD] font-medium">All 28</button>
+        <button className="lb-link">All 28</button>
       </div>
 
       {interpreters.length === 0 ? (
-        <p className="text-[12px] text-lb-muted text-center py-4">No interpreters online</p>
+        <div className="lb-empty">
+        <p className="text-[13px] font-medium text-lb-ink">No interpreters online</p>
+        <p className="text-[11px] text-lb-muted">Online interpreters will appear here</p>
+      </div>
       ) : (
         <div className="divide-y divide-lb-border">
           {interpreters.map((interp) => {
             const cfg = statusConfig[interp.status]
             const avBg = avatarBg[interp.status]
             return (
-              <div key={interp.id} className="flex items-center gap-2.5 py-2">
+              <div key={interp.id} className="flex items-center gap-2.5 py-2 hover:bg-lb-surface rounded-lg px-2 -mx-2 transition-colors">
                 <div className="relative shrink-0">
                   <div className={`w-7 h-7 rounded-full ${avBg} flex items-center justify-center text-[10px] font-medium`}>
                     {interp.initials}

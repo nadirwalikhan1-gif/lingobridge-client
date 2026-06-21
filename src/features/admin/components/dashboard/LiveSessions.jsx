@@ -1,4 +1,4 @@
-﻿// LiveSessions.jsx — Admin real-time session monitor
+// LiveSessions.jsx — Admin real-time session monitor
 // Motion: staggered slide-in on mount, pulse dots on live/escalated, ticking elapsed timers
 
 import { useState, useEffect } from 'react'
@@ -118,7 +118,7 @@ export default function LiveSessions({ sessions = [] }) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-lb-border">
         <div>
           <div className="flex items-center gap-1.5">
-            <h3 className="text-[13px] font-semibold text-lb-ink">Live Sessions</h3>
+            <h3 className="lb-section-title">Live Sessions</h3>
             <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#E1F5EE] text-[#0F6E56]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#1D9E75] animate-pulse inline-block" />
               {liveCount} active
@@ -126,11 +126,17 @@ export default function LiveSessions({ sessions = [] }) {
           </div>
           <p className="text-[10.5px] text-lb-muted mt-0.5">Real-time session monitoring</p>
         </div>
-        <button className="text-[11.5px] font-medium text-[#7F77DD]">View all</button>
+        <button className="lb-link">View all</button>
       </div>
 
       {sessions.length === 0 ? (
-        <p className="text-[12px] text-lb-muted text-center py-6">No active sessions</p>
+        <div className="lb-empty">
+        <div className="lb-empty-icon">
+          <svg className="w-5 h-5 text-lb-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" d="M15 10l4.553-2.069A1 1 0 0121 8.829v6.342a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" /></svg>
+        </div>
+        <p className="text-[13px] font-medium text-lb-ink">No active sessions</p>
+        <p className="text-[11px] text-lb-muted">Live sessions will appear here</p>
+      </div>
       ) : (
         <div className="px-4">
           {sessions.map((s, i) => (

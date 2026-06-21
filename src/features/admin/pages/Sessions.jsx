@@ -1,4 +1,4 @@
-﻿// src/features/admin/pages/Sessions.jsx
+// src/features/admin/pages/Sessions.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -66,8 +66,8 @@ export default function AdminSessions() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Real-time monitoring</p>
-          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Sessions</h1>
+          <p className="lb-page-eyebrow">Real-time monitoring</p>
+          <h1 className="lb-page-title">Sessions</h1>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-full bg-[#E1F5EE] text-[#0F6E56]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#1D9E75] animate-pulse inline-block" />
@@ -79,13 +79,19 @@ export default function AdminSessions() {
 
       <div className="lb-card">
         {sessions?.length === 0 ? (
-          <p className="text-[12px] text-lb-muted text-center py-8">No sessions recorded</p>
+          <div className="lb-empty">
+              <div className="lb-empty-icon">
+                <svg className="w-5 h-5 text-lb-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.829v6.342a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" /></svg>
+              </div>
+              <p className="text-[13px] font-medium text-lb-ink">No sessions yet</p>
+              <p className="text-[11px] text-lb-muted">Sessions will appear here once recorded</p>
+            </div>
         ) : (
           <div className="divide-y divide-lb-border">
             {filtered.map((s) => {
               const cfg = statusConfig[s.status] ?? FALLBACK_CFG
               return (
-                <div key={s.id} className="flex items-center gap-3 py-2.5">
+                <div key={s.id} className="flex items-center gap-3 py-2.5 hover:bg-lb-surface rounded-lg px-2 -mx-2 transition-colors cursor-pointer">
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
                   <div className="w-7 h-7 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[10px] font-medium text-[#534AB7] shrink-0">
                     {s.interpreterInitials}
@@ -106,7 +112,7 @@ export default function AdminSessions() {
                   <div className="text-right shrink-0">
                     <p className="text-[11px] text-lb-muted">{s.startedAt} • {s.elapsedMins}m</p>
                   </div>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.pill}`}>
+                  <span className={`text-[10px] font-semibold lb-badge shrink-0 ring-1 ring-inset ${cfg.pill}`}>
                     {cfg.label}
                   </span>
                 </div>
@@ -116,7 +122,10 @@ export default function AdminSessions() {
         )}
 
         {filtered.length === 0 && sessions?.length > 0 && (
-          <p className="text-[12px] text-lb-muted text-center py-8">No sessions match this filter</p>
+          <div className="lb-empty">
+              <p className="text-[13px] font-medium text-lb-ink">No results</p>
+              <p className="text-[11px] text-lb-muted">No sessions match this filter</p>
+            </div>
         )}
       </div>
     </div>

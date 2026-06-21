@@ -1,4 +1,4 @@
-﻿// src/features/admin/pages/Dashboard.jsx
+// src/features/admin/pages/Dashboard.jsx
 // Admin Mission Control — wired to AdminDataContext + Socket.IO singleton.
 // No mock data. All child components receive ext props.
 
@@ -31,23 +31,23 @@ function PlatformStats({ stats }) {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div className="rounded-lg px-4 py-3.5 bg-[#1a1635] lg:col-span-2">
-        <p className="text-[11px] mb-1.5 text-[#A9A4E0]">Active sessions</p>
-        <p className="text-[32px] font-medium leading-none text-white">{stats.activeSessions ?? 0}</p>
+      <div className="rounded-xl px-4 py-4 bg-[#1a1635] lg:col-span-2">
+        <p className="lb-label mb-2 !text-[#A9A4E0]">Active sessions</p>
+        <p className="text-[32px] font-bold leading-none text-white lb-stat-num">{stats.activeSessions ?? 0}</p>
         {stats.activeSessionsDelta && (
           <p className="text-[11px] mt-1.5 text-[#6EE7B7]">{stats.activeSessionsDelta}</p>
         )}
       </div>
-      <div className="rounded-lg px-4 py-3.5 bg-[#E1F5EE]">
-        <p className="text-[11px] mb-1.5 text-[#0F6E56]">Interpreters online</p>
-        <p className="text-[22px] font-medium leading-none text-[#085041]">{stats.interpretersOnline ?? 0}</p>
+      <div className="rounded-xl px-4 py-4 bg-[#E1F5EE]">
+        <p className="lb-label mb-2 !text-[#0F6E56]">Interpreters online</p>
+        <p className="text-[22px] font-bold leading-none text-[#085041] lb-stat-num">{stats.interpretersOnline ?? 0}</p>
         {stats.interpretersOnlineDelta && (
           <p className="text-[11px] mt-1.5 text-[#0F6E56]">{stats.interpretersOnlineDelta}</p>
         )}
       </div>
-      <div className="rounded-lg px-4 py-3.5 bg-[#FAEEDA]">
-        <p className="text-[11px] mb-1.5 text-[#BA7517]">Open disputes</p>
-        <p className="text-[22px] font-medium leading-none text-[#633806]">{stats.openDisputes ?? 0}</p>
+      <div className="rounded-xl px-4 py-4 bg-[#FAEEDA]">
+        <p className="lb-label mb-2 !text-[#BA7517]">Open disputes</p>
+        <p className="text-[22px] font-bold leading-none text-[#633806] lb-stat-num">{stats.openDisputes ?? 0}</p>
         {stats.openDisputesDelta && (
           <p className="text-[11px] mt-1.5 text-[#A32D2D]">{stats.openDisputesDelta}</p>
         )}
@@ -155,17 +155,17 @@ export default function AdminDashboard() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">{today} — Mission Control</p>
-          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Platform overview</h1>
+          <p className="lb-page-eyebrow">{today} — Mission Control</p>
+          <h1 className="lb-page-title">Platform overview</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={refresh}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-lb-border text-xs font-medium text-lb-ink bg-white hover:bg-lb-surface transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-lb-border text-xs font-semibold text-lb-ink bg-white hover:bg-lb-surface active:scale-[0.97] transition-all"
           >
             Refresh
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#1a1635] text-white hover:bg-[#26215C] transition-colors">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#1a1635] text-white hover:bg-[#26215C] active:scale-[0.97] transition-all shadow-sm">
             + Assign session
           </button>
         </div>

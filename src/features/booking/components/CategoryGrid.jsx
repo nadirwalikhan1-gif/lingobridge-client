@@ -1,4 +1,4 @@
-﻿// CategoryGrid.jsx — rebuilt with lb-* tokens to match interpreter design language
+// CategoryGrid.jsx — rebuilt with lb-* tokens to match interpreter design language
 import { Heart, Scale, Briefcase, GraduationCap, Plane, MoreHorizontal, Check } from 'lucide-react'
 
 const categories = [
@@ -38,8 +38,8 @@ export default function CategoryGrid({ selected, onSelect }) {
               onClick={() => onSelect?.(cat.id)}
               className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-lg border transition-colors ${
                 isSelected
-                  ? 'border-[#7F77DD] bg-[#EEEDFE]'
-                  : 'border-lb-border bg-lb-surface hover:border-[#7F77DD] hover:bg-[#EEEDFE]/40'
+                  ? 'border-lb-primary bg-[#EEEDFE] shadow-[0_0_0_3px_var(--color-lb-primary-glow)]'
+                  : 'border-lb-border bg-lb-surface hover:border-lb-primary hover:shadow-[0_0_0_3px_var(--color-lb-primary-glow)] hover:bg-[#EEEDFE]/40'
               }`}
               aria-pressed={isSelected}
             >

@@ -1,4 +1,4 @@
-﻿// Reviews.jsx — Interpreter Reviews Page
+// Reviews.jsx — Interpreter Reviews Page
 // Fixed: hardcoded ★★★★★ replaced with dynamic star row derived from avgRating
 // Fixed: r.date formatted via fmtDate() to handle ISO timestamps
 // Fixed: r.initials derived from r.client/r.clientName if not sent by backend

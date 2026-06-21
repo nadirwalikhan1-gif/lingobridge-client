@@ -1,4 +1,4 @@
-﻿// src/features/admin/components/dashboard/ActiveDisputes.jsx
+// src/features/admin/components/dashboard/ActiveDisputes.jsx
 // Wired to parent via onResolve/onEscalate props.
 
 function AlertIcon({ className }) {
@@ -82,12 +82,15 @@ export default function ActiveDisputes({ disputes = [], onResolve, onEscalate })
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-[13px] font-medium text-lb-ink">Active disputes</h3>
-        <button className="text-[12px] text-[#7F77DD] font-medium">View all</button>
+        <h3 className="lb-section-title">Active disputes</h3>
+        <button className="lb-link">View all</button>
       </div>
 
       {disputes.length === 0 ? (
-        <p className="text-[12px] text-lb-muted text-center py-4">No open disputes</p>
+        <div className="lb-empty">
+        <p className="text-[13px] font-medium text-lb-ink">No open disputes</p>
+        <p className="text-[11px] text-lb-muted">Disputes will appear here</p>
+      </div>
       ) : (
         <div className="divide-y divide-lb-border">
           {disputes.map((d) => {
@@ -127,7 +130,7 @@ export default function ActiveDisputes({ disputes = [], onResolve, onEscalate })
                     </div>
                   )}
                 </div>
-                <span className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.badge}`}>
+                <span className={`text-[9.5px] font-semibold lb-badge shrink-0 ${cfg.badge}`}>
                   {cfg.label}
                 </span>
               </div>

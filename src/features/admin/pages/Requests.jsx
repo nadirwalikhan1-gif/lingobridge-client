@@ -1,4 +1,4 @@
-﻿// src/features/admin/pages/Requests.jsx
+// src/features/admin/pages/Requests.jsx
 // Real-time via socket. Filters, search, bulk actions, session history.
 
 import { useState, useMemo } from 'react'
@@ -99,8 +99,8 @@ export default function Requests() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Real-time dispatch</p>
-          <h1 className="text-lg font-medium text-lb-ink mt-0.5">
+          <p className="lb-page-eyebrow">Real-time dispatch</p>
+          <h1 className="lb-page-title mt-0.5">
             Request Queue
             {requestQueue.length > 0 && (
               <span className="ml-2 text-[14px] text-lb-muted">({requestQueue.length} pending)</span>

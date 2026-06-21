@@ -216,7 +216,7 @@ function RecentSessionsList({ sessions, isLoading, error, navigate }) {
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-[14px] font-medium text-lb-ink">Recent sessions</h3>
+        <h3 className="lb-section-title">Recent sessions</h3>
         <button 
           onClick={() => navigate('/history')}
           className="text-[12px] text-[#7F77DD] font-medium hover:text-[#534AB7] transition-colors"
@@ -282,7 +282,7 @@ function RecentActivity({ activities, isLoading, navigate }) {
 
   return (
     <div className="lb-card">
-      <h3 className="text-[13px] font-medium text-lb-ink mb-3">Recent activity</h3>
+      <h3 className="lb-section-title mb-3">Recent activity</h3>
       {!activities?.length ? (
         <p className="text-[12px] text-lb-muted text-center py-4">No recent activity</p>
       ) : (
@@ -319,7 +319,7 @@ function QuickActions({ lastSession, navigate }) {
   if (!lastSession) {
     return (
       <div className="lb-card">
-        <h3 className="text-[13px] font-medium text-lb-ink mb-3">Quick actions</h3>
+        <h3 className="lb-section-title mb-3">Quick actions</h3>
         <button 
           onClick={() => navigate('/booking')}
           className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-[#7F77DD] bg-[#7F77DD] hover:bg-[#534AB7] text-white transition-colors"
@@ -376,7 +376,7 @@ function QuickActions({ lastSession, navigate }) {
 
   return (
     <div className="lb-card">
-      <h3 className="text-[13px] font-medium text-lb-ink mb-3">Quick actions</h3>
+      <h3 className="lb-section-title mb-3">Quick actions</h3>
       <div className="space-y-2">
         {actions.map((a) => (
           <button
@@ -422,7 +422,7 @@ function WalletSnapshot({ balance, isLoading, navigate }) {
 
   return (
     <div className="lb-card">
-      <h3 className="text-[13px] font-medium text-lb-ink mb-3">Wallet</h3>
+      <h3 className="lb-section-title mb-3">Wallet</h3>
       <div className="divide-y divide-lb-border">
         {[
           { label: 'Spent today', value: `$${(balance?.spentToday ?? 0).toFixed(2)}` },
@@ -495,12 +495,12 @@ const sessionsError = dashboardError
     <div className="space-y-4">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Welcome back, {user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'there'}</p>
-          <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Client workspace</h1>
+          <p className="lb-page-eyebrow">Welcome back, {user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'there'}</p>
+          <h1 className="lb-page-title">Client workspace</h1>
         </div>
         <button 
           onClick={() => navigate('/booking')}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#1a1635] text-white hover:bg-[#26215C] transition-colors"
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-[#1a1635] text-white hover:bg-[#26215C] active:scale-[0.97] transition-all shadow-sm"
         >
           <Plus className="w-3.5 h-3.5" /> Book session
         </button>

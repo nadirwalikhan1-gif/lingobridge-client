@@ -1,4 +1,4 @@
-﻿// src/features/admin/components/dashboard/RequestQueue.jsx
+// src/features/admin/components/dashboard/RequestQueue.jsx
 // Wired to parent via onAssign/onSkip props. No local state mutation.
 // Pending spinner per card. Waits for socket confirmation to disappear.
 
@@ -156,7 +156,7 @@ export default function RequestQueue({ requests = [], onAssign, onSkip }) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-lb-border">
         <div>
           <div className="flex items-center gap-1.5">
-            <h3 className="text-[13px] font-semibold text-lb-ink">Incoming Requests</h3>
+            <h3 className="lb-section-title">Incoming Requests</h3>
             {requests.length > 0 && (
               <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#7F77DD] text-white text-[10px] font-semibold">
                 {requests.length}
@@ -167,11 +167,17 @@ export default function RequestQueue({ requests = [], onAssign, onSkip }) {
             Assign to available interpreters before timer expires
           </p>
         </div>
-        <button className="text-[11.5px] font-medium text-[#7F77DD]">Dispatch view</button>
+        <button className="lb-link">Dispatch view</button>
       </div>
 
       {requests.length === 0 ? (
-        <p className="text-[12px] text-lb-muted text-center py-6">No requests in queue</p>
+        <div className="lb-empty">
+        <div className="lb-empty-icon">
+          <svg className="w-5 h-5 text-lb-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 6v6l4 2" /></svg>
+        </div>
+        <p className="text-[13px] font-medium text-lb-ink">Queue is clear</p>
+        <p className="text-[11px] text-lb-muted">No requests in queue</p>
+      </div>
       ) : (
         <div className="px-4 py-3">
           {requests.map((r, i) => (

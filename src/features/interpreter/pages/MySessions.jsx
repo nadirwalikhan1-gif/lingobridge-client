@@ -1,4 +1,4 @@
-﻿// MySessions.jsx — full production page
+// MySessions.jsx — full production page
 // Tabs: Upcoming / In Progress / Completed / Cancelled
 // Features: search, sort, session detail modal, socket live updates
 

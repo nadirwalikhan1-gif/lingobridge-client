@@ -1,4 +1,4 @@
-﻿// Requests.jsx — full production page
+// Requests.jsx — full production page
 // Real-time incoming requests + historical request management
 
 import { useState, useEffect, useRef, useCallback } from 'react'

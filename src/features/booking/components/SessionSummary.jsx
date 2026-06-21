@@ -1,4 +1,4 @@
-﻿// SessionSummary.jsx — rebuilt with lb-* tokens to match interpreter design language
+// SessionSummary.jsx — rebuilt with lb-* tokens to match interpreter design language
 // FIX: vault-model — client rates only, no platform fee display, hold cost preview
 
 import { Globe, Headphones, Video, Clock, Calendar, User, Tag, AlertTriangle, PauseCircle } from 'lucide-react'
@@ -75,7 +75,7 @@ export default function SessionSummary({
   return (
     <div className="lb-card flex flex-col gap-0">
 
-      <h3 className="text-[13px] font-medium text-lb-ink mb-3">Session summary</h3>
+      <h3 className="lb-section-title mb-3">Session summary</h3>
 
       {/* Details */}
       <div className="divide-y divide-lb-border">

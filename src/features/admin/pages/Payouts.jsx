@@ -1,4 +1,4 @@
-// Payouts.jsx — Admin payout management
+﻿// Payouts.jsx — Admin payout management
 // Real-time via socket. Filters, bulk approve, export.
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -98,8 +98,8 @@ export default function Payouts() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="lb-page-eyebrow">Financial operations</p>
-          <h1 className="lb-page-title">Payouts</h1>
+          <p className="text-xs text-lb-muted">Financial operations</p>
+          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Payouts</h1>
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (

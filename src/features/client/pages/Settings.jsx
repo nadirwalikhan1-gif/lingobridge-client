@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useId } from 'react';
+﻿import React, { useState, useEffect, useCallback, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -363,7 +363,7 @@ function PaymentMethodsModal({ isOpen, onClose }) {
         )}
 
         <button 
-          onClick={() => navigate('/wallet')}
+          onClick={() => navigate('/client/wallet')}
           className="w-full mt-4 py-2.5 rounded-xl bg-violet-600 text-white text-[13px] font-medium hover:bg-violet-700 transition-colors flex items-center justify-center gap-2"
         >
           <CreditCard size={14} /> Add New Payment Method
@@ -516,11 +516,11 @@ export default function Settings() {
               title="Invoice Settings" 
               description={`Format: ${settings.invoiceFormat?.toUpperCase()} · Billing email: ${settings.billingEmail || user?.email || 'Not set'}`} 
               action="Edit" 
-              onClick={() => navigate('/wallet/invoices')} 
+              onClick={() => navigate('/client/wallet/invoices')} 
             />
             <Toggle checked={settings.autoInvoice} onChange={(v) => update('autoInvoice', v)} label="Auto-generate invoices after each session" description="Send invoice PDF to billing email immediately after session completion" />
             <div className="pt-2">
-              <button onClick={() => navigate('/wallet/statements')} className="flex items-center gap-2 text-[12px] text-violet-600 hover:text-violet-700 transition-colors">
+              <button onClick={() => navigate('/client/wallet/statements')} className="flex items-center gap-2 text-[12px] text-violet-600 hover:text-violet-700 transition-colors">
                 <Download size={13} /> Download all statements
               </button>
             </div>

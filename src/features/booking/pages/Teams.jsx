@@ -832,7 +832,7 @@ export default function Teams() {
           }
           icon={DollarSign}
           loading={statsLoading}
-          onClick={() => navigate('/wallet')}
+          onClick={() => navigate('/client/wallet')}
         />
         <StatCard
           label="Team Sessions"
@@ -840,7 +840,7 @@ export default function Teams() {
           sub="This month"
           icon={BarChart3}
           loading={statsLoading}
-          onClick={() => navigate('/history')}
+          onClick={() => navigate('/client/history')}
         />
         <StatCard
           label="Active Members"
@@ -1081,7 +1081,7 @@ export default function Teams() {
         </div>
         <div
           className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 cursor-pointer hover:border-violet-200 transition-colors"
-          onClick={() => navigate('/wallet')}
+          onClick={() => navigate('/client/wallet')}
         >
           <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center mb-3">
             <CreditCard size={20} className="text-violet-600" />
@@ -1093,7 +1093,7 @@ export default function Teams() {
         </div>
         <div
           className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 cursor-pointer hover:border-violet-200 transition-colors"
-          onClick={() => navigate('/settings/api')}
+          onClick={() => navigate('/client/settings/api')}
         >
           <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center mb-3">
             <Code size={20} className="text-violet-600" />

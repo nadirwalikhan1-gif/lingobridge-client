@@ -2,6 +2,7 @@
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 import App from './App'
 import './index.css'
 import { AuthProvider } from './providers/AuthProvider'
@@ -23,6 +24,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <AuthProvider>
           <ErrorBoundary>
             <App />
+            <Toaster richColors position="top-right" />
           </ErrorBoundary>
         </AuthProvider>
       </QueryClientProvider>

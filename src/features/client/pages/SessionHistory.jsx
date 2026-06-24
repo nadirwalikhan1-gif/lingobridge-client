@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+﻿import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -95,7 +95,7 @@ export function SessionHistoryList({ sessions, showHeader = true, maxItems, onSe
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-slate-800">Recent Sessions</h3>
           <button 
-            onClick={() => navigate('/history')}
+            onClick={() => navigate('/client/history')}
             className="text-xs font-medium text-lb-primary hover:text-lb-deep transition-colors"
           >
             View All
@@ -108,7 +108,7 @@ export function SessionHistoryList({ sessions, showHeader = true, maxItems, onSe
           <div
             key={s.id}
             className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all cursor-pointer group"
-            onClick={() => onSessionClick ? onSessionClick(s) : navigate(`/history/${s.id}`)}
+            onClick={() => onSessionClick ? onSessionClick(s) : navigate(`/client/history/${s.id}`)}
           >
             <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-semibold text-slate-600">
@@ -400,7 +400,7 @@ export default function SessionHistory() {
               <div 
                 key={s.id} 
                 className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto_auto_auto_auto] gap-3 items-center p-4 hover:bg-slate-50 transition-colors cursor-pointer"
-                onClick={() => navigate(`/history/${s.id}`)}
+                onClick={() => navigate(`/client/history/${s.id}`)}
               >
                 <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-semibold text-slate-600">{s.interpreter?.initials || '??'}</span>

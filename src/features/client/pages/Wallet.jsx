@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+﻿import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -181,7 +181,7 @@ function TopUpModal({ isOpen, onClose, paymentMethods, onTopUp }) {
                 <div className="p-4 bg-slate-50 rounded-xl text-center">
                   <p className="text-[13px] text-slate-500 mb-2">No payment methods saved</p>
                   <button 
-                    onClick={() => { onClose(); navigate('/wallet/payment-methods'); }}
+                    onClick={() => { onClose(); navigate('/client/wallet/payment-methods'); }}
                     className="text-[13px] text-violet-600 font-medium hover:text-violet-700"
                   >
                     Add payment method
@@ -684,7 +684,7 @@ export default function Wallet() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[14px] font-bold text-slate-900">Payment Methods</h2>
           <button 
-            onClick={() => navigate('/wallet/payment-methods')}
+            onClick={() => navigate('/client/wallet/payment-methods')}
             className="text-[12px] text-violet-600 hover:text-violet-700 font-medium transition-colors"
           >
             + Add Card
@@ -711,7 +711,7 @@ export default function Wallet() {
               <CreditCard size={32} className="text-slate-200 mx-auto mb-2" />
               <p className="text-[13px] text-slate-400">No payment methods saved</p>
               <button 
-                onClick={() => navigate('/wallet/payment-methods')}
+                onClick={() => navigate('/client/wallet/payment-methods')}
                 className="text-[12px] text-violet-600 hover:text-violet-700 mt-2 transition-colors"
               >
                 Add your first payment method

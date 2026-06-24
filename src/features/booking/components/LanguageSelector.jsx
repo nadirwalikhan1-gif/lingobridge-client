@@ -1,4 +1,4 @@
-// LanguageSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
+﻿// LanguageSelector.jsx — rebuilt with lb-* tokens to match interpreter design language
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { FROM_LANGUAGES, TO_LANGUAGES } from '../../../config/constants'
@@ -21,7 +21,7 @@ function LanguageDropdown({ label, value, options, onChange }) {
       <button
         onClick={() => setOpen(!open)}
         className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-left ${
-          open ? 'border-lb-primary bg-lb-surface' : 'border-lb-border bg-lb-surface hover:border-lb-primary'
+          open ? 'border-[#7F77DD] bg-lb-surface' : 'border-lb-border bg-lb-surface hover:border-[#7F77DD]'
         }`}
       >
         {selected?.flag && (
@@ -67,7 +67,7 @@ export default function LanguageSelector({ fromLang, toLang, onFromChange, onToC
 
       <button
         onClick={onSwap}
-        className="w-8 h-8 mb-0.5 rounded-lg bg-lb-surface border border-lb-border flex items-center justify-center hover:border-lb-primary hover:bg-[#EEEDFE] transition-colors shrink-0"
+        className="w-8 h-8 mb-0.5 rounded-lg bg-lb-surface border border-lb-border flex items-center justify-center hover:border-[#7F77DD] hover:bg-[#EEEDFE] transition-colors shrink-0"
         aria-label="Swap languages"
       >
         <SwapIcon />

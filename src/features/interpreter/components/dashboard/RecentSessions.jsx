@@ -1,4 +1,4 @@
-// RecentSessions.jsx — expanded row shows notes, report, session detail
+﻿// RecentSessions.jsx — expanded row shows notes, report, session detail
 
 import { useState, useEffect } from 'react'
 

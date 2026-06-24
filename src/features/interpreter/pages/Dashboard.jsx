@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
+﻿import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
 import { getSocket } from '../../../lib/socket'
 import { useFallbackTimeout } from '../../../hooks/useFallbackTimeout'
@@ -224,8 +224,8 @@ export default function InterpreterDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="lb-page-eyebrow">{getGreeting()}, {displayName}</p>
-          <h1 className="lb-page-title mt-0.5">Interpreter workspace</h1>
+          <p className="text-xs text-lb-muted">{getGreeting()}, {displayName}</p>
+          <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Interpreter workspace</h1>
           <p className="text-[11px] text-lb-subtle mt-0.5">English → Pashto · Punjabi</p>
         </div>
 

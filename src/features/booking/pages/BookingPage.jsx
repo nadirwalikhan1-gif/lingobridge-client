@@ -437,6 +437,17 @@ export default function BookingPage() {
       setDirection('back')
       setStep(6)
     })
+
+    // Closes the silent-stall bug: previously request-cancelled only ever
+    // broadcast to interpreters/admins, so a timed-out or otherwise
+    // cancelled request left the client stuck on this screen forever.
+    socket.once('request-cancelled', (payload) => {
+      setConnectError(
+        payload?.message ?? 'No interpreter was available. Please try again.'
+      )
+      setDirection('back')
+      setStep(6)
+    })
   }
 
   // Cancel while on connecting screen — remove pending socket listeners
@@ -445,6 +456,7 @@ export default function BookingPage() {
     if (socket) {
       socket.off('call-requested')
       socket.off('error')
+      socket.off('request-cancelled')
     }
     setConnectError(null)
     setDirection('back')

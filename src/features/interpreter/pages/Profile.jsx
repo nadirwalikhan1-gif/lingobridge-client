@@ -1,4 +1,4 @@
-// Profile.jsx — Interpreter Profile Page
+﻿// Profile.jsx — Interpreter Profile Page
 // Socket + REST driven, no mock data, skeleton → empty state
 
 import { useState, useEffect, useRef, useId } from 'react'

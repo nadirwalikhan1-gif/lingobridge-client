@@ -1,4 +1,4 @@
-// WalletSummary.jsx — real props only; null-safe rendering throughout
+﻿// WalletSummary.jsx — real props only; null-safe rendering throughout
 
 export default function WalletSummary({
   balance   = null,
@@ -19,7 +19,7 @@ export default function WalletSummary({
 
   return (
     <div className="lb-card">
-      <h3 className="lb-section-title mb-3">Wallet summary</h3>
+      <h3 className="text-[13px] font-medium text-lb-ink mb-3">Wallet summary</h3>
 
       <div className="divide-y divide-lb-border">
         {rows.map((r, i) => (

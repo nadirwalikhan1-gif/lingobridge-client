@@ -1,4 +1,4 @@
-// src/features/admin/components/dashboard/PayoutQueue.jsx
+﻿// src/features/admin/components/dashboard/PayoutQueue.jsx
 // Wired to parent via onApprove prop. Added per-row Approve button.
 
 // ✅ FIX: added 'rejected' status + safe fallback so unknown statuses don't crash
@@ -25,22 +25,19 @@ export default function PayoutQueue({ ext: payouts = [], onApprove }) {
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="lb-section-title">Payout queue</h3>
-        <button className="lb-link">Review all</button>
+        <h3 className="text-[13px] font-medium text-lb-ink">Payout queue</h3>
+        <button className="text-[12px] text-[#7F77DD] font-medium">Review all</button>
       </div>
 
       {payouts.length === 0 ? (
-        <div className="lb-empty">
-        <p className="text-[13px] font-medium text-lb-ink">No payouts pending</p>
-        <p className="text-[11px] text-lb-muted">Pending payouts will appear here</p>
-      </div>
+        <p className="text-[12px] text-lb-muted text-center py-4">No payouts in queue</p>
       ) : (
         <>
           <div className="divide-y divide-lb-border">
             {payouts.map((p) => {
               const cfg = payoutStatus[p.status] || payoutStatus.rejected // ✅ FIX: fallback
               return (
-                <div key={p.id} className="flex items-center gap-2.5 py-2 hover:bg-lb-surface rounded-lg px-2 -mx-2 transition-colors">
+                <div key={p.id} className="flex items-center gap-2.5 py-2">
                   <div className="w-[26px] h-[26px] rounded-full bg-[#E1F5EE] flex items-center justify-center text-[9px] font-medium text-[#0F6E56] shrink-0">
                     {p.initials}
                   </div>
@@ -49,7 +46,7 @@ export default function PayoutQueue({ ext: payouts = [], onApprove }) {
                     <p className="text-[10px] text-lb-muted mt-0.5">{p.period} · {p.sessions} sessions</p>
                   </div>
                   <span className="text-[12px] font-medium text-lb-ink shrink-0">{p.amount}</span>
-                  <span className={`text-[9.5px] font-semibold lb-badge shrink-0 ${cfg.bg} ${cfg.text}`}>
+                  <span className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.bg} ${cfg.text}`}>
                     {cfg.label}
                   </span>
                   {p.status === 'pending' && onApprove && (

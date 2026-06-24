@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -367,7 +367,7 @@ export default function Messages() {
     setMobileShowList(false);
     setShowNewModal(false);
     queryClient.invalidateQueries({ queryKey: ['conversations'] });
-    navigate('/messages', { replace: true });
+    navigate('/client/messages', { replace: true });
   }, [queryClient, navigate]);
 
   const totalUnread = conversations?.reduce((sum, c) => sum + (c.unread ?? 0), 0) ?? 0;

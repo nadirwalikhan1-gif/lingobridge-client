@@ -1,4 +1,4 @@
-// src/features/admin/components/dashboard/RequestQueue.jsx
+﻿// src/features/admin/components/dashboard/RequestQueue.jsx
 // Wired to parent via onAssign/onSkip props. No local state mutation.
 // Pending spinner per card. Waits for socket confirmation to disappear.
 

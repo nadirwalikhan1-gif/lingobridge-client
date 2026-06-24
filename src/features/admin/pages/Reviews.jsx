@@ -1,4 +1,4 @@
-// src/features/admin/pages/Reviews.jsx
+﻿// src/features/admin/pages/Reviews.jsx
 // Wired to real API. Uses React Query with 30s staleTime.
 
 import { useState, useMemo } from 'react'
@@ -92,8 +92,8 @@ export default function Reviews() {
     <div className="space-y-3">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="lb-page-eyebrow">Platform operations</p>
-          <h1 className="lb-page-title mt-0.5">Reviews</h1>
+          <p className="text-xs text-lb-muted">Platform operations</p>
+          <h1 className="text-lg font-medium text-lb-ink mt-0.5">Reviews</h1>
         </div>
         {flaggedCount > 0 && (
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#FCEBEB] text-[#A32D2D]">

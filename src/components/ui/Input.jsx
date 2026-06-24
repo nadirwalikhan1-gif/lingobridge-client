@@ -1,22 +1,27 @@
-import { forwardRef, useId } from 'react'
+﻿import { forwardRef, useId } from 'react'
 
 const Input = forwardRef(function Input({ label, error, id, className = '', ...props }, ref) {
   const generatedId = useId()
   const inputId = id ?? generatedId
+
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label htmlFor={inputId} className="block text-xs font-semibold text-lb-ink mb-1.5 tracking-wide">
+        <label htmlFor={inputId} className="block text-sm font-medium text-slate-700 mb-1.5">
           {label}
         </label>
       )}
       <input
-        ref={ref} id={inputId}
-        className={`lb-input ${error ? '!border-red-400 focus:!border-red-500 focus:![box-shadow:0_0_0_3px_rgba(220,38,38,0.12)]' : ''}`}
+        ref={ref}
+        id={inputId}
+        className={`w-full px-3 py-2.5 bg-white border rounded-button text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-admin-accent/20 focus:border-admin-accent transition-colors ${
+          error ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-slate-200'
+        }`}
         {...props}
       />
-      {error && <p className="mt-1.5 text-xs text-red-600 font-medium">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   )
 })
+
 export default Input

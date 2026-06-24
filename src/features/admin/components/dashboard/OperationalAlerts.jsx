@@ -1,4 +1,4 @@
-// OperationalAlerts.jsx — Admin alert feed
+﻿// OperationalAlerts.jsx — Admin alert feed
 
 const severityConfig = {
   critical: {
@@ -28,15 +28,12 @@ export default function OperationalAlerts({ alerts = [] }) {
   return (
     <div className="lb-card">
       <div className="flex items-center justify-between px-4 py-3 border-b border-lb-border">
-        <span className="lb-section-title">Operational Alerts</span>
-        <button className="lb-link">View all</button>
+        <span className="text-[13px] font-semibold text-lb-ink">Operational Alerts</span>
+        <button className="text-[11.5px] font-medium text-[#7F77DD]">View all</button>
       </div>
 
       {alerts.length === 0 ? (
-        <div className="lb-empty">
-        <p className="text-[13px] font-medium text-lb-ink">All clear</p>
-        <p className="text-[11px] text-lb-muted">No active alerts</p>
-      </div>
+        <p className="text-[12px] text-lb-muted text-center py-6">No active alerts</p>
       ) : (
         <div className="space-y-2 px-4 py-3">
           {alerts.map((a) => {

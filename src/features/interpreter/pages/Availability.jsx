@@ -1,4 +1,4 @@
-// Availability.jsx — full production page
+﻿// Availability.jsx — full production page
 // Manages working hours, quick status, vacation mode, and availability insights
 
 import { useState, useEffect, useCallback } from 'react'

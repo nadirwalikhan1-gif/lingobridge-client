@@ -120,6 +120,12 @@ export function AdminDataProvider({ children }) {
     setRequestQueue(prev => prev.filter(r => r.id !== requestId))
   })
 
+  // Live top-up notification — prepends into the same alerts feed used by
+  // get-alerts, same pattern as new-dispute prepending into activeDisputes.
+  useSocket('wallet-topped-up', (alert) => {
+    setAlerts(prev => [alert, ...prev])
+  })
+
   const refresh = useCallback(() => {
     const socket = getSocket()
     if (!socket) return

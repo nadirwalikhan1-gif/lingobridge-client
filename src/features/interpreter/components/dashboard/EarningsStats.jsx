@@ -1,4 +1,4 @@
-// EarningsStats.jsx — hero earnings card dark + supporting stats
+﻿// EarningsStats.jsx — hero earnings card dark + supporting stats
 // All values via real props. Safe fallback: '—' for missing data.
 
 export default function EarningsStats({ stats = {} }) {

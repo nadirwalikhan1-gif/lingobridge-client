@@ -76,7 +76,7 @@ function ClientStats({ stats, wallet, navigate }) {
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
       <div 
         className={`rounded-xl px-6 py-5 flex flex-col justify-between min-h-[110px] cursor-pointer transition-transform hover:scale-[1.02] ${lowBalance ? 'bg-[#7B1F1F]' : 'bg-[#1a1635]'}`}
-        onClick={() => navigate('/wallet')}
+        onClick={() => navigate('/client/wallet')}
       >
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest">Wallet balance</p>
@@ -96,7 +96,7 @@ function ClientStats({ stats, wallet, navigate }) {
 
       <div 
         className="rounded-xl px-4 py-4 bg-[#EEEDFE] flex flex-col justify-between min-h-[110px] cursor-pointer transition-transform hover:scale-[1.02]"
-        onClick={() => navigate('/history')}
+        onClick={() => navigate('/client/history')}
       >
         <p className="text-[11px] text-[#534AB7] uppercase tracking-widest font-medium">Total sessions</p>
         <div className="mt-2">
@@ -107,7 +107,7 @@ function ClientStats({ stats, wallet, navigate }) {
 
       <div 
         className="rounded-xl px-4 py-4 bg-lb-surface border border-lb-border flex flex-col justify-between min-h-[110px] cursor-pointer transition-transform hover:scale-[1.02]"
-        onClick={() => navigate('/favourites')}
+        onClick={() => navigate('/client/favourites')}
       >
         <p className="text-[10px] text-lb-muted uppercase tracking-widest font-medium">Favourites</p>
         <div>
@@ -204,7 +204,7 @@ function RecentSessionsList({ sessions, isLoading, error, navigate }) {
           Book your first session and get connected with an interpreter instantly.
         </p>
         <button 
-          onClick={() => navigate('/booking')}
+          onClick={() => navigate('/client/booking')}
           className="mt-1 px-4 py-1.5 text-[12px] font-medium bg-[#7F77DD] text-white rounded-lg hover:bg-[#534AB7] transition-colors"
         >
           Book a session
@@ -218,7 +218,7 @@ function RecentSessionsList({ sessions, isLoading, error, navigate }) {
       <div className="flex items-baseline justify-between mb-3">
         <h3 className="text-[14px] font-medium text-lb-ink">Recent sessions</h3>
         <button 
-          onClick={() => navigate('/history')}
+          onClick={() => navigate('/client/history')}
           className="text-[12px] text-[#7F77DD] font-medium hover:text-[#534AB7] transition-colors"
         >
           View all
@@ -229,7 +229,7 @@ function RecentSessionsList({ sessions, isLoading, error, navigate }) {
           <div 
             key={s.id} 
             className="flex items-center gap-2.5 py-2 cursor-pointer hover:bg-slate-50 rounded-lg px-2 -mx-2 transition-colors"
-            onClick={() => navigate(`/history/${s.id}`)}
+            onClick={() => navigate(`/client/history/${s.id}`)}
           >
             <div className="w-7 h-7 rounded-full bg-[#EEEDFE] flex items-center justify-center text-[10px] font-semibold text-[#534AB7] shrink-0">
               {s.interpreter?.initials || '??'}
@@ -295,8 +295,8 @@ function RecentActivity({ activities, isLoading, navigate }) {
                 className="flex items-center gap-2.5 py-2 cursor-pointer hover:bg-slate-50 rounded-lg px-2 -mx-2 transition-colors"
                 onClick={() => {
                   if (a.link) navigate(a.link)
-                  else if (a.type === 'message') navigate('/messages')
-                  else if (a.type === 'session') navigate('/history')
+                  else if (a.type === 'message') navigate('/client/messages')
+                  else if (a.type === 'session') navigate('/client/history')
                 }}
               >
                 <div className={`w-6 h-6 rounded-full ${bg} flex items-center justify-center shrink-0`}>{icon}</div>
@@ -321,7 +321,7 @@ function QuickActions({ lastSession, navigate }) {
       <div className="lb-card">
         <h3 className="text-[13px] font-medium text-lb-ink mb-3">Quick actions</h3>
         <button 
-          onClick={() => navigate('/booking')}
+          onClick={() => navigate('/client/booking')}
           className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-[#7F77DD] bg-[#7F77DD] hover:bg-[#534AB7] text-white transition-colors"
         >
           <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
@@ -352,7 +352,7 @@ function QuickActions({ lastSession, navigate }) {
       textColor: 'text-white',
       descColor: 'text-white/70',
       primary: true,
-      onClick: () => navigate(`/booking?interpreter=${lastSession.interpreterId}&from=${lastSession.fromLang}&to=${lastSession.toLang}&type=${lastSession.type}`)
+      onClick: () => navigate(`/client/booking?interpreter=${lastSession.interpreterId}&from=${lastSession.fromLang}&to=${lastSession.toLang}&type=${lastSession.type}`)
     },
     {
       label: 'New session',
@@ -361,7 +361,7 @@ function QuickActions({ lastSession, navigate }) {
       bg: 'bg-[#EEEDFE]',
       textColor: 'text-lb-ink',
       descColor: 'text-lb-muted',
-      onClick: () => navigate('/booking')
+      onClick: () => navigate('/client/booking')
     },
     {
       label: 'Schedule later',
@@ -370,7 +370,7 @@ function QuickActions({ lastSession, navigate }) {
       bg: 'bg-lb-surface',
       textColor: 'text-lb-ink',
       descColor: 'text-lb-muted',
-      onClick: () => navigate('/booking?schedule=true')
+      onClick: () => navigate('/client/booking?schedule=true')
     },
   ]
 
@@ -446,7 +446,7 @@ function WalletSnapshot({ balance, isLoading, navigate }) {
         {low && !isNegative && <p className="text-[10px] text-amber-500 text-right mb-2">⚠ Balance low — top up to avoid interruptions</p>}
         {!low && <p className="text-[10px] text-lb-subtle text-right mb-3">Ready to use</p>}
         <button 
-          onClick={() => navigate('/wallet')}
+          onClick={() => navigate('/client/wallet')}
           className="w-full bg-[#1a1635] hover:bg-[#26215C] text-white text-[13px] font-medium rounded-lg py-2.5 transition-colors flex items-center justify-center gap-2"
         >
           <Wallet className="w-4 h-4" /> Add funds
@@ -469,7 +469,6 @@ export default function ClientDashboard() {
   staleTime: 30000,
 })
 
-const profile    = dashboard?.profile
 const stats      = dashboard?.stats
 const sessions   = dashboard?.sessions
 const upcoming   = dashboard?.upcoming
@@ -496,11 +495,11 @@ const sessionsError = dashboardError
     <div className="space-y-4">
       <div className="flex items-center justify-between pb-1">
         <div>
-          <p className="text-xs text-lb-muted">Welcome back, {profile?.fullName ?? user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'there'}</p>
+          <p className="text-xs text-lb-muted">Welcome back, {user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'there'}</p>
           <h1 className="text-lg font-semibold text-lb-ink mt-0.5">Client workspace</h1>
         </div>
         <button 
-          onClick={() => navigate('/booking')}
+          onClick={() => navigate('/client/booking')}
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#1a1635] text-white hover:bg-[#26215C] transition-colors"
         >
           <Plus className="w-3.5 h-3.5" /> Book session
@@ -554,7 +553,7 @@ const sessionsError = dashboardError
             )}
             <div className="mt-3 pt-3 border-t border-lb-border">
               <button 
-                onClick={() => navigate('/booking')}
+                onClick={() => navigate('/client/booking')}
                 className="w-full bg-[#7F77DD] hover:bg-[#534AB7] text-white text-[12px] font-medium rounded-lg py-1.5 transition-colors"
               >
                 + Book new session

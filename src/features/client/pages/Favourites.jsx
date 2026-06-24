@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+﻿import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -340,7 +340,7 @@ export default function Favourites() {
   });
 
   const handleBrowse = () => navigate('/interpreters');
-  const handleMessage = (interpreterId) => navigate(`/messages?interpreter=${interpreterId}`);
+  const handleMessage = (interpreterId) => navigate(`/client/messages?interpreter=${interpreterId}`);
 
   const favourites = data?.favourites ?? [];
   const totalPages = data?.totalPages ?? 1;

@@ -1,4 +1,4 @@
-// DurationSelector.jsx — Fix #9: all options in a single 2×4 grid, no pagination
+﻿// DurationSelector.jsx — Fix #9: all options in a single 2×4 grid, no pagination
 // FIX: vault-model — use CLIENT_RATES instead of old per-type constants
 
 import { CLIENT_RATES } from '../../../config/constants'
@@ -19,8 +19,8 @@ export default function DurationSelector({ selected, onSelect, sessionType }) {
             onClick={() => onSelect(min)}
             className={`flex flex-col items-center justify-center py-3 rounded-lg border transition-colors ${
               isActive
-                ? 'border-lb-primary bg-[#EEEDFE] shadow-[0_0_0_3px_var(--color-lb-primary-glow)]'
-                : 'border-lb-border bg-lb-surface hover:border-lb-primary hover:shadow-[0_0_0_3px_var(--color-lb-primary-glow)] hover:bg-[#EEEDFE]/40'
+                ? 'border-[#7F77DD] bg-[#EEEDFE]'
+                : 'border-lb-border bg-lb-surface hover:border-[#7F77DD] hover:bg-[#EEEDFE]/40'
             }`}
             aria-pressed={isActive}
           >

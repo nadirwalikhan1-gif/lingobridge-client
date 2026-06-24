@@ -1,4 +1,4 @@
-// Payouts.jsx — Interpreter Payouts Page
+﻿// Payouts.jsx — Interpreter Payouts Page
 // Fixed: import paths corrected (4 levels up to src/)
 // Fixed: withdraw button shows minimum threshold copy
 // All data socket-driven, no mock data

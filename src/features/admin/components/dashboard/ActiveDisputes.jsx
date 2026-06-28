@@ -1,6 +1,8 @@
 ﻿// src/features/admin/components/dashboard/ActiveDisputes.jsx
 // Wired to parent via onResolve/onEscalate props.
 
+import { useNavigate } from 'react-router-dom'
+
 function AlertIcon({ className }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -79,11 +81,12 @@ const FALLBACK_CFG = {
 
 // FIX: prop was `ext: disputes` — renamed to `disputes` to match what parent passes
 export default function ActiveDisputes({ disputes = [], onResolve, onEscalate }) {
+  const navigate = useNavigate()
   return (
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
         <h3 className="text-[13px] font-medium text-lb-ink">Active disputes</h3>
-        <button className="text-[12px] text-[#7F77DD] font-medium">View all</button>
+        <button onClick={() => navigate('/admin/disputes')} className="text-[12px] text-[#7F77DD] font-medium">View all</button>
       </div>
 
       {disputes.length === 0 ? (

@@ -77,7 +77,11 @@ export default function InterpreterCards({ selected, onSelect }) {
               {interpreters.find(i => i.id === selected)?.name}
             </span>
           )}
-          <button className="flex items-center gap-0.5 text-[11px] text-[#7F77DD]">
+          <button
+            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+            disabled={page === totalPages - 1}
+            className="flex items-center gap-0.5 text-[11px] text-[#7F77DD] disabled:opacity-40"
+          >
             View all <ChevronRight className="w-3 h-3" />
           </button>
         </div>

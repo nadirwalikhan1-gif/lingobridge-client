@@ -1,5 +1,7 @@
 ﻿// OperationalAlerts.jsx — Admin alert feed
 
+import { useNavigate } from 'react-router-dom'
+
 const severityConfig = {
   critical: {
     border: 'border-[#E24B4A]',
@@ -25,11 +27,12 @@ const severityConfig = {
 }
 
 export default function OperationalAlerts({ alerts = [] }) {
+  const navigate = useNavigate()
   return (
     <div className="lb-card">
       <div className="flex items-center justify-between px-4 py-3 border-b border-lb-border">
         <span className="text-[13px] font-semibold text-lb-ink">Operational Alerts</span>
-        <button className="text-[11.5px] font-medium text-[#7F77DD]">View all</button>
+        <button onClick={() => navigate('/admin/disputes')} className="text-[11.5px] font-medium text-[#7F77DD]">View all</button>
       </div>
 
       {alerts.length === 0 ? (

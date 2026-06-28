@@ -1,6 +1,7 @@
 ﻿// RecentSessions.jsx — expanded row shows notes, report, session detail
 
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const DOMAIN_COLORS = {
   'Medical':   { bg: '#E1F5EE', text: '#0F6E56' },
@@ -28,6 +29,7 @@ function TypeIcon({ type }) {
 }
 
 export default function RecentSessions() {
+  const navigate = useNavigate()
   const [sessions,   setSessions]   = useState([])
   const [loading,    setLoading]    = useState(true)
   const [expandedId, setExpandedId] = useState(null)
@@ -59,7 +61,7 @@ export default function RecentSessions() {
     <div className="lb-card">
       <div className="flex items-baseline justify-between mb-3">
         <h3 className="text-[14px] font-medium text-lb-ink">Recent sessions</h3>
-        <button className="text-[12px] text-[#7F77DD] font-medium">View all</button>
+        <button onClick={() => navigate('/interpreter/sessions')} className="text-[12px] text-[#7F77DD] font-medium">View all</button>
       </div>
 
       {sessions.length === 0 ? (

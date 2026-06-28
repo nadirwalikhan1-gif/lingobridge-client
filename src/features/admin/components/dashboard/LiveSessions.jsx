@@ -2,6 +2,7 @@
 // Motion: staggered slide-in on mount, pulse dots on live/escalated, ticking elapsed timers
 
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function fmt(secs) {
   const m = Math.floor(secs / 60)
@@ -111,6 +112,7 @@ function SessionRow({ session, index }) {
 }
 
 export default function LiveSessions({ sessions = [] }) {
+  const navigate = useNavigate()
   const liveCount = sessions.filter((s) => s.status === 'live' || s.status === 'escalated').length
 
   return (
@@ -126,7 +128,7 @@ export default function LiveSessions({ sessions = [] }) {
           </div>
           <p className="text-[10.5px] text-lb-muted mt-0.5">Real-time session monitoring</p>
         </div>
-        <button className="text-[11.5px] font-medium text-[#7F77DD]">View all</button>
+        <button onClick={() => navigate('/admin/sessions')} className="text-[11.5px] font-medium text-[#7F77DD]">View all</button>
       </div>
 
       {sessions.length === 0 ? (

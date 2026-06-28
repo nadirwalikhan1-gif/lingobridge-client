@@ -335,7 +335,7 @@ export default function IncomingRequests({ onRequestsChange, nextSession }) {
             )}
           </div>
           {newCount === 0 && (
-            <button className="text-[12px] text-[#7F77DD] font-medium">View all</button>
+            <button onClick={() => navigate('/interpreter/requests')} className="text-[12px] text-[#7F77DD] font-medium">View all</button>
           )}
         </div>
 

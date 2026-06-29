@@ -122,8 +122,14 @@ export function AdminDataProvider({ children }) {
 
   // Live top-up notification — prepends into the same alerts feed used by
   // get-alerts, same pattern as new-dispute prepending into activeDisputes.
-  useSocket('wallet-topped-up', (alert) => {
-    setAlerts(prev => [alert, ...prev])
+ useSocket('wallet-topped-up', (data) => {
+    setAlerts(prev => [{
+      id:       `topup-${data.userId}-${Date.now()}`,
+      severity: 'info',
+      title:    `Wallet top-up — ${data.userName ?? data.userId}`,
+      detail:   `$${data.amount} ${data.currency ?? 'USD'} received`,
+      time:     data.time,
+    }, ...prev])
   })
 
   const refresh = useCallback(() => {

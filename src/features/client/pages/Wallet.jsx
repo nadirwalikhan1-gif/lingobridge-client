@@ -29,9 +29,9 @@ const fetchPaymentMethods = async () => {
   return data.methods;
 };
 
-const topUpWallet = async ({ amount, paymentMethodId }) => {
-  const { data } = await api.post('/v1/wallet/top-up', { amount, paymentMethodId });
-  return data;
+const createCheckout = async ({ amount, currency = 'USD' }) => {
+  const { data } = await api.post('/create-checkout', { amount, currency });
+  return data; // { url: '...' }
 };
 
 const exportTransactions = async ({ format, filters }) => {
@@ -107,27 +107,32 @@ function StatCard({ label, value, icon: Icon, trend, onClick, loading }) {
 }
 
 // ─── Top Up Modal ─────────────────────────────────────────────────────────────
-function TopUpModal({ isOpen, onClose, paymentMethods, onTopUp }) {
-  const navigate = useNavigate();
-  const [amount, setAmount] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState('');
-  const [step, setStep] = useState('amount'); // 'amount', 'confirm', 'processing', 'success'
+// LemonSqueezy handles card collection — no saved payment method needed.
+// Valid amounts must match server VALID_AMOUNTS: [10, 25, 50, 100].
+// Flow: select amount → POST /create-checkout → redirect to LemonSqueezy URL.
+function TopUpModal({ isOpen, onClose }) {
+  const [amount, setAmount] = useState(null);
+  const [step, setStep] = useState('amount'); // 'amount' | 'processing'
 
-  const presetAmounts = [25, 50, 100, 200, 500];
-  const parsedAmount = parseFloat(amount);
-  const isValid = parsedAmount >= 10 && parsedAmount <= 10000;
+  const presetAmounts = [10, 25, 50, 100];
 
-  const mutation = useMutation({
-    mutationFn: topUpWallet,
-    onSuccess: () => {
-      setStep('success');
-      setTimeout(() => { onClose(); setStep('amount'); setAmount(''); }, 2000);
-    },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || 'Payment failed');
+  const handleClose = () => {
+    setAmount(null);
+    setStep('amount');
+    onClose();
+  };
+
+  const handleContinue = async () => {
+    if (!amount) return;
+    setStep('processing');
+    try {
+      const result = await createCheckout({ amount, currency: 'USD' });
+      window.location.href = result.url;
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Could not start checkout. Try again.');
       setStep('amount');
     }
-  });
+  };
 
   if (!isOpen) return null;
 
@@ -138,36 +143,21 @@ function TopUpModal({ isOpen, onClose, paymentMethods, onTopUp }) {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-[18px] font-bold text-slate-900">Add Funds</h3>
-              <button onClick={onClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400"><X size={18} /></button>
+              <button onClick={handleClose} aria-label="Close" className="p-1 rounded-lg hover:bg-slate-50 text-slate-400">
+                <X size={18} />
+              </button>
             </div>
 
-            <div className="mb-6">
-              <label htmlFor="add-funds-amount" className="text-[12px] font-medium text-slate-600 mb-2 block">Amount</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[18px] font-bold text-slate-400">$</span>
-                <input
-                  id="add-funds-amount"
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
-                  min="10"
-                  max="10000"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-[24px] font-bold text-slate-900 focus:outline-none focus:border-violet-400"
-                />
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1">Min $10 · Max $10,000</p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 mb-6">
+            <label className="text-[12px] font-medium text-slate-600 mb-3 block">Select Amount</label>
+            <div className="grid grid-cols-2 gap-3 mb-6">
               {presetAmounts.map(amt => (
                 <button
                   key={amt}
-                  onClick={() => setAmount(amt.toString())}
-                  className={`py-2.5 rounded-xl text-[14px] font-medium border transition-colors ${
-                    amount === amt.toString() 
-                      ? 'bg-violet-600 text-white border-violet-600' 
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-violet-200'
+                  onClick={() => setAmount(amt)}
+                  className={`py-4 rounded-xl text-[16px] font-semibold border-2 transition-colors ${
+                    amount === amt
+                      ? 'bg-violet-600 text-white border-violet-600'
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-violet-300'
                   }`}
                 >
                   ${amt}
@@ -175,45 +165,13 @@ function TopUpModal({ isOpen, onClose, paymentMethods, onTopUp }) {
               ))}
             </div>
 
-            <div className="mb-6">
-              <label className="text-[12px] font-medium text-slate-600 mb-2 block">Payment Method</label>
-              {!paymentMethods?.length ? (
-                <div className="p-4 bg-slate-50 rounded-xl text-center">
-                  <p className="text-[13px] text-slate-500 mb-2">No payment methods saved</p>
-                  <button 
-                    onClick={() => { onClose(); navigate('/client/wallet/payment-methods'); }}
-                    className="text-[13px] text-violet-600 font-medium hover:text-violet-700"
-                  >
-                    Add payment method
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {paymentMethods.map(method => (
-                    <button
-                      key={method.id}
-                      onClick={() => setSelectedMethod(method.id)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors text-left ${
-                        selectedMethod === method.id 
-                          ? 'bg-violet-50 border-violet-200' 
-                          : 'bg-white border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <CreditCard size={20} className="text-slate-400" />
-                      <div className="flex-1">
-                        <p className="text-[13px] font-medium text-slate-900">{method.type} •••• {method.last4}</p>
-                        <p className="text-[11px] text-slate-400">Expires {method.expiry}</p>
-                      </div>
-                      {selectedMethod === method.id && <Check size={16} className="text-violet-600" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <p className="text-[11px] text-slate-400 mb-6 text-center">
+              Min $10 · Secure checkout powered by LemonSqueezy
+            </p>
 
             <button
-              onClick={() => setStep('confirm')}
-              disabled={!isValid || !selectedMethod}
+              onClick={handleContinue}
+              disabled={!amount}
               className="w-full py-3 rounded-xl bg-violet-600 text-white text-[14px] font-semibold hover:bg-violet-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               Continue
@@ -221,57 +179,11 @@ function TopUpModal({ isOpen, onClose, paymentMethods, onTopUp }) {
           </div>
         )}
 
-        {step === 'confirm' && (
-          <div className="p-6">
-            <h3 className="text-[18px] font-bold text-slate-900 mb-4">Confirm Top-Up</h3>
-            <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-3">
-              <div className="flex justify-between text-[13px]">
-                <span className="text-slate-500">Amount</span>
-                <span className="font-semibold text-slate-900">${parsedAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-[13px]">
-                <span className="text-slate-500">Fee</span>
-                <span className="font-semibold text-slate-900">$0.00</span>
-              </div>
-              <div className="h-px bg-slate-200" />
-              <div className="flex justify-between text-[14px]">
-                <span className="font-medium text-slate-900">Total</span>
-                <span className="font-bold text-slate-900">${parsedAmount.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setStep('amount')} 
-                className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-[14px] font-medium hover:bg-slate-50 transition-colors"
-              >
-                Back
-              </button>
-              <button 
-                onClick={() => { setStep('processing'); mutation.mutate({ amount: parsedAmount, paymentMethodId: selectedMethod }); }}
-                disabled={mutation.isPending}
-                className="flex-1 py-3 rounded-xl bg-violet-600 text-white text-[14px] font-semibold hover:bg-violet-700 transition-colors disabled:opacity-50"
-              >
-                {mutation.isPending ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'Confirm Payment'}
-              </button>
-            </div>
-          </div>
-        )}
-
         {step === 'processing' && (
           <div className="p-12 text-center">
             <Loader2 size={40} className="text-violet-600 animate-spin mx-auto mb-4" />
-            <p className="text-[16px] font-medium text-slate-900">Processing payment...</p>
+            <p className="text-[16px] font-medium text-slate-900">Preparing checkout…</p>
             <p className="text-[13px] text-slate-400 mt-1">Please do not close this window</p>
-          </div>
-        )}
-
-        {step === 'success' && (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-              <Check size={32} className="text-emerald-500" />
-            </div>
-            <p className="text-[18px] font-bold text-slate-900 mb-1">Payment Successful!</p>
-            <p className="text-[14px] text-slate-500">${parsedAmount.toFixed(2)} has been added to your wallet</p>
           </div>
         )}
       </div>
@@ -721,14 +633,10 @@ export default function Wallet() {
         </div>
       </div>
 
-      <TopUpModal 
-        isOpen={showTopUp} 
-        onClose={() => setShowTopUp(false)} 
-        paymentMethods={paymentMethods}
-        onTopUp={() => queryClient.invalidateQueries({ queryKey: ['wallet'] })}
+      <TopUpModal
+        isOpen={showTopUp}
+        onClose={() => setShowTopUp(false)}
       />
     </div>
   );
 }
-
-
